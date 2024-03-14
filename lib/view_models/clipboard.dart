@@ -10,11 +10,12 @@ import 'package:test_webrtc/view_models/button.dart';
 class ClipboardViewModel extends FamilyAsyncNotifier<String, DataTransceiver> {
   late IconButtonViewModel copyButtonViewModel;
   late IconButtonViewModel pasteButtonViewModel;
+  late DataTransceiver _dataTransceiver;
 
   @override
   FutureOr<String> build(DataTransceiver arg) {
     _dataTransceiver = arg;
-    _dataTransceiver!.setOnReceiveDataListener(_onDataReceived);
+    _dataTransceiver.setOnReceiveDataListener(_onDataReceived);
     copyButtonViewModel = IconButtonViewModel(
         title: 'Copy', onPressed: _onCopyButtonPressed, icon: Icons.copy);
     pasteButtonViewModel = IconButtonViewModel(
@@ -38,11 +39,9 @@ class ClipboardViewModel extends FamilyAsyncNotifier<String, DataTransceiver> {
 
     if (data != null && data.text != null) {
       state = AsyncValue.data(data.text!);
-      _dataTransceiver!.sendData(data.text!);
+      _dataTransceiver.sendData(data.text!);
     }
   }
-
-  DataTransceiver? _dataTransceiver;
 }
 
 final clipboardViewModelProvider =
