@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:test_webrtc/services/connection_service.dart';
+import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/ice_server_configuration.dart';
 import 'package:test_webrtc/connection_info.dart';
 import 'package:test_webrtc/connection_info_repository.dart';
@@ -80,7 +80,6 @@ class CreateConnectionService extends AbstractConnectionService {
     }
   }
 
-  //todo: do this for the joining side as well
   void _handleSignalingAnswers() {
     _subscription = ref
         .watch(connectionInfoRepositoryProvider)
@@ -120,6 +119,8 @@ class CreateConnectionService extends AbstractConnectionService {
   }
 }
 
+//Currently, there is no good way to detect when to clean up this
+//service. So now once it is constructed, it will live forever.
 CreateConnectionService? _connectionService;
 
 final createConnectionServiceProvider =

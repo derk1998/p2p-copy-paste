@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:test_webrtc/services/connection_service.dart';
+import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/ice_server_configuration.dart';
 import 'package:test_webrtc/connection_info.dart';
 import 'package:test_webrtc/connection_info_repository.dart';
@@ -69,6 +69,8 @@ class JoinConnectionService extends AbstractConnectionService {
   }
 }
 
+//Currently, there is no good way to detect when to clean up this
+//service. So now once it is constructed, it will live forever.
 JoinConnectionService? _connectionService;
 
 final joinConnectionServiceProvider = Provider<JoinConnectionService>((ref) {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/services/connection_service.dart';
+import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/view_models/clipboard.dart';
+import 'package:test_webrtc/widgets/button.dart' as btn;
 
 class ClipboardScreen extends ConsumerWidget {
   const ClipboardScreen({super.key, required this.dataTransceiver});
@@ -29,16 +30,8 @@ class ClipboardScreen extends ConsumerWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.copy),
-                  onPressed: viewModel.onCopyButtonPressed,
-                  label: const Text('Copy'),
-                ),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.paste),
-                  onPressed: viewModel.onPasteButtonPressed,
-                  label: const Text('Paste'),
-                )
+                btn.IconButton(viewModel: viewModel.copyButtonViewModel),
+                btn.IconButton(viewModel: viewModel.pasteButtonViewModel),
               ],
             )
           ],
