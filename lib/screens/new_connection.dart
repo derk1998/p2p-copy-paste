@@ -22,7 +22,7 @@ class NewConnectionScreen extends ConsumerWidget {
       body: Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           state.isLoading
-              ? const Text('Loading')
+              ? const CircularProgressIndicator()
               : Text(state.value == null ? 'no data' : state.value!.statusText),
           if (state.value != null && state.value!.connectionId != null)
             SelectableText(state.value!.connectionId!),

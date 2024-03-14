@@ -18,18 +18,16 @@ class NewConnectionScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
     NewConnectionScreenData, NavigatorState> {
   final String title = 'Create a new connection';
 
-  void Function()? t;
-
   @override
   FutureOr<NewConnectionScreenData> build(NavigatorState arg) {
     ref.onDispose(() {
       log('DISPOSING NEW CONNECTION VM');
     });
-    _connect(arg);
-    return NewConnectionScreenData(statusText: 'Loading...');
+    return _connect(arg);
   }
 
-  void _connect(NavigatorState navigator) async {
+  Future<NewConnectionScreenData> _connect(NavigatorState navigator) async {
+    final completer = Completer<NewConnectionScreenData>();
     final connectionService = ref.read(createConnectionServiceProvider);
     state = const AsyncLoading();
 
@@ -42,10 +40,11 @@ class NewConnectionScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
     });
 
     connectionService.setOnConnectionIdPublished((id) {
-      state = AsyncValue.data(NewConnectionScreenData(
+      completer.complete(NewConnectionScreenData(
           statusText: 'Connection ID:', connectionId: id));
     });
     connectionService.startNewConnection();
+    return completer.future;
   }
 }
 
