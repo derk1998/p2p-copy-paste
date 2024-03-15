@@ -34,7 +34,7 @@ class JoinConnectionScreen extends ConsumerWidget {
                 height: 16,
               ),
               state.isLoading
-                  ? const Text('Loading')
+                  ? const CircularProgressIndicator()
                   : Text(state.value == null ? 'no data' : state.value!)
             ],
           ),
