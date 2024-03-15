@@ -20,7 +20,7 @@ class CreateConnectionService extends AbstractConnectionService
   StreamSubscription<ConnectionInfo?>? _subscription;
   bool answerSet = false;
   void Function()? _onConnectionClosedListener;
-  final _roomCreation = Completer<void>();
+  Completer<void>? _roomCreation;
 
   Future<void> _openDataChannel() async {
     setDataChannel(await peerConnection!
@@ -60,9 +60,7 @@ class CreateConnectionService extends AbstractConnectionService
 
     peerConnection!.onIceCandidate = (candidate) async {
       log(candidate.candidate!);
-      //wait here for room creation
-      //is that possible?
-      await _roomCreation.future;
+      await _roomCreation!.future;
       connectionInfo!.addIceCandidateA(candidate);
       ref.read(connectionInfoRepositoryProvider).updateRoom(connectionInfo!);
     };
@@ -77,7 +75,7 @@ class CreateConnectionService extends AbstractConnectionService
     connectionInfo = await ref
         .read(connectionInfoRepositoryProvider)
         .addRoom(connectionInfo!);
-    _roomCreation.complete();
+    _roomCreation!.complete();
     log('ROOM ID: ${connectionInfo?.id}');
 
     _handleSignalingAnswers();
@@ -114,6 +112,7 @@ class CreateConnectionService extends AbstractConnectionService
     if (_subscription != null) {
       await _subscription!.cancel();
     }
+    _roomCreation = Completer<void>();
     answerSet = false;
 
     final offer = await _configureLocal();

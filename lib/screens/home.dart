@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/view_models/home.dart';
-import 'package:test_webrtc/widgets/button.dart';
+import 'package:test_webrtc/widgets/button.dart' as btn;
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -21,11 +21,19 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Button(viewModel: viewModel.startNewConnectionButtonViewModel),
+              btn.Button(
+                  viewModel: viewModel.startNewConnectionButtonViewModel),
               const SizedBox(
                 height: 16,
               ),
-              Button(viewModel: viewModel.joinConnectionButtonViewModel),
+              btn.Button(viewModel: viewModel.joinConnectionButtonViewModel),
+              if (viewModel.joinWithQrCodeButtonViewModel != null) ...[
+                const SizedBox(
+                  height: 16,
+                ),
+                btn.IconButton(
+                    viewModel: viewModel.joinWithQrCodeButtonViewModel!)
+              ],
             ],
           ),
         ),

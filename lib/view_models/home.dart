@@ -1,9 +1,12 @@
 import 'dart:core';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/screens/join_connection.dart';
 import 'package:test_webrtc/screens/new_connection.dart';
+import 'package:test_webrtc/screens/scan_qr_code.dart';
 import 'package:test_webrtc/view_models/button.dart';
 
 class HomeScreenViewModel {
@@ -13,17 +16,32 @@ class HomeScreenViewModel {
         onPressed: _onStartNewConnectionButtonClicked);
 
     joinConnectionButtonViewModel = ButtonViewModel(
-        title: 'Join connection', onPressed: _onJoinConnectionButtonClicked);
+        title: 'I have a code', onPressed: _onJoinConnectionButtonClicked);
+
+    if (!kIsWeb) {
+      //not supported for web
+      joinWithQrCodeButtonViewModel = IconButtonViewModel(
+          title: 'I have a QR code',
+          onPressed: _onJoinWithQrCodeButtonClicked,
+          icon: Icons.qr_code);
+    }
   }
 
   final NavigatorState navigator;
   final String title = 'P2P Copy Paste';
   late ButtonViewModel startNewConnectionButtonViewModel;
   late ButtonViewModel joinConnectionButtonViewModel;
+  IconButtonViewModel? joinWithQrCodeButtonViewModel;
 
   void _onStartNewConnectionButtonClicked() async {
     navigator.push(MaterialPageRoute(
       builder: (context) => const NewConnectionScreen(),
+    ));
+  }
+
+  void _onJoinWithQrCodeButtonClicked() {
+    navigator.push(MaterialPageRoute(
+      builder: (context) => const ScanQRCodeScreen(),
     ));
   }
 
