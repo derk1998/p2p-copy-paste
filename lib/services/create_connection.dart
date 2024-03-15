@@ -19,8 +19,8 @@ class CreateConnectionService extends AbstractConnectionService
   RTCPeerConnection? peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
   bool answerSet = false;
-  final List<RTCIceCandidate> _gatheredIceCandidates = [];
   void Function()? _onConnectionClosedListener;
+  final _roomCreation = Completer<void>();
 
   Future<void> _openDataChannel() async {
     setDataChannel(await peerConnection!
@@ -42,7 +42,6 @@ class CreateConnectionService extends AbstractConnectionService
   }
 
   Future<RTCSessionDescription> _configureLocal() async {
-    final c = Completer<RTCSessionDescription>();
     peerConnection = await createPeerConnection(iceServerConfiguration);
     connectionInfo ??= ConnectionInfo();
 
@@ -59,31 +58,18 @@ class CreateConnectionService extends AbstractConnectionService
 
     final offer = await peerConnection!.createOffer();
 
-    peerConnection!.onIceCandidate = (candidate) {
+    peerConnection!.onIceCandidate = (candidate) async {
       log(candidate.candidate!);
-      _gatheredIceCandidates.add(candidate);
-    };
-
-    peerConnection!.onIceGatheringState = (state) async {
-      if (state == RTCIceGatheringState.RTCIceGatheringStateGathering) {
-        log('START GATHERING ICE CANDIDATES');
-        _gatheredIceCandidates.clear();
-      }
-
-      if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-        log('DONE GATHERING ICE CANDIDATES');
-
-        for (final candidate in _gatheredIceCandidates) {
-          connectionInfo!.addIceCandidateA(candidate);
-        }
-        c.complete(offer);
-      }
+      //wait here for room creation
+      //is that possible?
+      await _roomCreation.future;
+      connectionInfo!.addIceCandidateA(candidate);
+      ref.read(connectionInfoRepositoryProvider).updateRoom(connectionInfo!);
     };
 
     //Responsible for gathering ice candidates
     await peerConnection!.setLocalDescription(offer);
-
-    return c.future;
+    return offer;
   }
 
   Future<void> _configureRemote(RTCSessionDescription offer) async {
@@ -91,6 +77,7 @@ class CreateConnectionService extends AbstractConnectionService
     connectionInfo = await ref
         .read(connectionInfoRepositoryProvider)
         .addRoom(connectionInfo!);
+    _roomCreation.complete();
     log('ROOM ID: ${connectionInfo?.id}');
 
     _handleSignalingAnswers();

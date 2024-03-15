@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -17,10 +16,15 @@ class JoinConnectionService extends AbstractConnectionService
   final Ref ref;
   ConnectionInfo? _connectionInfo;
   RTCPeerConnection? _peerConnection;
-  final List<RTCIceCandidate> _gatheredIceCandidates = [];
+  StreamSubscription<ConnectionInfo?>? _subscription;
+
   void Function()? _onConnectionClosedListener;
 
   Future<void> joinConnection(String connectionId) async {
+    if (_subscription != null) {
+      await _subscription!.cancel();
+    }
+
     //signaling
     _connectionInfo = await ref
         .read(connectionInfoRepositoryProvider)
@@ -58,31 +62,23 @@ class JoinConnectionService extends AbstractConnectionService
 
     _peerConnection!.onIceCandidate = (candidate) {
       log(candidate.candidate!);
-      _gatheredIceCandidates.add(candidate);
-    };
-
-    _peerConnection!.onIceGatheringState = (state) {
-      if (state == RTCIceGatheringState.RTCIceGatheringStateGathering) {
-        log('START ICE CANDIDATE GATHERING');
-        _gatheredIceCandidates.clear();
-      }
-
-      if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-        log('DONE ICE CANDIDATE GATHERING');
-
-        for (final candidate in _gatheredIceCandidates) {
-          _connectionInfo!.addIceCandidateB(candidate);
-        }
-        ref.read(connectionInfoRepositoryProvider).updateRoom(_connectionInfo!);
-      }
+      _connectionInfo!.addIceCandidateB(candidate);
+      ref.read(connectionInfoRepositoryProvider).updateRoom(_connectionInfo!);
     };
 
     _peerConnection!.setRemoteDescription(_connectionInfo!.offer!);
 
-    for (final candidate in _connectionInfo!.iceCandidatesA) {
-      log('Add candidate: ${candidate.candidate}');
-      _peerConnection!.addCandidate(candidate);
-    }
+    _subscription = ref
+        .read(connectionInfoRepositoryProvider)
+        .roomSnapshots(_connectionInfo!.id!)
+        .listen((snapshot) {
+      if (_connectionInfo!.iceCandidatesA.isNotEmpty) {
+        for (final iceCandidate in _connectionInfo!.iceCandidatesA) {
+          log('Adding ice candidate: ${iceCandidate.candidate}');
+          _peerConnection!.addCandidate(iceCandidate);
+        }
+      }
+    });
 
     final answer = await _peerConnection!.createAnswer();
     await _peerConnection!.setLocalDescription(answer);
