@@ -34,7 +34,9 @@ class NewConnectionScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
     connectionService.setOnConnectedListener(() {
       navigator.push(MaterialPageRoute(
         builder: (context) => ClipboardScreen(
+          closeConnectionUseCase: connectionService,
           dataTransceiver: connectionService,
+          navigator: navigator,
         ),
       ));
     });

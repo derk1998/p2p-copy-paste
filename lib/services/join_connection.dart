@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -7,14 +8,17 @@ import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/ice_server_configuration.dart';
 import 'package:test_webrtc/connection_info.dart';
 import 'package:test_webrtc/connection_info_repository.dart';
+import 'package:test_webrtc/use_cases/close_connection.dart';
 
-class JoinConnectionService extends AbstractConnectionService {
+class JoinConnectionService extends AbstractConnectionService
+    implements CloseConnectionUseCase {
   JoinConnectionService(this.ref);
 
   final Ref ref;
   ConnectionInfo? _connectionInfo;
   RTCPeerConnection? _peerConnection;
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
+  void Function()? _onConnectionClosedListener;
 
   Future<void> joinConnection(String connectionId) async {
     //signaling
@@ -27,7 +31,29 @@ class JoinConnectionService extends AbstractConnectionService {
 
     _peerConnection!.onDataChannel = (channel) {
       setDataChannel(channel);
-      callOnConnectedListener();
+
+      channel.onDataChannelState = (state) {
+        log('DATA CHANNEL STATE CHANGED! -> $state');
+        if (state == RTCDataChannelState.RTCDataChannelClosed) {
+          //Workaround for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
+          if (_onConnectionClosedListener != null) {
+            _onConnectionClosedListener!.call();
+          }
+        }
+
+        if (state == RTCDataChannelState.RTCDataChannelOpen) {
+          callOnConnectedListener();
+        }
+      };
+
+      //Works on android
+      //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
+      _peerConnection!.onConnectionState = (state) {
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed &&
+            _onConnectionClosedListener != null) {
+          _onConnectionClosedListener!.call();
+        }
+      };
     };
 
     _peerConnection!.onIceCandidate = (candidate) {
@@ -66,6 +92,20 @@ class JoinConnectionService extends AbstractConnectionService {
         .read(connectionInfoRepositoryProvider)
         .updateRoom(
             ConnectionInfo.join(id: _connectionInfo!.id!, answer: answer));
+  }
+
+  //todo: move to base
+  @override
+  void close() async {
+    if (_peerConnection != null) {
+      await _peerConnection!.close();
+    }
+  }
+
+  @override
+  void setOnConnectionClosedListener(
+      void Function() onConnectionClosedListener) {
+    _onConnectionClosedListener = onConnectionClosedListener;
   }
 }
 

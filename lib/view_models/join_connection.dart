@@ -38,7 +38,9 @@ class JoinConnectionScreenViewModel
     connectionService.setOnConnectedListener(() {
       _navigator.push(MaterialPageRoute(
         builder: (context) => ClipboardScreen(
+          closeConnectionUseCase: connectionService,
           dataTransceiver: connectionService,
+          navigator: _navigator,
         ),
       ));
     });

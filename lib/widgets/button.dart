@@ -21,3 +21,20 @@ class IconButton extends StatelessWidget {
         label: Text(viewModel.title));
   }
 }
+
+class DialogButton extends StatelessWidget {
+  const DialogButton({super.key, required this.viewModel});
+
+  final ButtonViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      style: TextButton.styleFrom(
+        textStyle: Theme.of(context).textTheme.labelLarge,
+      ),
+      onPressed: viewModel.onPressed,
+      child: Text(viewModel.title),
+    );
+  }
+}

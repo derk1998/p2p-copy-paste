@@ -7,8 +7,10 @@ import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/ice_server_configuration.dart';
 import 'package:test_webrtc/connection_info.dart';
 import 'package:test_webrtc/connection_info_repository.dart';
+import 'package:test_webrtc/use_cases/close_connection.dart';
 
-class CreateConnectionService extends AbstractConnectionService {
+class CreateConnectionService extends AbstractConnectionService
+    implements CloseConnectionUseCase {
   CreateConnectionService(this.ref);
 
   final Ref ref;
@@ -18,12 +20,21 @@ class CreateConnectionService extends AbstractConnectionService {
   StreamSubscription<ConnectionInfo?>? _subscription;
   bool answerSet = false;
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
+  void Function()? _onConnectionClosedListener;
 
   Future<void> _openDataChannel() async {
     setDataChannel(await peerConnection!
         .createDataChannel('clipboard', RTCDataChannelInit()..id = 1));
 
     dataChannel?.onDataChannelState = (state) {
+      log('DATA CHANNEL STATE: $state');
+      if (state == RTCDataChannelState.RTCDataChannelClosed) {
+        //Workaround for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
+        if (_onConnectionClosedListener != null) {
+          _onConnectionClosedListener!.call();
+        }
+      }
+
       if (state == RTCDataChannelState.RTCDataChannelOpen) {
         callOnConnectedListener();
       }
@@ -34,6 +45,15 @@ class CreateConnectionService extends AbstractConnectionService {
     final c = Completer<RTCSessionDescription>();
     peerConnection = await createPeerConnection(iceServerConfiguration);
     connectionInfo ??= ConnectionInfo();
+
+    //Works on android
+    //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
+    peerConnection!.onConnectionState = (state) {
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed &&
+          _onConnectionClosedListener != null) {
+        _onConnectionClosedListener!.call();
+      }
+    };
 
     await _openDataChannel();
 
@@ -116,6 +136,21 @@ class CreateConnectionService extends AbstractConnectionService {
   void setOnConnectionIdPublished(
       void Function(String id) onConnectionIdPublished) {
     _onConnectionIdPublished = onConnectionIdPublished;
+  }
+
+  //todo: move to base
+  @override
+  void close() async {
+    if (peerConnection != null) {
+      log('CONNECTION CLOSED');
+      await peerConnection!.close();
+    }
+  }
+
+  @override
+  void setOnConnectionClosedListener(
+      void Function() onConnectionClosedListener) {
+    _onConnectionClosedListener = onConnectionClosedListener;
   }
 }
 
