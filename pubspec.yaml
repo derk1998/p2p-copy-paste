@@ -41,6 +41,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   qr_flutter: ^4.1.0
   qr_code_scanner: ^1.0.1
+  firebase_auth: ^4.17.9
 
 dev_dependencies:
   flutter_test:
