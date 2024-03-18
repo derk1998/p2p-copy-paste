@@ -1,16 +1,9 @@
-# test_webrtc
+# P2P Copy Paste
 
-A new Flutter project.
+I keep getting into situations where I need to transfer something, for instance a link, between devices. Either I gather enough patience to manually type it over or send a mail to myself. This should be easier and that's where this project comes in.
 
-## Getting Started
+## Some notes about the implementation
 
-This project is a starting point for a Flutter application.
+This is also sort of an experiment for me as this is my first Flutter app. When I was following tutorials I found that people barely spend time on layering. And since I'm fan of MVVM and clean architecture I decided to incorporate it in this project as well.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+It is also my first project using WebRTC so it's all very exciting.
