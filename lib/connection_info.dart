@@ -45,7 +45,7 @@ class ConnectionInfo {
     }
   }
 
-  dynamic toMap() {
+  Map<String, dynamic> toMap() {
     return {
       if (offer != null) 'offer': offer?.toMap(),
       if (answer != null) 'answer': answer?.toMap(),

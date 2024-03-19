@@ -8,11 +8,13 @@ class FirestoreConnectionInfoRepository {
   final _collection = FirebaseFirestore.instance.collection('rooms');
 
   Future<ConnectionInfo> addRoom(ConnectionInfo room) async {
-    final ref = _collection.doc();
-    await ref.set(room.toMap());
+    final ref = _collection.doc(room.id!);
+    final data = room.toMap();
+    data['timestamp'] = FieldValue.serverTimestamp();
+    await ref.set(data);
     log('Adding room: ${room.toMap().toString()}');
 
-    return room..id = ref.id;
+    return room;
   }
 
   Future<ConnectionInfo> updateRoom(ConnectionInfo room) async {

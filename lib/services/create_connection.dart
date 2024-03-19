@@ -7,6 +7,7 @@ import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/ice_server_configuration.dart';
 import 'package:test_webrtc/connection_info.dart';
 import 'package:test_webrtc/connection_info_repository.dart';
+import 'package:test_webrtc/services/login.dart';
 import 'package:test_webrtc/use_cases/close_connection.dart';
 
 class CreateConnectionService extends AbstractConnectionService
@@ -43,7 +44,8 @@ class CreateConnectionService extends AbstractConnectionService
 
   Future<RTCSessionDescription> _configureLocal() async {
     peerConnection = await createPeerConnection(iceServerConfiguration);
-    connectionInfo ??= ConnectionInfo();
+    connectionInfo =
+        ConnectionInfo(id: ref.read(loginServiceProvider).getUserId());
 
     //Works on android
     //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
