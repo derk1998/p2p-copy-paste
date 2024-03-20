@@ -4,8 +4,10 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/lifetime.dart';
+import 'package:test_webrtc/screens/invite_answered.dart';
 import 'package:test_webrtc/screens/invite_expired.dart';
 import 'package:test_webrtc/services/create_invite.dart';
+import 'package:test_webrtc/view_models/invite_answered.dart';
 import 'package:test_webrtc/view_models/invite_expired.dart';
 
 class CreateInviteScreenData {
@@ -39,6 +41,12 @@ class CreateInviteScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
                 viewModel: InviteExpiredViewModel(navigator: navigator)),
           ),
         );
+        completer.complete(CreateInviteScreenData());
+      } else if (update.state == CreateInviteState.receivedUid) {
+        navigator.pushReplacement(MaterialPageRoute(
+            builder: (context) => InviteAnsweredScreen(
+                viewModel: InviteAnsweredScreenViewModel(
+                    navigator: navigator, invite: update.invite!))));
         completer.complete(CreateInviteScreenData());
       }
 

@@ -69,7 +69,9 @@ class CreateInviteService {
     if (_invite?.joiner != null) {
       _done = true;
       return CreateInviteUpdate(
-          seconds: currentSeconds, state: CreateInviteState.receivedUid);
+          seconds: currentSeconds,
+          state: CreateInviteState.receivedUid,
+          invite: _invite);
     }
 
     return CreateInviteUpdate(
