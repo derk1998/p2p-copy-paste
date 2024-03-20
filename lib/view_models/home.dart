@@ -11,8 +11,7 @@ import 'package:test_webrtc/view_models/button.dart';
 class HomeScreenViewModel {
   HomeScreenViewModel({required this.navigator}) {
     startNewConnectionButtonViewModel = ButtonViewModel(
-        title: 'Start new connection',
-        onPressed: _onStartNewConnectionButtonClicked);
+        title: 'Create an invite', onPressed: _onCreateInviteButtonClicked);
 
     joinConnectionButtonViewModel = ButtonViewModel(
         title: 'I have a code', onPressed: _onJoinConnectionButtonClicked);
@@ -32,7 +31,7 @@ class HomeScreenViewModel {
   late ButtonViewModel joinConnectionButtonViewModel;
   IconButtonViewModel? joinWithQrCodeButtonViewModel;
 
-  void _onStartNewConnectionButtonClicked() async {
+  void _onCreateInviteButtonClicked() async {
     navigator.push(MaterialPageRoute(
       builder: (context) => const CreateInviteScreen(),
     ));
