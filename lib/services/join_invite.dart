@@ -1,0 +1,63 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:test_webrtc/models/invite.dart';
+import 'package:test_webrtc/repositories/invite_repository.dart';
+import 'package:test_webrtc/services/login.dart';
+
+class JoinInviteService {
+  JoinInviteService(this._ref);
+
+  final Ref _ref;
+  StreamSubscription<Invite?>? _subscription;
+
+  Future<bool> join(Invite invite) async {
+    final completer = Completer<bool>();
+    try {
+      _subscription?.cancel();
+
+      final retrievedInvite = (await _ref
+          .read(invitesRepositoryProvider)
+          .getInvite(invite.creator));
+
+      retrievedInvite.joiner = _ref.read(loginServiceProvider).getUserId();
+      _ref.read(invitesRepositoryProvider).updateInvite(retrievedInvite);
+      _subscription = _ref
+          .read(invitesRepositoryProvider)
+          .snapshots(retrievedInvite.creator)
+          .timeout(
+        const Duration(seconds: 30),
+        onTimeout: (sink) {
+          _subscription!.cancel();
+          completer.complete(false);
+        },
+      ).listen((invite) {
+        if (invite?.accepted != null && invite!.accepted!) {
+          _subscription!.cancel();
+          completer.complete(true);
+        } else {
+          log('WAITING FOR INVITE STILL');
+        }
+      }, onError: (e) {
+        _subscription!.cancel();
+        completer.complete(false);
+      });
+    } catch (e) {
+      completer.complete(false);
+    }
+
+    //todo: check timestamp is same as server timestamp
+    //todo: error handling
+    return completer.future;
+  }
+}
+
+//Currently, there is no good way to detect when to clean up this
+//service. So now once it is constructed, it will live forever.
+JoinInviteService? _joinInviteService;
+
+final joinInviteServiceProvider = Provider<JoinInviteService>((ref) {
+  _joinInviteService ??= JoinInviteService(ref);
+  return _joinInviteService!;
+});

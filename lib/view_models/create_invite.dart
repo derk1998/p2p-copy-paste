@@ -46,7 +46,7 @@ class CreateInviteScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
         navigator.pushReplacement(MaterialPageRoute(
             builder: (context) => InviteAnsweredScreen(
                 viewModel: InviteAnsweredScreenViewModel(
-                    navigator: navigator, invite: update.invite!))));
+                    navigator: navigator, invite: update.invite!, ref: ref))));
         completer.complete(CreateInviteScreenData());
       }
 

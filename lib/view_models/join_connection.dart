@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:core';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,19 @@ class JoinConnectionScreenViewModel
   }
 
   void _onSubmitConnectionIdButtonClicked() async {
-    join(codeController.text);
+    state = const AsyncLoading();
+    final invite = Invite(codeController.text);
+    bool result = await ref.read(joinInviteServiceProvider).join(invite);
+
+    //now we should have access to the connection info
+    if (result) {
+      join(codeController.text);
+    }
+
+    if (!result) {
+      log('Failed to join!');
+      state = const AsyncData('Could not join');
+    }
   }
 }
 
