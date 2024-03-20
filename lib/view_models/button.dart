@@ -13,3 +13,10 @@ class IconButtonViewModel extends ButtonViewModel {
 
   final IconData icon;
 }
+
+class PureIconButtonViewModel {
+  PureIconButtonViewModel({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final void Function() onPressed;
+}

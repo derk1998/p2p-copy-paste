@@ -1,0 +1,57 @@
+import 'dart:async';
+import 'dart:core';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:test_webrtc/lifetime.dart';
+import 'package:test_webrtc/screens/code_expired.dart';
+import 'package:test_webrtc/services/create_invite.dart';
+import 'package:test_webrtc/view_models/code_expired.dart';
+
+class CreateInviteScreenData {
+  CreateInviteScreenData({this.data, this.seconds});
+
+  int? seconds;
+  String? data;
+}
+
+class CreateInviteScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
+    CreateInviteScreenData, NavigatorState> with LifeTime {
+  final String title = 'Create an invite';
+
+  @override
+  FutureOr<CreateInviteScreenData> build(NavigatorState arg) {
+    ref.onDispose(() {
+      expire();
+    });
+    return _connect(arg);
+  }
+
+  Future<CreateInviteScreenData> _connect(NavigatorState navigator) async {
+    state = const AsyncLoading();
+    final completer = Completer<CreateInviteScreenData>();
+
+    ref.read(createInviteServiceProvider).create((update) {
+      if (update.state == CreateInviteState.expired) {
+        navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => CodeExpiredScreen(
+                viewModel: CodeExpiredViewModel(navigator: navigator)),
+          ),
+        );
+        completer.complete(CreateInviteScreenData());
+      }
+
+      state = AsyncData(CreateInviteScreenData(
+          seconds: update.seconds, data: update.invite?.toMap().toString()));
+    }, WeakReference(this));
+
+    return completer.future;
+  }
+}
+
+final createInviteScreenViewModelProvider =
+    AutoDisposeAsyncNotifierProviderFamily<CreateInviteScreenViewModel,
+        CreateInviteScreenData, NavigatorState>(() {
+  return CreateInviteScreenViewModel();
+});
