@@ -56,6 +56,13 @@ class CreateConnectionService extends AbstractConnectionService
       }
     };
 
+    //When the peer is disconnected due to closing the app
+    peerConnection!.onIceConnectionState = (state) {
+      if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        _onConnectionClosedListener?.call();
+      }
+    };
+
     await _openDataChannel();
 
     final offer = await peerConnection!.createOffer();

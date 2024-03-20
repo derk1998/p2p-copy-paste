@@ -50,6 +50,13 @@ class JoinConnectionService extends AbstractConnectionService
         }
       };
 
+      //When the peer is disconnected due to closing the app
+      _peerConnection!.onIceConnectionState = (state) {
+        if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+          _onConnectionClosedListener?.call();
+        }
+      };
+
       //Works on android
       //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
       _peerConnection!.onConnectionState = (state) {
