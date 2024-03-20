@@ -28,7 +28,6 @@ class InviteAnsweredScreenViewModel {
   late ButtonViewModel declineInviteButton;
 
   void _onAcceptInviteButtonPressed() async {
-    //todo: establish connection
     final result = await ref.read(createInviteServiceProvider).accept(invite);
 
     if (result) {
@@ -49,6 +48,7 @@ class InviteAnsweredScreenViewModel {
   }
 
   void _onDeclineInviteButtonPressed() {
+    ref.read(createInviteServiceProvider).decline(invite);
     Navigator.pop(navigator.context);
   }
 }

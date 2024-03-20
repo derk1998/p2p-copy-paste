@@ -13,11 +13,6 @@ class FirestoreInviteRepository {
     data['timestamp'] = FieldValue.serverTimestamp();
     await ref.set(data);
     log('Adding invite: ${invite.toMap().toString()}');
-
-    //For setting timestamp on invite
-    // final inviteWithTimestamp =
-    //     await ref.get(const GetOptions(source: Source.server));
-    // return Invite.fromMap(inviteWithTimestamp.data()!);
     return invite;
   }
 

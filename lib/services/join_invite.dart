@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/models/invite.dart';
@@ -33,11 +32,9 @@ class JoinInviteService {
           completer.complete(false);
         },
       ).listen((invite) {
-        if (invite?.accepted != null && invite!.accepted!) {
+        if (invite?.accepted != null) {
           _subscription!.cancel();
-          completer.complete(true);
-        } else {
-          log('WAITING FOR INVITE STILL');
+          completer.complete(invite!.accepted!);
         }
       }, onError: (e) {
         _subscription!.cancel();
@@ -47,8 +44,6 @@ class JoinInviteService {
       completer.complete(false);
     }
 
-    //todo: check timestamp is same as server timestamp
-    //todo: error handling
     return completer.future;
   }
 }

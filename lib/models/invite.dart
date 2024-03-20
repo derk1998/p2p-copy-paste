@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 T? cast<T>(x) => x is T ? x : null;
@@ -14,6 +12,10 @@ class Invite {
 
   void accept() {
     accepted = true;
+  }
+
+  void decline() {
+    accepted = false;
   }
 
   Invite.fromMap(Map<String, dynamic> data) : creator = data['creator'] {

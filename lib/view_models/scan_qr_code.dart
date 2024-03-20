@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:test_webrtc/models/invite.dart';
 import 'package:test_webrtc/view_models/abstract_join_connection.dart';
 
 class ScanQrCodeScreenViewModel extends AbstractJoinConnectionScreenViewModel {
@@ -13,12 +16,14 @@ class ScanQrCodeScreenViewModel extends AbstractJoinConnectionScreenViewModel {
     controller.scannedDataStream.listen((scanData) {
       if (scanData.code != null && !_scannedCodes.contains(scanData.code)) {
         _scannedCodes.add(scanData.code!);
-        join(scanData.code!);
-        Future.delayed(const Duration(seconds: 10), () {
-          if (state.isLoading) {
-            state = const AsyncValue.data('Failed to connect');
-          }
-        });
+        try {
+          final Map<String, dynamic> inviteData = jsonDecode(scanData.code!);
+          inviteData['timestamp'] = DateTime.parse(inviteData['timestamp']);
+          final invite = Invite.fromMap(inviteData);
+          join(invite);
+        } catch (e) {
+          //ignore, keep trying
+        }
       }
     });
   }

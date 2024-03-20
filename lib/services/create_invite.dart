@@ -49,6 +49,28 @@ class CreateInviteService {
     });
   }
 
+  Future<bool> accept(Invite invite) async {
+    invite.accept();
+    try {
+      await _ref.read(invitesRepositoryProvider).addInvite(invite);
+    } catch (e) {
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<bool> decline(Invite invite) async {
+    invite.decline();
+    try {
+      await _ref.read(invitesRepositoryProvider).addInvite(invite);
+    } catch (e) {
+      return false;
+    }
+
+    return true;
+  }
+
   void _cancelSubscription() {
     _createSubscription?.cancel();
     log('DONER');

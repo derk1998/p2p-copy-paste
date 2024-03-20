@@ -27,19 +27,8 @@ class JoinConnectionScreenViewModel
   }
 
   void _onSubmitConnectionIdButtonClicked() async {
-    state = const AsyncLoading();
     final invite = Invite(codeController.text);
-    bool result = await ref.read(joinInviteServiceProvider).join(invite);
-
-    //now we should have access to the connection info
-    if (result) {
-      join(codeController.text);
-    }
-
-    if (!result) {
-      log('Failed to join!');
-      state = const AsyncData('Could not join');
-    }
+    join(invite);
   }
 }
 
