@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/view_models/create_invite.dart';
@@ -23,7 +24,9 @@ class CreateInviteScreen extends ConsumerWidget {
         child: state.isLoading
             ? const CircularProgressIndicator()
             : Column(mainAxisSize: MainAxisSize.min, children: [
-                if (state.value != null && state.value!.data != null)
+                if (kDebugMode &&
+                    state.value != null &&
+                    state.value!.data != null)
                   SelectableText(state.value!.data!),
                 if (state.value != null && state.value!.data != null)
                   QrImageView(

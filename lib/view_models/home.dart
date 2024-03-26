@@ -13,8 +13,10 @@ class HomeScreenViewModel {
     startNewConnectionButtonViewModel = ButtonViewModel(
         title: 'Create an invite', onPressed: _onCreateInviteButtonClicked);
 
-    joinConnectionButtonViewModel = ButtonViewModel(
-        title: 'I have a code', onPressed: _onJoinConnectionButtonClicked);
+    if (kDebugMode) {
+      joinConnectionButtonViewModel = ButtonViewModel(
+          title: 'I have a code', onPressed: _onJoinConnectionButtonClicked);
+    }
 
     if (!kIsWeb) {
       //not supported for web
@@ -28,7 +30,7 @@ class HomeScreenViewModel {
   final NavigatorState navigator;
   final String title = 'P2P Copy Paste';
   late ButtonViewModel startNewConnectionButtonViewModel;
-  late ButtonViewModel joinConnectionButtonViewModel;
+  ButtonViewModel? joinConnectionButtonViewModel;
   IconButtonViewModel? joinWithQrCodeButtonViewModel;
 
   void _onCreateInviteButtonClicked() async {

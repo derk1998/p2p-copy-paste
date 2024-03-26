@@ -26,7 +26,8 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(
                 height: 16,
               ),
-              btn.Button(viewModel: viewModel.joinConnectionButtonViewModel),
+              if (viewModel.joinConnectionButtonViewModel != null)
+                btn.Button(viewModel: viewModel.joinConnectionButtonViewModel!),
               if (viewModel.joinWithQrCodeButtonViewModel != null) ...[
                 const SizedBox(
                   height: 16,
