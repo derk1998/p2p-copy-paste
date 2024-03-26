@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:test_webrtc/navigation.dart';
 import 'package:test_webrtc/screens/home.dart';
 import 'package:test_webrtc/screens/login.dart';
 import 'firebase_options.dart';
@@ -24,7 +23,6 @@ class P2PCopyPaste extends StatelessWidget {
     return ProviderScope(
         child: MaterialApp(
       title: 'P2P Copy Paste',
-      navigatorKey: navigatorKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

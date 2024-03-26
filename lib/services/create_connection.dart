@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:test_webrtc/services/connection.dart';
 import 'package:test_webrtc/ice_server_configuration.dart';
-import 'package:test_webrtc/connection_info.dart';
-import 'package:test_webrtc/connection_info_repository.dart';
+import 'package:test_webrtc/models/connection_info.dart';
+import 'package:test_webrtc/repositories/connection_info_repository.dart';
 import 'package:test_webrtc/services/login.dart';
 import 'package:test_webrtc/use_cases/close_connection.dart';
 
@@ -53,6 +53,13 @@ class CreateConnectionService extends AbstractConnectionService
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed &&
           _onConnectionClosedListener != null) {
         _onConnectionClosedListener!.call();
+      }
+    };
+
+    //When the peer is disconnected due to closing the app
+    peerConnection!.onIceConnectionState = (state) {
+      if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        _onConnectionClosedListener?.call();
       }
     };
 

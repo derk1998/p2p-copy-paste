@@ -1,22 +1,22 @@
 import 'dart:core';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:test_webrtc/screens/create_invite.dart';
 import 'package:test_webrtc/screens/join_connection.dart';
-import 'package:test_webrtc/screens/new_connection.dart';
 import 'package:test_webrtc/screens/scan_qr_code.dart';
 import 'package:test_webrtc/view_models/button.dart';
 
 class HomeScreenViewModel {
   HomeScreenViewModel({required this.navigator}) {
     startNewConnectionButtonViewModel = ButtonViewModel(
-        title: 'Start new connection',
-        onPressed: _onStartNewConnectionButtonClicked);
+        title: 'Create an invite', onPressed: _onCreateInviteButtonClicked);
 
-    joinConnectionButtonViewModel = ButtonViewModel(
-        title: 'I have a code', onPressed: _onJoinConnectionButtonClicked);
+    if (kDebugMode) {
+      joinConnectionButtonViewModel = ButtonViewModel(
+          title: 'I have a code', onPressed: _onJoinConnectionButtonClicked);
+    }
 
     if (!kIsWeb) {
       //not supported for web
@@ -30,12 +30,12 @@ class HomeScreenViewModel {
   final NavigatorState navigator;
   final String title = 'P2P Copy Paste';
   late ButtonViewModel startNewConnectionButtonViewModel;
-  late ButtonViewModel joinConnectionButtonViewModel;
+  ButtonViewModel? joinConnectionButtonViewModel;
   IconButtonViewModel? joinWithQrCodeButtonViewModel;
 
-  void _onStartNewConnectionButtonClicked() async {
+  void _onCreateInviteButtonClicked() async {
     navigator.push(MaterialPageRoute(
-      builder: (context) => const NewConnectionScreen(),
+      builder: (context) => const CreateInviteScreen(),
     ));
   }
 
