@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
@@ -52,16 +51,7 @@ class CreateInviteScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
       }
 
       state = AsyncData(CreateInviteScreenData(
-          seconds: update.seconds,
-          data: json.encode(
-            update.invite?.toMap(),
-            toEncodable: (object) {
-              if (object is DateTime) {
-                return object.toIso8601String();
-              }
-              return object;
-            },
-          )));
+          seconds: update.seconds, data: update.invite?.toJson()));
     }, WeakReference(this));
 
     return completer.future;

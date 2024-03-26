@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:test_webrtc/models/invite.dart';
 import 'package:test_webrtc/screens/clipboard.dart';
 import 'package:test_webrtc/services/join_connection.dart';
+import 'package:test_webrtc/services/join_invite.dart';
 
-abstract class AbstractJoinConnectionScreenViewModel
+abstract class AbstractJoinConnectionScreenViewModel<T>
     extends AutoDisposeFamilyAsyncNotifier<String, NavigatorState> {
   late NavigatorState _navigator;
   final String title = 'Join connection';
@@ -19,13 +21,20 @@ abstract class AbstractJoinConnectionScreenViewModel
     return '';
   }
 
-  void join(String id) async {
-    if (id.trim().isEmpty) {
+  void join(Invite invite) async {
+    state = const AsyncLoading();
+
+    if (invite.creator.trim().isEmpty) {
       state = const AsyncData('ID must be valid');
       return;
     }
 
-    state = const AsyncData('Connecting...');
+    bool result = await ref.read(joinInviteServiceProvider).join(invite);
+
+    if (!result) {
+      state = const AsyncData('Could not join');
+      return;
+    }
 
     final connectionService = ref.read(joinConnectionServiceProvider);
 
@@ -41,7 +50,7 @@ abstract class AbstractJoinConnectionScreenViewModel
 
     try {
       state = const AsyncLoading();
-      await connectionService.joinConnection(id);
+      await connectionService.joinConnection(invite.creator);
     } catch (e) {
       state = const AsyncData('Unable to connect. Is the ID correct?');
     }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 T? cast<T>(x) => x is T ? x : null;
@@ -42,5 +44,17 @@ class Invite {
       if (timestamp != null) 'timestamp': timestamp,
       if (accepted != null) 'accepted': accepted,
     };
+  }
+
+  String toJson() {
+    return json.encode(
+      toMap(),
+      toEncodable: (object) {
+        if (object is DateTime) {
+          return object.toIso8601String();
+        }
+        return object;
+      },
+    );
   }
 }
