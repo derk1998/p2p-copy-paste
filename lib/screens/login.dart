@@ -1,21 +1,18 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:test_webrtc/view_models/login.dart';
+import 'package:test_webrtc/widgets/button.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.read(loginScreenViewModelProvider);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('P2P Copy Paste')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            FirebaseAuth.instance.signInAnonymously();
-          },
-          child: const Text('Get started'),
-        ),
-      ),
+      appBar: AppBar(title: Text(viewModel.title)),
+      body: Center(child: Button(viewModel: viewModel.loginButtonViewModel)),
     );
   }
 }
