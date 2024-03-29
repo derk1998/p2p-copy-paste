@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -37,7 +36,6 @@ class JoinConnectionService extends AbstractConnectionService
       setDataChannel(channel);
 
       channel.onDataChannelState = (state) {
-        log('DATA CHANNEL STATE CHANGED! -> $state');
         if (state == RTCDataChannelState.RTCDataChannelClosed) {
           //Workaround for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
           if (_onConnectionClosedListener != null) {
@@ -68,7 +66,6 @@ class JoinConnectionService extends AbstractConnectionService
     };
 
     _peerConnection!.onIceCandidate = (candidate) {
-      log(candidate.candidate!);
       _connectionInfo!.addIceCandidateB(candidate);
       ref.read(connectionInfoRepositoryProvider).updateRoom(_connectionInfo!);
     };
@@ -81,7 +78,6 @@ class JoinConnectionService extends AbstractConnectionService
         .listen((snapshot) {
       if (_connectionInfo!.iceCandidatesA.isNotEmpty) {
         for (final iceCandidate in _connectionInfo!.iceCandidatesA) {
-          log('Adding ice candidate: ${iceCandidate.candidate}');
           _peerConnection!.addCandidate(iceCandidate);
         }
       }

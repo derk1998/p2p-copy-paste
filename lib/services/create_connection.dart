@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -28,7 +27,6 @@ class CreateConnectionService extends AbstractConnectionService
         .createDataChannel('clipboard', RTCDataChannelInit()..id = 1));
 
     dataChannel?.onDataChannelState = (state) {
-      log('DATA CHANNEL STATE: $state');
       if (state == RTCDataChannelState.RTCDataChannelClosed) {
         //Workaround for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
         if (_onConnectionClosedListener != null) {
@@ -68,7 +66,6 @@ class CreateConnectionService extends AbstractConnectionService
     final offer = await peerConnection!.createOffer();
 
     peerConnection!.onIceCandidate = (candidate) async {
-      log(candidate.candidate!);
       await _roomCreation!.future;
       connectionInfo!.addIceCandidateA(candidate);
       ref.read(connectionInfoRepositoryProvider).updateRoom(connectionInfo!);
@@ -85,7 +82,6 @@ class CreateConnectionService extends AbstractConnectionService
         .read(connectionInfoRepositoryProvider)
         .addRoom(connectionInfo!);
     _roomCreation!.complete();
-    log('ROOM ID: ${connectionInfo?.id}');
 
     _handleSignalingAnswers();
 
@@ -103,14 +99,12 @@ class CreateConnectionService extends AbstractConnectionService
           peerConnection!.signalingState !=
               RTCSignalingState.RTCSignalingStateStable &&
           !answerSet) {
-        log('Received answer!');
         peerConnection!.setRemoteDescription(connectionInfo.answer!);
         answerSet = true;
       }
 
       if (connectionInfo.iceCandidatesB.isNotEmpty && answerSet) {
         for (final iceCandidate in connectionInfo.iceCandidatesB) {
-          log('Adding ice candidate: ${iceCandidate.candidate}');
           peerConnection!.addCandidate(iceCandidate);
         }
       }
@@ -137,7 +131,6 @@ class CreateConnectionService extends AbstractConnectionService
   @override
   void close() async {
     if (peerConnection != null) {
-      log('CONNECTION CLOSED');
       await peerConnection!.close();
     }
   }

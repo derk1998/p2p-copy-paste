@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/lifetime.dart';
@@ -44,7 +43,6 @@ class CreateInviteService {
       const Duration(seconds: 1),
       _onPeriodicUpdate,
     ).listen((event) {
-      log(event.toString());
       onCreateInviteUpdate(event);
     });
   }
@@ -73,7 +71,6 @@ class CreateInviteService {
 
   void _cancelSubscription() {
     _createSubscription?.cancel();
-    log('DONER');
   }
 
   CreateInviteUpdate _onPeriodicUpdate(int secondCount) {

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_webrtc/models/invite.dart';
@@ -42,8 +40,6 @@ class InviteAnsweredScreenViewModel {
         ));
       });
       connectionService.startNewConnection();
-    } else {
-      log('FAILED TO JOIN');
     }
   }
 
