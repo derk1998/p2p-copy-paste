@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/models/connection_info.dart';
+import 'package:p2p_copy_paste/models/connection_info.dart';
 
 class FirestoreConnectionInfoRepository {
   final _collection = FirebaseFirestore.instance.collection('rooms');

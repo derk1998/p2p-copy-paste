@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_webrtc/view_models/invite_answered.dart';
-import 'package:test_webrtc/widgets/button.dart';
+import 'package:p2p_copy_paste/view_models/invite_answered.dart';
+import 'package:p2p_copy_paste/widgets/button.dart';
 
 class InviteAnsweredScreen extends StatelessWidget {
   const InviteAnsweredScreen({super.key, required this.viewModel});

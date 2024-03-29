@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/view_models/home.dart';
-import 'package:test_webrtc/widgets/button.dart' as btn;
+import 'package:p2p_copy_paste/view_models/home.dart';
+import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

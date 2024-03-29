@@ -1,4 +1,4 @@
-import 'package:test_webrtc/view_models/button.dart';
+import 'package:p2p_copy_paste/view_models/button.dart';
 
 class CancelConfirmViewModel {
   CancelConfirmViewModel(

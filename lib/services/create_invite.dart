@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/lifetime.dart';
-import 'package:test_webrtc/models/invite.dart';
-import 'package:test_webrtc/repositories/invite_repository.dart';
-import 'package:test_webrtc/services/login.dart';
+import 'package:p2p_copy_paste/lifetime.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/repositories/invite_repository.dart';
+import 'package:p2p_copy_paste/services/login.dart';
 
 enum CreateInviteState { waiting, expired, receivedUid }
 

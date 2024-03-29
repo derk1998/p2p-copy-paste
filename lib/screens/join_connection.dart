@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/view_models/join_connection.dart';
-import 'package:test_webrtc/widgets/button.dart';
+import 'package:p2p_copy_paste/view_models/join_connection.dart';
+import 'package:p2p_copy_paste/widgets/button.dart';
 
 class JoinConnectionScreen extends ConsumerWidget {
   const JoinConnectionScreen({super.key});

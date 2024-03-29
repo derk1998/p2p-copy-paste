@@ -3,12 +3,12 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/lifetime.dart';
-import 'package:test_webrtc/screens/invite_answered.dart';
-import 'package:test_webrtc/screens/invite_expired.dart';
-import 'package:test_webrtc/services/create_invite.dart';
-import 'package:test_webrtc/view_models/invite_answered.dart';
-import 'package:test_webrtc/view_models/invite_expired.dart';
+import 'package:p2p_copy_paste/lifetime.dart';
+import 'package:p2p_copy_paste/screens/invite_answered.dart';
+import 'package:p2p_copy_paste/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/view_models/invite_answered.dart';
+import 'package:p2p_copy_paste/view_models/invite_expired.dart';
 
 class CreateInviteScreenData {
   CreateInviteScreenData({this.data, this.seconds});

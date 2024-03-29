@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:test_webrtc/services/connection.dart';
-import 'package:test_webrtc/ice_server_configuration.dart';
-import 'package:test_webrtc/models/connection_info.dart';
-import 'package:test_webrtc/repositories/connection_info_repository.dart';
-import 'package:test_webrtc/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
+import 'package:p2p_copy_paste/ice_server_configuration.dart';
+import 'package:p2p_copy_paste/models/connection_info.dart';
+import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
+import 'package:p2p_copy_paste/use_cases/close_connection.dart';
 
 class JoinConnectionService extends AbstractConnectionService
     implements CloseConnectionUseCase {

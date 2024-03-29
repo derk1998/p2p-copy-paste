@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_webrtc/view_models/invite_expired.dart';
-import 'package:test_webrtc/widgets/pure_icon_button.dart';
+import 'package:p2p_copy_paste/view_models/invite_expired.dart';
+import 'package:p2p_copy_paste/widgets/pure_icon_button.dart';
 
 class InviteExpiredScreen extends StatelessWidget {
   const InviteExpiredScreen({super.key, required this.viewModel});

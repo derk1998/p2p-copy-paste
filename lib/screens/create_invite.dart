@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/view_models/create_invite.dart';
+import 'package:p2p_copy_paste/view_models/create_invite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class CreateInviteScreen extends ConsumerWidget {

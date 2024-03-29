@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/models/invite.dart';
-import 'package:test_webrtc/screens/clipboard.dart';
-import 'package:test_webrtc/services/join_connection.dart';
-import 'package:test_webrtc/services/join_invite.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/screens/clipboard.dart';
+import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/services/join_invite.dart';
 
 abstract class AbstractJoinConnectionScreenViewModel<T>
     extends AutoDisposeFamilyAsyncNotifier<String, NavigatorState> {

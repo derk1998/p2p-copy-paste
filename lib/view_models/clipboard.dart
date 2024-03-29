@@ -3,12 +3,12 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/services/connection.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:flutter/services.dart' as services;
-import 'package:test_webrtc/use_cases/close_connection.dart';
-import 'package:test_webrtc/view_models/button.dart';
-import 'package:test_webrtc/view_models/cancel_confirm.dart';
-import 'package:test_webrtc/widgets/cancel_confirm_dialog.dart';
+import 'package:p2p_copy_paste/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/view_models/button.dart';
+import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
+import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 
 class ClipboardViewModelDependencies {
   ClipboardViewModelDependencies(

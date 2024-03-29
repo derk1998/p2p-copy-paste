@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/widgets/home.dart';
-import 'package:test_webrtc/widgets/login.dart';
-import 'package:test_webrtc/services/login.dart';
-import 'package:test_webrtc/view_models/startup.dart';
+import 'package:p2p_copy_paste/widgets/home.dart';
+import 'package:p2p_copy_paste/widgets/login.dart';
+import 'package:p2p_copy_paste/services/login.dart';
+import 'package:p2p_copy_paste/view_models/startup.dart';
 
 class StartupScreen extends ConsumerWidget {
   const StartupScreen({super.key});

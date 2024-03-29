@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/services/connection.dart';
-import 'package:test_webrtc/use_cases/close_connection.dart';
-import 'package:test_webrtc/view_models/clipboard.dart';
-import 'package:test_webrtc/widgets/button.dart' as btn;
+import 'package:p2p_copy_paste/services/connection.dart';
+import 'package:p2p_copy_paste/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/view_models/clipboard.dart';
+import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
 class ClipboardScreen extends ConsumerWidget {
   ClipboardScreen(

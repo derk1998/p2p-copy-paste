@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:test_webrtc/models/invite.dart';
-import 'package:test_webrtc/view_models/abstract_join_connection.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/view_models/abstract_join_connection.dart';
 
 class ScanQrCodeScreenViewModel extends AbstractJoinConnectionScreenViewModel {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');

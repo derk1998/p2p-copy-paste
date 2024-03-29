@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:641454048311:android:1feaa6c1d6053d7af3abb2",
         "android_client_info": {
-          "package_name": "com.example.test_webrtc"
+          "package_name": "com.example.p2p_copy_paste"
         }
       },
       "oauth_client": [],

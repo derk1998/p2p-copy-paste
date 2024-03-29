@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/services/login.dart';
-import 'package:test_webrtc/view_models/button.dart';
+import 'package:p2p_copy_paste/services/login.dart';
+import 'package:p2p_copy_paste/view_models/button.dart';
 
 class StartupScreenViewModel extends AutoDisposeAsyncNotifier<LoginState?> {
   final String title = 'P2P Copy Paste';

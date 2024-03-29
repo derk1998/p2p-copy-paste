@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/models/invite.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
 
 class FirestoreInviteRepository {
   final _collection = FirebaseFirestore.instance.collection('invites');

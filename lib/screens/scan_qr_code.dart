@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:test_webrtc/view_models/scan_qr_code.dart';
+import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
 
 class ScanQRCodeScreen extends ConsumerWidget {
   const ScanQRCodeScreen({super.key});

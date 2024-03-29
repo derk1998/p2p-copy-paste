@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/models/invite.dart';
-import 'package:test_webrtc/screens/clipboard.dart';
-import 'package:test_webrtc/services/create_connection.dart';
-import 'package:test_webrtc/services/create_invite.dart';
-import 'package:test_webrtc/view_models/button.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/screens/clipboard.dart';
+import 'package:p2p_copy_paste/services/create_connection.dart';
+import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/view_models/button.dart';
 
 class InviteAnsweredScreenViewModel {
   InviteAnsweredScreenViewModel(

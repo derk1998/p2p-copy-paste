@@ -3,10 +3,10 @@ import 'dart:core';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/screens/create_invite.dart';
-import 'package:test_webrtc/screens/join_connection.dart';
-import 'package:test_webrtc/screens/scan_qr_code.dart';
-import 'package:test_webrtc/view_models/button.dart';
+import 'package:p2p_copy_paste/screens/create_invite.dart';
+import 'package:p2p_copy_paste/screens/join_connection.dart';
+import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
+import 'package:p2p_copy_paste/view_models/button.dart';
 
 class HomeScreenViewModel {
   HomeScreenViewModel({required this.navigator}) {
