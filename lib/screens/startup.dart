@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_webrtc/screens/home.dart';
-import 'package:test_webrtc/screens/login.dart';
+import 'package:test_webrtc/widgets/home.dart';
+import 'package:test_webrtc/widgets/login.dart';
 import 'package:test_webrtc/services/login.dart';
 import 'package:test_webrtc/view_models/startup.dart';
 
@@ -13,16 +13,19 @@ class StartupScreen extends ConsumerWidget {
     final AsyncValue<LoginState?> state =
         ref.watch(startupScreenViewModelProvider);
 
-    if (state.isLoading || state.value == null) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+    final viewModel = ref.watch(startupScreenViewModelProvider.notifier);
 
-    if (state.value! == LoginState.loggedIn) {
-      return const HomeScreen();
-    }
-
-    return const LoginScreen();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(viewModel.title),
+      ),
+      body: state.isLoading || state.value == null
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : state.value! == LoginState.loggedIn
+              ? const HomeScreen()
+              : const LoginScreen(),
+    );
   }
 }

@@ -10,9 +10,6 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.read(loginScreenViewModelProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(viewModel.title)),
-      body: Center(child: Button(viewModel: viewModel.loginButtonViewModel)),
-    );
+    return Center(child: Button(viewModel: viewModel.loginButtonViewModel));
   }
 }

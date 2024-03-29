@@ -28,7 +28,6 @@ class HomeScreenViewModel {
   }
 
   final NavigatorState navigator;
-  final String title = 'P2P Copy Paste';
   late ButtonViewModel startNewConnectionButtonViewModel;
   ButtonViewModel? joinConnectionButtonViewModel;
   IconButtonViewModel? joinWithQrCodeButtonViewModel;

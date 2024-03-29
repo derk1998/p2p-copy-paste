@@ -11,7 +11,6 @@ class LoginScreenViewModel {
   }
 
   final Ref ref;
-  final String title = 'P2P Copy Paste';
   late ButtonViewModel loginButtonViewModel;
 
   void _onLoginButtonClicked() async {
