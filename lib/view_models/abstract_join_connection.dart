@@ -39,7 +39,7 @@ abstract class AbstractJoinConnectionScreenViewModel<T>
     final connectionService = ref.read(joinConnectionServiceProvider);
 
     connectionService.setOnConnectedListener(() {
-      _navigator.push(MaterialPageRoute(
+      _navigator.pushReplacement(MaterialPageRoute(
         builder: (context) => ClipboardScreen(
           closeConnectionUseCase: connectionService,
           dataTransceiver: connectionService,
