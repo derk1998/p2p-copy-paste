@@ -31,6 +31,8 @@ class HomeScreenViewModel {
   late ButtonViewModel startNewConnectionButtonViewModel;
   ButtonViewModel? joinConnectionButtonViewModel;
   IconButtonViewModel? joinWithQrCodeButtonViewModel;
+  final String description =
+      'Start copying and pasting between devices. Download the app or go to https://cp.xdatwork.com on your other device.';
 
   void _onCreateInviteButtonClicked() async {
     navigator.push(MaterialPageRoute(

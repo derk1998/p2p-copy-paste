@@ -13,10 +13,17 @@ class HomeScreen extends ConsumerWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              viewModel.description,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(
+              height: 16,
+            ),
             btn.Button(viewModel: viewModel.startNewConnectionButtonViewModel),
             const SizedBox(
               height: 16,
