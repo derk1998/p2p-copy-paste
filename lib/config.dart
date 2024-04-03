@@ -1,0 +1,1 @@
+const kInviteTimeoutInSeconds = 60;

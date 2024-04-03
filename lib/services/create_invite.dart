@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
@@ -78,12 +79,12 @@ class CreateInviteService {
       _cancelSubscription();
     }
 
-    if (secondCount >= 30) {
+    if (secondCount >= kInviteTimeoutInSeconds) {
       _done = true;
       return CreateInviteUpdate(seconds: 0, state: CreateInviteState.expired);
     }
 
-    final currentSeconds = 30 - secondCount;
+    final currentSeconds = kInviteTimeoutInSeconds - secondCount;
 
     if (_invite?.joiner != null) {
       _done = true;

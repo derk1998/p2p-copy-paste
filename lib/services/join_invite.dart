@@ -26,7 +26,7 @@ class JoinInviteService {
           .read(invitesRepositoryProvider)
           .snapshots(retrievedInvite.creator)
           .timeout(
-        const Duration(seconds: 30),
+        const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
           _subscription!.cancel();
           completer.complete(false);
