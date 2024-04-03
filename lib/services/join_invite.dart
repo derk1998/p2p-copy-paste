@@ -1,9 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/login.dart';
+
+enum InviteStatus {
+  inviteSent,
+  inviteAccepted,
+  inviteDeclined,
+  inviteTimeout,
+  inviteError,
+}
 
 class JoinInviteService {
   JoinInviteService(this._ref);
@@ -11,8 +20,10 @@ class JoinInviteService {
   final Ref _ref;
   StreamSubscription<Invite?>? _subscription;
 
-  Future<bool> join(Invite invite) async {
-    final completer = Completer<bool>();
+  Future<void> join(
+      Invite invite,
+      void Function(InviteStatus inviteStatus)
+          onInviteStatusChangedListener) async {
     try {
       _subscription?.cancel();
 
@@ -22,6 +33,7 @@ class JoinInviteService {
 
       retrievedInvite.joiner = _ref.read(loginServiceProvider).getUserId();
       _ref.read(invitesRepositoryProvider).updateInvite(retrievedInvite);
+      onInviteStatusChangedListener.call(InviteStatus.inviteSent);
       _subscription = _ref
           .read(invitesRepositoryProvider)
           .snapshots(retrievedInvite.creator)
@@ -29,22 +41,23 @@ class JoinInviteService {
         const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
           _subscription!.cancel();
-          completer.complete(false);
+          onInviteStatusChangedListener.call(InviteStatus.inviteTimeout);
         },
       ).listen((invite) {
         if (invite?.accepted != null) {
           _subscription!.cancel();
-          completer.complete(invite!.accepted!);
+          onInviteStatusChangedListener.call(invite!.accepted!
+              ? InviteStatus.inviteAccepted
+              : InviteStatus.inviteDeclined);
         }
       }, onError: (e) {
         _subscription!.cancel();
-        completer.complete(false);
+        onInviteStatusChangedListener.call(InviteStatus.inviteError);
       });
     } catch (e) {
-      completer.complete(false);
+      _subscription?.cancel();
+      onInviteStatusChangedListener.call(InviteStatus.inviteError);
     }
-
-    return completer.future;
   }
 }
 

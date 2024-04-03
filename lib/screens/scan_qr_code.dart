@@ -10,15 +10,13 @@ class ScanQRCodeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModelProvider =
         joinWithQrCodeScreenViewModelProvider(Navigator.of(context));
-    final AsyncValue<String> state = ref.watch(viewModelProvider);
     final viewModel = ref.read(viewModelProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(viewModel.title),
-      ),
-      body: Stack(children: [
-        QRView(
+        appBar: AppBar(
+          title: Text(viewModel.title),
+        ),
+        body: QRView(
           key: viewModel.qrKey,
           onQRViewCreated: viewModel.onCreated,
           overlay: QrScannerOverlayShape(
@@ -28,25 +26,6 @@ class ScanQRCodeScreen extends ConsumerWidget {
             borderWidth: 5,
             cutOutSize: 300,
           ),
-        ),
-        if (state.isLoading)
-          Center(
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(state.value!),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  const CircularProgressIndicator(),
-                ],
-              ),
-            ),
-          )
-      ]),
-    );
+        ));
   }
 }
