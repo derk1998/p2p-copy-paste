@@ -115,6 +115,7 @@ class CreateConnectionService extends AbstractConnectionService
     if (_subscription != null) {
       await _subscription!.cancel();
     }
+    connectionInfo = null;
     _roomCreation = Completer<void>();
     answerSet = false;
 
