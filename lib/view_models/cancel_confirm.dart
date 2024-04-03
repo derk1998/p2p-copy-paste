@@ -5,14 +5,18 @@ class CancelConfirmViewModel {
       {required this.title,
       required this.description,
       required void Function() onCancelButtonPressed,
-      required void Function() onConfirmButtonPressed})
-      : cancelButtonViewModel =
-            ButtonViewModel(title: 'Cancel', onPressed: onCancelButtonPressed),
+      required void Function() onConfirmButtonPressed,
+      String cancelName = 'Cancel',
+      String confirmName = 'Confirm',
+      this.isContentMarkdown = false})
+      : cancelButtonViewModel = ButtonViewModel(
+            title: cancelName, onPressed: onCancelButtonPressed),
         confirmButtonViewModel = ButtonViewModel(
-            title: 'Confirm', onPressed: onConfirmButtonPressed);
+            title: confirmName, onPressed: onConfirmButtonPressed);
 
   final String title;
   final String description;
+  bool isContentMarkdown;
 
   final ButtonViewModel cancelButtonViewModel;
   final ButtonViewModel confirmButtonViewModel;

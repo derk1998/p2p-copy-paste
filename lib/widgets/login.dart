@@ -8,7 +8,8 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.read(loginScreenViewModelProvider);
+    final viewModel =
+        ref.read(loginScreenViewModelProvider(Navigator.of(context)));
 
     return Center(child: Button(viewModel: viewModel.loginButtonViewModel));
   }
