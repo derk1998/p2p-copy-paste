@@ -14,10 +14,20 @@ class ScanQRCodeScreen extends ConsumerWidget {
     final viewModel = ref.read(viewModelProvider.notifier);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(viewModel.title),
+      ),
       body: Stack(children: [
         QRView(
           key: viewModel.qrKey,
           onQRViewCreated: viewModel.onCreated,
+          overlay: QrScannerOverlayShape(
+            borderColor: Colors.red,
+            borderRadius: 10,
+            borderLength: 30,
+            borderWidth: 5,
+            cutOutSize: 300,
+          ),
         ),
         if (state.isLoading)
           Center(
