@@ -5,10 +5,20 @@ GITHUB_USER = derk1998
 GITHUB_REPO = git@github.com:$(GITHUB_USER)/$(OUTPUT)
 BUILD_VERSION := $(shell grep 'version:' pubspec.yaml | awk '{print $$2}')
 
+build_android:
+	@echo "Clean existing repository"
+	flutter clean
+
+	@echo "Getting packages..."
+	flutter pub get
+
+	@echo "Building appbundle..."
+	flutter build appbundle --obfuscate --split-debug-info=debug_symbols/$(BUILD_VERSION)
+
 # Deploy the Flutter web project to GitHub
-deploy:
+deploy_web:
 ifndef OUTPUT
-  $(error OUTPUT is not set. Usage: make deploy OUTPUT=<output_repo_name>)
+	$(error OUTPUT is not set. Usage: make deploy OUTPUT=<output_repo_name>)
 endif
 	@echo "Clean existing repository"
 	flutter clean
@@ -31,4 +41,4 @@ endif
 	@echo "✅ Finished deploy: $(GITHUB_REPO)"
 	@echo "🚀 Flutter web URL: https://$(GITHUB_USER).github.io/$(OUTPUT)/"
 
-.PHONY: deploy
+.PHONY: deploy_web build_android
