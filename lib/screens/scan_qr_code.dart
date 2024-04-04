@@ -10,7 +10,7 @@ class ScanQRCodeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModelProvider =
         joinWithQrCodeScreenViewModelProvider(Navigator.of(context));
-    final viewModel = ref.read(viewModelProvider.notifier);
+    final viewModel = ref.watch(viewModelProvider.notifier);
 
     return Scaffold(
         appBar: AppBar(
