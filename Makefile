@@ -3,7 +3,7 @@
 
 GITHUB_USER = derk1998
 GITHUB_REPO = git@github.com:$(GITHUB_USER)/$(OUTPUT)
-BUILD_VERSION := $(shell grep 'version:' pubspec.yaml | awk '{print $$2}')
+BUILD_VERSION := $(shell grep 'version:' pubspec.yaml | awk '{print $$2}' | cut -d+ -f1)
 
 build_android:
 	@echo "Clean existing repository"
