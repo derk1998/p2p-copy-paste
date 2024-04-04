@@ -26,20 +26,21 @@ class InviteAnsweredScreenViewModel {
   late ButtonViewModel declineInviteButton;
 
   void _onAcceptInviteButtonPressed() async {
-    final result = await ref.read(createInviteServiceProvider).accept(invite);
+    final connectionService = ref.read(createConnectionServiceProvider);
+    connectionService.setOnConnectedListener(() {
+      navigator.push(MaterialPageRoute(
+        builder: (context) => ClipboardScreen(
+          closeConnectionUseCase: connectionService,
+          dataTransceiver: connectionService,
+          navigator: navigator,
+        ),
+      ));
+    });
+    await connectionService.startNewConnection();
 
-    if (result) {
-      final connectionService = ref.read(createConnectionServiceProvider);
-      connectionService.setOnConnectedListener(() {
-        navigator.push(MaterialPageRoute(
-          builder: (context) => ClipboardScreen(
-            closeConnectionUseCase: connectionService,
-            dataTransceiver: connectionService,
-            navigator: navigator,
-          ),
-        ));
-      });
-      connectionService.startNewConnection();
+    final result = await ref.read(createInviteServiceProvider).accept(invite);
+    if (!result) {
+      connectionService.close();
     }
   }
 
