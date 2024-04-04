@@ -19,7 +19,6 @@ class CreateConnectionService extends AbstractConnectionService
   RTCPeerConnection? peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
   bool answerSet = false;
-  void Function()? _onConnectionClosedListener;
   Completer<void>? _roomCreation;
 
   Future<void> _openDataChannel() async {
@@ -29,9 +28,7 @@ class CreateConnectionService extends AbstractConnectionService
     dataChannel?.onDataChannelState = (state) {
       if (state == RTCDataChannelState.RTCDataChannelClosed) {
         //Workaround for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
-        if (_onConnectionClosedListener != null) {
-          _onConnectionClosedListener!.call();
-        }
+        callOnDisconnectedListener();
       }
 
       if (state == RTCDataChannelState.RTCDataChannelOpen) {
@@ -48,16 +45,15 @@ class CreateConnectionService extends AbstractConnectionService
     //Works on android
     //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
     peerConnection!.onConnectionState = (state) {
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed &&
-          _onConnectionClosedListener != null) {
-        _onConnectionClosedListener!.call();
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        callOnDisconnectedListener();
       }
     };
 
     //When the peer is disconnected due to closing the app
     peerConnection!.onIceConnectionState = (state) {
       if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-        _onConnectionClosedListener?.call();
+        callOnDisconnectedListener();
       }
     };
 
@@ -139,7 +135,7 @@ class CreateConnectionService extends AbstractConnectionService
   @override
   void setOnConnectionClosedListener(
       void Function() onConnectionClosedListener) {
-    _onConnectionClosedListener = onConnectionClosedListener;
+    setOnDisconnectedListener(onConnectionClosedListener);
   }
 }
 

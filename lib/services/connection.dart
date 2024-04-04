@@ -7,12 +7,16 @@ abstract class DataTransceiver {
   void sendData(String data);
 }
 
+enum ConnectionState { connected, disconnected }
+
 abstract class AbstractConnectionService implements DataTransceiver {
   AbstractConnectionService();
 
   void Function()? _onConnectedListener;
+  void Function()? _onDisconnectedListener;
   void Function(String data)? _onReceiveDataListener;
   RTCDataChannel? dataChannel;
+  ConnectionState _connectionState = ConnectionState.disconnected;
 
   @override
   void setOnReceiveDataListener(
@@ -34,12 +38,24 @@ abstract class AbstractConnectionService implements DataTransceiver {
   }
 
   void callOnConnectedListener() {
-    if (_onConnectedListener != null) {
-      _onConnectedListener!.call();
+    if (_connectionState == ConnectionState.disconnected) {
+      _onConnectedListener?.call();
+      _connectionState = ConnectionState.connected;
+    }
+  }
+
+  void callOnDisconnectedListener() {
+    if (_connectionState == ConnectionState.connected) {
+      _onDisconnectedListener?.call();
+      _connectionState = ConnectionState.disconnected;
     }
   }
 
   void setOnConnectedListener(void Function() onConnectedListener) {
     _onConnectedListener = onConnectedListener;
+  }
+
+  void setOnDisconnectedListener(void Function() onDisconnectedListener) {
+    _onDisconnectedListener = onDisconnectedListener;
   }
 }

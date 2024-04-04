@@ -17,8 +17,6 @@ class JoinConnectionService extends AbstractConnectionService
   RTCPeerConnection? _peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
 
-  void Function()? _onConnectionClosedListener;
-
   Future<void> joinConnection(String connectionId) async {
     if (_subscription != null) {
       await _subscription!.cancel();
@@ -38,9 +36,7 @@ class JoinConnectionService extends AbstractConnectionService
       channel.onDataChannelState = (state) {
         if (state == RTCDataChannelState.RTCDataChannelClosed) {
           //Workaround for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
-          if (_onConnectionClosedListener != null) {
-            _onConnectionClosedListener!.call();
-          }
+          callOnDisconnectedListener();
         }
 
         if (state == RTCDataChannelState.RTCDataChannelOpen) {
@@ -51,16 +47,15 @@ class JoinConnectionService extends AbstractConnectionService
       //When the peer is disconnected due to closing the app
       _peerConnection!.onIceConnectionState = (state) {
         if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-          _onConnectionClosedListener?.call();
+          callOnDisconnectedListener();
         }
       };
 
       //Works on android
       //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
       _peerConnection!.onConnectionState = (state) {
-        if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed &&
-            _onConnectionClosedListener != null) {
-          _onConnectionClosedListener!.call();
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+          callOnDisconnectedListener();
         }
       };
     };
@@ -104,7 +99,7 @@ class JoinConnectionService extends AbstractConnectionService
   @override
   void setOnConnectionClosedListener(
       void Function() onConnectionClosedListener) {
-    _onConnectionClosedListener = onConnectionClosedListener;
+    setOnDisconnectedListener(onConnectionClosedListener);
   }
 }
 
