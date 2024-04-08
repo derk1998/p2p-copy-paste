@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/ice_server_configuration.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
-import 'package:p2p_copy_paste/services/login.dart';
 import 'package:p2p_copy_paste/use_cases/close_connection.dart';
 
 class CreateConnectionService extends AbstractConnectionService
@@ -40,7 +41,7 @@ class CreateConnectionService extends AbstractConnectionService
   Future<RTCSessionDescription> _configureLocal() async {
     peerConnection = await createPeerConnection(iceServerConfiguration);
     connectionInfo =
-        ConnectionInfo(id: ref.read(loginServiceProvider).getUserId());
+        ConnectionInfo(id: GetIt.I.get<IAuthenticationService>().getUserId());
 
     //Works on android
     //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548

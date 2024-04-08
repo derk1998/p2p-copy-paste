@@ -3,7 +3,8 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:p2p_copy_paste/services/login.dart';
+import 'package:get_it/get_it.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
@@ -39,7 +40,7 @@ class LoginScreenViewModel {
             },
             onConfirmButtonPressed: () {
               navigator.pop();
-              ref.read(loginServiceProvider).login();
+              GetIt.I.get<IAuthenticationService>().signInAnonymously();
             }),
       ),
     );

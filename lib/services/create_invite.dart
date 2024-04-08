@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
-import 'package:p2p_copy_paste/services/login.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
 
 enum CreateInviteState { waiting, expired, receivedUid }
 
@@ -32,7 +33,7 @@ class CreateInviteService {
     _done = false;
     lifeTime.target?.setOnExpiringListener(_cancelSubscription);
 
-    final ownUid = _ref.read(loginServiceProvider).getUserId();
+    final ownUid = GetIt.I.get<IAuthenticationService>().getUserId();
     await _ref.read(invitesRepositoryProvider).addInvite(Invite(ownUid));
 
     _inviteSubscription = _ref

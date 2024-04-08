@@ -44,6 +44,7 @@ dependencies:
   firebase_auth: ^4.17.9
   flutter_launcher_icons: ^0.13.1
   flutter_markdown: ^0.6.22+1
+  get_it: ^7.6.8
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +56,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+  mockito: ^5.4.4
+  build_runner: ^2.4.9
 
 flutter_launcher_icons:
   android: "launcher_icon"

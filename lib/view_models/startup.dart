@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:p2p_copy_paste/services/login.dart';
+import 'package:get_it/get_it.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 
 class StartupScreenViewModel extends AutoDisposeAsyncNotifier<LoginState?> {
@@ -21,8 +22,8 @@ class StartupScreenViewModel extends AutoDisposeAsyncNotifier<LoginState?> {
   @override
   FutureOr<LoginState?> build() {
     state = const AsyncLoading();
-    ref
-        .read(loginServiceProvider)
+    GetIt.I
+        .get<IAuthenticationService>()
         .setOnLoginStateChangedListener(_onLoginStateChanged);
     return null;
   }

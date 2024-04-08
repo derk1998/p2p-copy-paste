@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
 import 'package:p2p_copy_paste/services/join_invite.dart';
-import 'package:p2p_copy_paste/services/login.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 
 class ConnectDialogViewModelDependencies {
@@ -101,7 +102,7 @@ class ConnectDialogViewModel extends AutoDisposeFamilyAsyncNotifier<
             'The invite is declined by the other device. Please try again.');
         break;
       case InviteStatus.inviteSent:
-        String code = ref.read(loginServiceProvider).getUserId();
+        String code = GetIt.I.get<IAuthenticationService>().getUserId();
         state = _createData(
             'Verify if the following code is displayed on the other device: $code',
             refresh: false);

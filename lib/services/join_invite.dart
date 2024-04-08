@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
-import 'package:p2p_copy_paste/services/login.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
 
 enum InviteStatus {
   inviteSent,
@@ -31,7 +32,8 @@ class JoinInviteService {
           .read(invitesRepositoryProvider)
           .getInvite(invite.creator));
 
-      retrievedInvite.joiner = _ref.read(loginServiceProvider).getUserId();
+      retrievedInvite.joiner =
+          GetIt.I.get<IAuthenticationService>().getUserId();
       _ref.read(invitesRepositoryProvider).updateInvite(retrievedInvite);
       onInviteStatusChangedListener.call(InviteStatus.inviteSent);
       _subscription = _ref

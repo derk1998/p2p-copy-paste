@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:p2p_copy_paste/screens/startup.dart';
-import 'firebase_options.dart';
+import 'package:p2p_copy_paste/services/authentication.dart';
+import 'package:p2p_copy_paste/services/firebase_authentication.dart';
+import 'package:p2p_copy_paste/services/firebase_storage.dart';
+import 'package:p2p_copy_paste/services/storage.dart';
+import 'package:get_it/get_it.dart';
+
+final getIt = GetIt.instance;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  getIt.registerSingleton<IStorageService>(FirebaseStorageService());
+  getIt.registerSingleton<IAuthenticationService>(
+      FirebaseAuthenticationService());
+
+  await getIt.get<IStorageService>().initialize();
 
   runApp(const P2PCopyPaste());
 }
