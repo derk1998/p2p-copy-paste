@@ -4,6 +4,7 @@
 GITHUB_USER = derk1998
 GITHUB_REPO = git@github.com:$(GITHUB_USER)/$(OUTPUT)
 BUILD_VERSION := $(shell grep 'version:' pubspec.yaml | awk '{print $$2}' | cut -d+ -f1)
+PROJECT_DIR = $(CURDIR)
 
 build_android:
 	@echo "Clean existing repository"
@@ -14,6 +15,10 @@ build_android:
 
 	@echo "Building appbundle..."
 	flutter build appbundle --obfuscate --split-debug-info=debug_symbols/$(BUILD_VERSION)
+
+	@echo "Zipping native debug symbols"
+	cd build/app/intermediates/merged_native_libs/release/out/lib/ && \
+	zip -r $(PROJECT_DIR)/debug_symbols/$(BUILD_VERSION)/native-debug-symbols-$(BUILD_VERSION).zip *
 
 # Deploy the Flutter web project to GitHub
 deploy_web:
