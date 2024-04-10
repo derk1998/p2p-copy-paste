@@ -10,6 +10,7 @@ import 'package:mockito/mockito.dart' as _i2;
 import 'package:p2p_copy_paste/lifetime.dart' as _i5;
 import 'package:p2p_copy_paste/models/invite.dart' as _i6;
 import 'package:p2p_copy_paste/navigation_manager.dart' as _i7;
+import 'package:p2p_copy_paste/services/clipboard.dart' as _i9;
 import 'package:p2p_copy_paste/services/create_connection.dart' as _i8;
 import 'package:p2p_copy_paste/services/create_invite.dart' as _i3;
 
@@ -225,6 +226,33 @@ class MockICreateConnectionService extends _i2.Mock
   void sendData(String? data) => super.noSuchMethod(
         Invocation.method(
           #sendData,
+          [data],
+        ),
+        returnValueForMissingStub: null,
+      );
+}
+
+/// A class which mocks [IClipboardService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockIClipboardService extends _i2.Mock implements _i9.IClipboardService {
+  MockIClipboardService() {
+    _i2.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<String?> get() => (super.noSuchMethod(
+        Invocation.method(
+          #get,
+          [],
+        ),
+        returnValue: _i4.Future<String?>.value(),
+      ) as _i4.Future<String?>);
+
+  @override
+  void set(String? data) => super.noSuchMethod(
+        Invocation.method(
+          #set,
           [data],
         ),
         returnValueForMissingStub: null,

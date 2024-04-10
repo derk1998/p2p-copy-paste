@@ -5,13 +5,19 @@ import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/invite_answered.dart';
 
 import 'invite_expired_screen_test.mocks.dart';
 
-@GenerateMocks([ICreateInviteService, INavigator, ICreateConnectionService])
+@GenerateMocks([
+  ICreateInviteService,
+  INavigator,
+  ICreateConnectionService,
+  IClipboardService
+])
 void main() {
   late InviteAnsweredScreenViewModel viewModel;
   late MockICreateInviteService mockCreateInviteService;
@@ -28,7 +34,8 @@ void main() {
         invite: invite,
         createInviteService: mockCreateInviteService,
         navigator: mockNavigator,
-        createConnectionService: mockCreateConnectionService);
+        createConnectionService: mockCreateConnectionService,
+        clipboardService: MockIClipboardService());
   });
 
   test('Verify if new connection is created when accept button is pressed',

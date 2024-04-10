@@ -5,6 +5,7 @@ import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/invite_answered.dart';
 import 'package:p2p_copy_paste/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/invite_answered.dart';
@@ -38,11 +39,13 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
   CreateInviteScreenViewModel(
       {required this.navigator,
       required this.createInviteService,
-      required this.createConnectionService});
+      required this.createConnectionService,
+      required this.clipboardService});
 
   final INavigator navigator;
   final ICreateInviteService createInviteService;
   final ICreateConnectionService createConnectionService;
+  final IClipboardService clipboardService;
   final _stateSubject = BehaviorSubject<CreateInviteScreenState>.seeded(
       CreateInviteScreenState());
 
@@ -78,7 +81,8 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
             viewModel: InviteExpiredViewModel(
                 navigator: navigator,
                 createInviteService: createInviteService,
-                createConnectionService: createConnectionService)));
+                createConnectionService: createConnectionService,
+                clipboardService: clipboardService)));
         completer.complete(CreateInviteScreenState());
       } else if (update.state == CreateInviteState.receivedUid) {
         navigator.replaceScreen(InviteAnsweredScreen(
@@ -86,7 +90,8 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
                 navigator: navigator,
                 invite: update.invite!,
                 createInviteService: createInviteService,
-                createConnectionService: createConnectionService)));
+                createConnectionService: createConnectionService,
+                clipboardService: clipboardService)));
         completer.complete(CreateInviteScreenState());
       }
 

@@ -4,13 +4,19 @@ import 'package:mockito/mockito.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/create_invite.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/invite_expired.dart';
 
 import 'invite_expired_screen_test.mocks.dart';
 
-@GenerateMocks([ICreateInviteService, INavigator, ICreateConnectionService])
+@GenerateMocks([
+  ICreateInviteService,
+  INavigator,
+  ICreateConnectionService,
+  IClipboardService
+])
 void main() {
   late InviteExpiredViewModel viewModel;
   late MockICreateInviteService mockCreateInviteService;
@@ -23,7 +29,8 @@ void main() {
     viewModel = InviteExpiredViewModel(
         createInviteService: mockCreateInviteService,
         navigator: mockNavigator,
-        createConnectionService: MockICreateConnectionService());
+        createConnectionService: MockICreateConnectionService(),
+        clipboardService: MockIClipboardService());
   });
 
   test('Verify if create invite screen is shown when refresh button is pressed',

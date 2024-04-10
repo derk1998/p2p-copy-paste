@@ -5,6 +5,7 @@ import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/screens/startup.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
@@ -29,6 +30,7 @@ void main() async {
       .registerLazySingleton<ICreateInviteService>(() => CreateInviteService());
   getIt.registerLazySingleton<ICreateConnectionService>(
       () => CreateConnectionService(FirestoreConnectionInfoRepository()));
+  getIt.registerLazySingleton<IClipboardService>(() => ClipboardService());
 
   await getIt.get<IStorageService>().initialize();
 

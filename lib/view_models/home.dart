@@ -8,6 +8,7 @@ import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/create_invite.dart';
 import 'package:p2p_copy_paste/screens/join_connection.dart';
 import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
@@ -43,7 +44,8 @@ class HomeScreenViewModel {
           viewModel: CreateInviteScreenViewModel(
               navigator: GetIt.I.get<INavigator>(),
               createInviteService: GetIt.I.get<ICreateInviteService>(),
-              createConnectionService: GetIt.I.get<ICreateConnectionService>()),
+              createConnectionService: GetIt.I.get<ICreateConnectionService>(),
+              clipboardService: GetIt.I.get<IClipboardService>()),
         ));
   }
 

@@ -1,90 +1,96 @@
-import 'dart:async';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:flutter/services.dart' as services;
+import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/use_cases/close_connection.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
+import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
+import 'package:rxdart/rxdart.dart';
 
-class ClipboardViewModelDependencies {
-  ClipboardViewModelDependencies(
-      {required this.dataTransceiver, required this.closeConnectionUseCase});
+class ClipboardScreenState {
+  ClipboardScreenState({this.clipboard = ''});
 
-  final TransceiveDataUseCase dataTransceiver;
-  final CloseConnectionUseCase closeConnectionUseCase;
+  final String clipboard;
 }
 
-class ClipboardViewModel
-    extends FamilyAsyncNotifier<String, ClipboardViewModelDependencies> {
+class ClipboardScreenViewModel implements StatefulScreenViewModel {
   late IconButtonViewModel copyButtonViewModel;
   late IconButtonViewModel pasteButtonViewModel;
-  late TransceiveDataUseCase _dataTransceiver;
-  late CloseConnectionUseCase _closeConnectionUseCase;
 
-  @override
-  FutureOr<String> build(ClipboardViewModelDependencies arg) {
-    _closeConnectionUseCase = arg.closeConnectionUseCase;
-    _closeConnectionUseCase.setOnConnectionClosedListener(_onConnectionClosed);
-
-    _dataTransceiver = arg.dataTransceiver;
-    _dataTransceiver.setOnReceiveDataListener(_onDataReceived);
+  ClipboardScreenViewModel(
+      {required this.dataTransceiver,
+      required this.closeConnectionUseCase,
+      required this.navigator,
+      required this.clipboardService}) {
     copyButtonViewModel = IconButtonViewModel(
         title: 'Copy', onPressed: _onCopyButtonPressed, icon: Icons.copy);
     pasteButtonViewModel = IconButtonViewModel(
         title: 'Paste', onPressed: _onPasteButtonPressed, icon: Icons.paste);
+  }
 
-    return '';
+  final _stateSubject =
+      BehaviorSubject<ClipboardScreenState>.seeded(ClipboardScreenState());
+
+  Stream<ClipboardScreenState> get state => _stateSubject;
+
+  final TransceiveDataUseCase dataTransceiver;
+  final CloseConnectionUseCase closeConnectionUseCase;
+  final INavigator navigator;
+  final IClipboardService clipboardService;
+
+  @override
+  void init() {
+    closeConnectionUseCase.setOnConnectionClosedListener(_onConnectionClosed);
+    dataTransceiver.setOnReceiveDataListener(_onDataReceived);
+  }
+
+  @override
+  void dispose() {
+    _stateSubject.close();
+  }
+
+  void _updateState(final String data) {
+    _stateSubject.add(ClipboardScreenState(clipboard: data));
   }
 
   void _onDataReceived(String data) {
-    state = AsyncData(data);
+    _updateState(data);
   }
 
   void _onCopyButtonPressed() {
-    if (state.hasValue) {
-      services.Clipboard.setData(services.ClipboardData(text: state.value!));
-    }
+    clipboardService.set(_stateSubject.value.clipboard);
   }
 
   void _onPasteButtonPressed() async {
-    final data = await services.Clipboard.getData('text/plain');
-
-    if (data != null && data.text != null) {
-      state = AsyncValue.data(data.text!);
-      _dataTransceiver.sendData(data.text!);
+    final data = await clipboardService.get();
+    if (data != null) {
+      _updateState(data);
+      dataTransceiver.sendData(data);
     }
   }
 
   void _onConnectionClosed() {
-    GetIt.I.get<INavigator>().goToHome();
+    navigator.goToHome();
   }
 
-  void onBackPressed(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final viewModel = CancelConfirmViewModel(
-            title: 'Are you sure?',
-            description: 'The connection will be lost',
-            onCancelButtonPressed: () {
-              GetIt.I.get<INavigator>().popScreen();
-            },
-            onConfirmButtonPressed: () {
-              _closeConnectionUseCase.close();
-            });
-        return CancelConfirmDialog(viewModel: viewModel);
-      },
+  void onBackPressed() {
+    navigator.pushDialog(
+      CancelConfirmDialog(
+        viewModel: CancelConfirmViewModel(
+          title: 'Are you sure?',
+          description: 'The connection will be lost',
+          onCancelButtonPressed: () {
+            navigator.popScreen();
+          },
+          onConfirmButtonPressed: () {
+            closeConnectionUseCase.close();
+          },
+        ),
+      ),
     );
   }
 }
-
-final clipboardViewModelProvider = AsyncNotifierProviderFamily<
-    ClipboardViewModel, String, ClipboardViewModelDependencies>(() {
-  return ClipboardViewModel();
-});
