@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
 class ClipboardScreen extends ConsumerWidget {
   ClipboardScreen(
       {super.key,
-      required DataTransceiver dataTransceiver,
-      required CloseConnectionUseCase closeConnectionUseCase,
-      required NavigatorState navigator})
+      required TransceiveDataUseCase dataTransceiver,
+      required CloseConnectionUseCase closeConnectionUseCase})
       : clipboardDependencies = ClipboardViewModelDependencies(
             dataTransceiver: dataTransceiver,
-            closeConnectionUseCase: closeConnectionUseCase,
-            navigator: navigator);
+            closeConnectionUseCase: closeConnectionUseCase);
 
   final ClipboardViewModelDependencies clipboardDependencies;
 

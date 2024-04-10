@@ -28,16 +28,15 @@ class JoinInviteService {
     try {
       _subscription?.cancel();
 
-      final retrievedInvite = (await _ref
-          .read(invitesRepositoryProvider)
-          .getInvite(invite.creator));
+      final retrievedInvite =
+          (await GetIt.I.get<IInviteRepository>().getInvite(invite.creator));
 
       retrievedInvite.joiner =
           GetIt.I.get<IAuthenticationService>().getUserId();
-      _ref.read(invitesRepositoryProvider).updateInvite(retrievedInvite);
+      GetIt.I.get<IInviteRepository>().updateInvite(retrievedInvite);
       onInviteStatusChangedListener.call(InviteStatus.inviteSent);
-      _subscription = _ref
-          .read(invitesRepositoryProvider)
+      _subscription = GetIt.I
+          .get<IInviteRepository>()
           .snapshots(retrievedInvite.creator)
           .timeout(
         const Duration(seconds: kInviteTimeoutInSeconds),

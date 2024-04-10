@@ -3,31 +3,29 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:p2p_copy_paste/services/connection.dart';
+import 'package:get_it/get_it.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:flutter/services.dart' as services;
 import 'package:p2p_copy_paste/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 
 class ClipboardViewModelDependencies {
   ClipboardViewModelDependencies(
-      {required this.dataTransceiver,
-      required this.closeConnectionUseCase,
-      required this.navigator});
+      {required this.dataTransceiver, required this.closeConnectionUseCase});
 
-  final DataTransceiver dataTransceiver;
+  final TransceiveDataUseCase dataTransceiver;
   final CloseConnectionUseCase closeConnectionUseCase;
-  final NavigatorState navigator;
 }
 
 class ClipboardViewModel
     extends FamilyAsyncNotifier<String, ClipboardViewModelDependencies> {
   late IconButtonViewModel copyButtonViewModel;
   late IconButtonViewModel pasteButtonViewModel;
-  late DataTransceiver _dataTransceiver;
+  late TransceiveDataUseCase _dataTransceiver;
   late CloseConnectionUseCase _closeConnectionUseCase;
-  late NavigatorState _navigator;
 
   @override
   FutureOr<String> build(ClipboardViewModelDependencies arg) {
@@ -35,7 +33,6 @@ class ClipboardViewModel
     _closeConnectionUseCase.setOnConnectionClosedListener(_onConnectionClosed);
 
     _dataTransceiver = arg.dataTransceiver;
-    _navigator = arg.navigator;
     _dataTransceiver.setOnReceiveDataListener(_onDataReceived);
     copyButtonViewModel = IconButtonViewModel(
         title: 'Copy', onPressed: _onCopyButtonPressed, icon: Icons.copy);
@@ -65,7 +62,7 @@ class ClipboardViewModel
   }
 
   void _onConnectionClosed() {
-    _navigator.popUntil((route) => route.isFirst);
+    GetIt.I.get<INavigator>().goToHome();
   }
 
   void onBackPressed(BuildContext context) {
@@ -76,7 +73,7 @@ class ClipboardViewModel
             title: 'Are you sure?',
             description: 'The connection will be lost',
             onCancelButtonPressed: () {
-              Navigator.of(context).pop();
+              GetIt.I.get<INavigator>().popScreen();
             },
             onConfirmButtonPressed: () {
               _closeConnectionUseCase.close();

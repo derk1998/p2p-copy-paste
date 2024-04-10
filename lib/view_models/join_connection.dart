@@ -38,15 +38,15 @@ class JoinConnectionScreenViewModel
       return;
     }
 
-    _navigator.pushReplacement(MaterialPageRoute(
-      builder: (context) => ConnectDialog(
-        invite: invite,
-        navigator: _navigator,
-        getJoinNewInvitePageRoute: () => MaterialPageRoute(
-          builder: (context) => const JoinConnectionScreen(),
+    _navigator.pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => ConnectDialog(
+          invite: invite,
+          navigator: _navigator,
+          getJoinNewInvitePageView: () => const JoinConnectionScreen(),
         ),
       ),
-    ));
+    );
   }
 }
 

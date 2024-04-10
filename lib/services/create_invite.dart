@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/lifetime.dart';
@@ -18,26 +17,34 @@ class CreateInviteUpdate {
   Invite? invite;
 }
 
-class CreateInviteService {
-  CreateInviteService(this._ref);
+abstract class ICreateInviteService {
+  Future<void> create(
+      void Function(CreateInviteUpdate update) onCreateInviteUpdate,
+      WeakReference<LifeTime> lifeTime);
 
-  final Ref _ref;
+  Future<bool> accept(Invite invite);
+  Future<bool> decline(Invite invite);
+}
+
+class CreateInviteService extends ICreateInviteService {
   StreamSubscription<CreateInviteUpdate>? _createSubscription;
   StreamSubscription<Invite?>? _inviteSubscription;
   Invite? _invite;
   var _done = false;
 
-  void create(void Function(CreateInviteUpdate update) onCreateInviteUpdate,
+  @override
+  Future<void> create(
+      void Function(CreateInviteUpdate update) onCreateInviteUpdate,
       WeakReference<LifeTime> lifeTime) async {
     _inviteSubscription?.cancel();
     _done = false;
     lifeTime.target?.setOnExpiringListener(_cancelSubscription);
 
     final ownUid = GetIt.I.get<IAuthenticationService>().getUserId();
-    await _ref.read(invitesRepositoryProvider).addInvite(Invite(ownUid));
+    await GetIt.I.get<IInviteRepository>().addInvite(Invite(ownUid));
 
-    _inviteSubscription = _ref
-        .read(invitesRepositoryProvider)
+    _inviteSubscription = GetIt.I
+        .get<IInviteRepository>()
         .snapshots(ownUid)
         .listen(_onInviteUpdated);
 
@@ -49,10 +56,11 @@ class CreateInviteService {
     });
   }
 
+  @override
   Future<bool> accept(Invite invite) async {
     invite.accept();
     try {
-      await _ref.read(invitesRepositoryProvider).addInvite(invite);
+      await GetIt.I.get<IInviteRepository>().addInvite(invite);
     } catch (e) {
       return false;
     }
@@ -60,10 +68,11 @@ class CreateInviteService {
     return true;
   }
 
+  @override
   Future<bool> decline(Invite invite) async {
     invite.decline();
     try {
-      await _ref.read(invitesRepositoryProvider).addInvite(invite);
+      await GetIt.I.get<IInviteRepository>().addInvite(invite);
     } catch (e) {
       return false;
     }
@@ -105,12 +114,3 @@ class CreateInviteService {
     _invite = invite;
   }
 }
-
-//Currently, there is no good way to detect when to clean up this
-//service. So now once it is constructed, it will live forever.
-CreateInviteService? _createInviteService;
-
-final createInviteServiceProvider = Provider<CreateInviteService>((ref) {
-  _createInviteService ??= CreateInviteService(ref);
-  return _createInviteService!;
-});

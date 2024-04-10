@@ -9,11 +9,9 @@ class ConnectDialog extends ConsumerWidget {
       {super.key,
       required Invite invite,
       required NavigatorState navigator,
-      required MaterialPageRoute Function() getJoinNewInvitePageRoute})
+      required Widget Function() getJoinNewInvitePageView})
       : _dependencies = ConnectDialogViewModelDependencies(
-            invite: invite,
-            navigator: navigator,
-            getJoinNewInvitePageRoute: getJoinNewInvitePageRoute);
+            invite: invite, getJoinNewInvitePageView: getJoinNewInvitePageView);
 
   final ConnectDialogViewModelDependencies _dependencies;
 

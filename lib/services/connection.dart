@@ -1,15 +1,8 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-abstract class DataTransceiver {
-  void setOnReceiveDataListener(
-      void Function(String data) onReceiveDataListener);
-
-  void sendData(String data);
-}
-
 enum ConnectionState { connected, disconnected }
 
-abstract class AbstractConnectionService implements DataTransceiver {
+abstract class AbstractConnectionService {
   AbstractConnectionService();
 
   void Function()? _onConnectedListener;
@@ -18,8 +11,7 @@ abstract class AbstractConnectionService implements DataTransceiver {
   RTCDataChannel? dataChannel;
   ConnectionState _connectionState = ConnectionState.disconnected;
 
-  @override
-  void setOnReceiveDataListener(
+  void setOnReceiveDataListenerImpl(
       void Function(String data) onReceiveDataListener) {
     _onReceiveDataListener = onReceiveDataListener;
 
@@ -28,8 +20,7 @@ abstract class AbstractConnectionService implements DataTransceiver {
     };
   }
 
-  @override
-  void sendData(String data) {
+  void sendDataImpl(String data) {
     dataChannel!.send(RTCDataChannelMessage(data));
   }
 
@@ -51,7 +42,7 @@ abstract class AbstractConnectionService implements DataTransceiver {
     }
   }
 
-  void setOnConnectedListener(void Function() onConnectedListener) {
+  void setOnConnectedListenerImpl(void Function() onConnectedListener) {
     _onConnectedListener = onConnectedListener;
   }
 

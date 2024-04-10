@@ -1,46 +1,60 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/view_models/create_invite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class CreateInviteScreen extends ConsumerWidget {
-  const CreateInviteScreen({super.key});
+class CreateInviteScreen extends StatefulWidget {
+  const CreateInviteScreen({super.key, required this.viewModel});
+
+  final CreateInviteScreenViewModel viewModel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelProvider =
-        createInviteScreenViewModelProvider(Navigator.of(context));
-    final AsyncValue<CreateInviteScreenData> state =
-        ref.watch(viewModelProvider);
+  State<CreateInviteScreen> createState() => _CreateInviteScreenState();
+}
 
-    final viewModel = ref.read(viewModelProvider.notifier);
+class _CreateInviteScreenState extends State<CreateInviteScreen> {
+  @override
+  void initState() {
+    widget.viewModel.init();
+    super.initState();
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(viewModel.title),
-      ),
-      body: Center(
-        child: state.isLoading
-            ? const CircularProgressIndicator()
-            : Column(mainAxisSize: MainAxisSize.min, children: [
-                if (kDebugMode &&
-                    state.value != null &&
-                    state.value!.data != null)
-                  SelectableText(state.value!.data!),
-                if (state.value != null && state.value!.data != null)
-                  QrImageView(
-                    data: state.value!.data!,
-                    version: QrVersions.auto,
-                    size: 200.0,
-                  ),
-                if (state.value?.seconds != null)
-                  Text(
-                    state.value!.seconds!.toString(),
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  )
-              ]),
-      ),
+  @override
+  void dispose() {
+    widget.viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<CreateInviteScreenState>(
+      stream: widget.viewModel.state,
+      builder: (context, snapshot) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.viewModel.title),
+          ),
+          body: Center(
+            child: !snapshot.hasData || snapshot.data!.loading
+                ? const CircularProgressIndicator()
+                : Column(mainAxisSize: MainAxisSize.min, children: [
+                    if (kDebugMode && snapshot.data!.data != null)
+                      SelectableText(snapshot.data!.data!),
+                    if (snapshot.data!.data != null)
+                      QrImageView(
+                        data: snapshot.data!.data!,
+                        version: QrVersions.auto,
+                        size: 200.0,
+                      ),
+                    if (snapshot.data!.seconds != null)
+                      Text(
+                        snapshot.data!.seconds!.toString(),
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      )
+                  ]),
+          ),
+        );
+      },
     );
   }
 }

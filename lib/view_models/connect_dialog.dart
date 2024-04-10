@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
@@ -12,14 +13,12 @@ import 'package:p2p_copy_paste/view_models/button.dart';
 
 class ConnectDialogViewModelDependencies {
   ConnectDialogViewModelDependencies({
-    required this.navigator,
     required this.invite,
-    required this.getJoinNewInvitePageRoute,
+    required this.getJoinNewInvitePageView,
   });
 
-  final NavigatorState navigator;
   final Invite invite;
-  MaterialPageRoute Function() getJoinNewInvitePageRoute;
+  Widget Function() getJoinNewInvitePageView;
 }
 
 class ConnectDialogViewModelData {
@@ -32,23 +31,21 @@ class ConnectDialogViewModelData {
 
 class ConnectDialogViewModel extends AutoDisposeFamilyAsyncNotifier<
     ConnectDialogViewModelData?, ConnectDialogViewModelDependencies> {
-  late NavigatorState _navigator;
   late Invite _invite;
   final String title = 'Connecting';
-  late MaterialPageRoute Function() _getJoinNewInvitePageRoute;
+  late Widget Function() _getJoinNewInvitePageView;
 
   @override
   FutureOr<ConnectDialogViewModelData?> build(
       ConnectDialogViewModelDependencies arg) {
-    _navigator = arg.navigator;
     _invite = arg.invite;
-    _getJoinNewInvitePageRoute = arg.getJoinNewInvitePageRoute;
+    _getJoinNewInvitePageView = arg.getJoinNewInvitePageView;
     join(_invite);
     return null;
   }
 
   void _onRefreshButtonPressed() {
-    _navigator.pushReplacement(_getJoinNewInvitePageRoute());
+    GetIt.I.get<INavigator>().replaceScreen(_getJoinNewInvitePageView());
   }
 
   AsyncData<ConnectDialogViewModelData?> _createData(String description,
@@ -65,24 +62,21 @@ class ConnectDialogViewModel extends AutoDisposeFamilyAsyncNotifier<
   }
 
   void _connect(Invite invite) async {
-    final connectionService = ref.read(joinConnectionServiceProvider);
+    // final connectionService = ref.read(joinConnectionServiceProvider);
 
-    connectionService.setOnConnectedListener(() {
-      _navigator.pushReplacement(MaterialPageRoute(
-        builder: (context) => ClipboardScreen(
-          closeConnectionUseCase: connectionService,
-          dataTransceiver: connectionService,
-          navigator: _navigator,
-        ),
-      ));
-    });
+    // connectionService.setOnConnectedListenerImpl(() {
+    //   GetIt.I.get<INavigator>().replaceScreen(ClipboardScreen(
+    //         closeConnectionUseCase: connectionService,
+    //         dataTransceiver: connectionService,
+    //       ));
+    // });
 
-    try {
-      state = const AsyncLoading();
-      await connectionService.joinConnection(invite.creator);
-    } catch (e) {
-      state = _createData('Unable to connect');
-    }
+    // try {
+    //   state = const AsyncLoading();
+    //   await connectionService.joinConnection(invite.creator);
+    // } catch (e) {
+    //   state = _createData('Unable to connect');
+    // }
   }
 
   void _onInviteStatusChanged(Invite invite, InviteStatus inviteStatus) async {

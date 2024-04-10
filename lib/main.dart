@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
+import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
+import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/screens/startup.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
+import 'package:p2p_copy_paste/services/create_connection.dart';
+import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 import 'package:p2p_copy_paste/services/firebase_storage.dart';
 import 'package:p2p_copy_paste/services/storage.dart';
@@ -12,9 +17,18 @@ final getIt = GetIt.instance;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  getIt.registerSingleton<INavigator>(NavigationManager());
+
+  getIt.registerLazySingleton<IInviteRepository>(
+      () => FirestoreInviteRepository());
+
   getIt.registerSingleton<IStorageService>(FirebaseStorageService());
   getIt.registerSingleton<IAuthenticationService>(
       FirebaseAuthenticationService());
+  getIt
+      .registerLazySingleton<ICreateInviteService>(() => CreateInviteService());
+  getIt.registerLazySingleton<ICreateConnectionService>(
+      () => CreateConnectionService(FirestoreConnectionInfoRepository()));
 
   await getIt.get<IStorageService>().initialize();
 
@@ -33,6 +47,7 @@ class P2PCopyPaste extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      navigatorKey: getIt.get<INavigator>().getNavigatorKey(),
       home: const StartupScreen(),
     ));
   }

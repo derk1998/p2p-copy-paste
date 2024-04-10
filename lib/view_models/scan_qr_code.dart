@@ -31,9 +31,7 @@ class ScanQrCodeScreenViewModel
       builder: (context) => ConnectDialog(
         invite: invite,
         navigator: _navigator,
-        getJoinNewInvitePageRoute: () => MaterialPageRoute(
-          builder: (context) => const ScanQRCodeScreen(),
-        ),
+        getJoinNewInvitePageView: () => const ScanQRCodeScreen(),
       ),
     ));
   }
