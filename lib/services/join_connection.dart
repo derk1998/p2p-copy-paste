@@ -117,6 +117,6 @@ class JoinConnectionService extends AbstractConnectionService
   @override
   void setOnReceiveDataListener(
       void Function(String data) onReceiveDataListener) {
-    setOnReceiveDataListener(onReceiveDataListener);
+    setOnReceiveDataListenerImpl(onReceiveDataListener);
   }
 }
