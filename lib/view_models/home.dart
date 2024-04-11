@@ -11,8 +11,12 @@ import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/services/join_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/create_invite.dart';
+import 'package:p2p_copy_paste/view_models/join_connection.dart';
+import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
 
 class HomeScreenViewModel {
   HomeScreenViewModel() {
@@ -42,19 +46,38 @@ class HomeScreenViewModel {
   void _onCreateInviteButtonClicked() async {
     GetIt.I.get<INavigator>().pushScreen(CreateInviteScreen(
           viewModel: CreateInviteScreenViewModel(
-              navigator: GetIt.I.get<INavigator>(),
-              createInviteService: GetIt.I.get<ICreateInviteService>(),
-              createConnectionService: GetIt.I.get<ICreateConnectionService>(),
-              clipboardService: GetIt.I.get<IClipboardService>()),
+            navigator: GetIt.I.get<INavigator>(),
+            createInviteService: GetIt.I.get<ICreateInviteService>(),
+            createConnectionService: GetIt.I.get<ICreateConnectionService>(),
+            clipboardService: GetIt.I.get<IClipboardService>(),
+          ),
         ));
   }
 
   void _onJoinWithQrCodeButtonClicked() {
-    GetIt.I.get<INavigator>().pushScreen(const ScanQRCodeScreen());
+    GetIt.I.get<INavigator>().pushScreen(
+          ScanQRCodeScreen(
+            viewModel: ScanQrCodeScreenViewModel(
+              navigator: GetIt.I.get<INavigator>(),
+              clipboardService: GetIt.I.get<IClipboardService>(),
+              joinConnectionService: GetIt.I.get<IJoinConnectionService>(),
+              joinInviteService: GetIt.I.get<IJoinInviteService>(),
+            ),
+          ),
+        );
   }
 
   void _onJoinConnectionButtonClicked() {
-    GetIt.I.get<INavigator>().pushScreen(const JoinConnectionScreen());
+    GetIt.I.get<INavigator>().pushScreen(
+          JoinConnectionScreen(
+            viewModel: JoinConnectionScreenViewModel(
+              clipboardService: GetIt.I.get<IClipboardService>(),
+              joinConnectionService: GetIt.I.get<IJoinConnectionService>(),
+              joinInviteService: GetIt.I.get<IJoinInviteService>(),
+              navigator: GetIt.I.get<INavigator>(),
+            ),
+          ),
+        );
   }
 }
 

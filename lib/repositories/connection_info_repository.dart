@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 
 abstract class IConnectionInfoRepository {
@@ -54,7 +53,3 @@ class FirestoreConnectionInfoRepository implements IConnectionInfoRepository {
             : null);
   }
 }
-
-final connectionInfoRepositoryProvider =
-    Provider<FirestoreConnectionInfoRepository>(
-        (ref) => FirestoreConnectionInfoRepository());

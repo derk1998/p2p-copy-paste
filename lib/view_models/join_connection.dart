@@ -1,57 +1,85 @@
-import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/connect_dialog.dart';
 import 'package:p2p_copy_paste/screens/join_connection.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
+import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/services/join_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
+import 'package:p2p_copy_paste/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/view_models/screen.dart';
+import 'package:rxdart/rxdart.dart';
 
-class JoinConnectionScreenViewModel
-    extends AutoDisposeFamilyAsyncNotifier<String, NavigatorState> {
-  final codeController = TextEditingController();
+class JoinConnectionScreenState {
+  JoinConnectionScreenState({this.loading = false, this.status = ''});
+
+  bool loading;
+  String status;
+}
+
+class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
   late ButtonViewModel connectButtonViewModel;
-  late NavigatorState _navigator;
   final String title = 'Join connection';
 
-  void _dispose() {
-    codeController.dispose();
-  }
-
-  @override
-  FutureOr<String> build(NavigatorState arg) {
+  JoinConnectionScreenViewModel(
+      {required this.navigator,
+      required this.clipboardService,
+      required this.joinConnectionService,
+      required this.joinInviteService}) {
     connectButtonViewModel = ButtonViewModel(
         title: 'Connect', onPressed: _onSubmitConnectionIdButtonClicked);
-    ref.onDispose(_dispose);
-    _navigator = arg;
-    return '';
+  }
+
+  final INavigator navigator;
+  final IClipboardService clipboardService;
+  final IJoinConnectionService joinConnectionService;
+  final IJoinInviteService joinInviteService;
+  String code = '';
+
+  final _stateSubject = BehaviorSubject<JoinConnectionScreenState>.seeded(
+      JoinConnectionScreenState());
+
+  Stream<JoinConnectionScreenState> get state => _stateSubject;
+
+  @override
+  void init() {}
+
+  @override
+  void dispose() {
+    _stateSubject.close();
+  }
+
+  void _updateState(String status, {bool loading = false}) {
+    _stateSubject
+        .add(JoinConnectionScreenState(status: status, loading: loading));
   }
 
   void _onSubmitConnectionIdButtonClicked() async {
-    final invite = Invite(codeController.text);
+    final invite = Invite(code);
     //First some sanity checking
-    state = const AsyncLoading();
+    _updateState('', loading: true);
 
     if (invite.creator.trim().isEmpty) {
-      state = const AsyncData('ID must be valid');
+      _updateState('ID must be valid');
       return;
     }
 
-    _navigator.pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => ConnectDialog(
+    navigator.replaceScreen(ConnectDialog(
+      viewModel: ConnectDialogViewModel(
           invite: invite,
-          navigator: _navigator,
-          getJoinNewInvitePageView: () => const JoinConnectionScreen(),
-        ),
-      ),
-    );
+          navigator: navigator,
+          getJoinNewInvitePageView: () => JoinConnectionScreen(
+                viewModel: JoinConnectionScreenViewModel(
+                    clipboardService: clipboardService,
+                    joinConnectionService: joinConnectionService,
+                    joinInviteService: joinInviteService,
+                    navigator: navigator),
+              ),
+          clipboardService: clipboardService,
+          joinConnectionService: joinConnectionService,
+          joinInviteService: joinInviteService),
+    ));
   }
 }
-
-final joinConnectionScreenViewModelProvider =
-    AutoDisposeAsyncNotifierProviderFamily<JoinConnectionScreenViewModel,
-        String, NavigatorState>(() {
-  return JoinConnectionScreenViewModel();
-});

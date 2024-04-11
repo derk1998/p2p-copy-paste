@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
@@ -15,12 +13,20 @@ enum InviteStatus {
   inviteError,
 }
 
-class JoinInviteService {
-  JoinInviteService(this._ref);
+abstract class IJoinInviteService {
+  Future<void> join(Invite invite,
+      void Function(InviteStatus inviteStatus) onInviteStatusChangedListener);
+}
 
-  final Ref _ref;
+class JoinInviteService implements IJoinInviteService {
+  JoinInviteService(
+      {required this.inviteRepository, required this.authenticationService});
+
   StreamSubscription<Invite?>? _subscription;
+  final IInviteRepository inviteRepository;
+  final IAuthenticationService authenticationService;
 
+  @override
   Future<void> join(
       Invite invite,
       void Function(InviteStatus inviteStatus)
@@ -29,16 +35,13 @@ class JoinInviteService {
       _subscription?.cancel();
 
       final retrievedInvite =
-          (await GetIt.I.get<IInviteRepository>().getInvite(invite.creator));
+          (await inviteRepository.getInvite(invite.creator));
 
-      retrievedInvite.joiner =
-          GetIt.I.get<IAuthenticationService>().getUserId();
-      GetIt.I.get<IInviteRepository>().updateInvite(retrievedInvite);
+      retrievedInvite.joiner = authenticationService.getUserId();
+      inviteRepository.updateInvite(retrievedInvite);
       onInviteStatusChangedListener.call(InviteStatus.inviteSent);
-      _subscription = GetIt.I
-          .get<IInviteRepository>()
-          .snapshots(retrievedInvite.creator)
-          .timeout(
+      _subscription =
+          inviteRepository.snapshots(retrievedInvite.creator).timeout(
         const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
           _subscription!.cancel();
@@ -61,12 +64,3 @@ class JoinInviteService {
     }
   }
 }
-
-//Currently, there is no good way to detect when to clean up this
-//service. So now once it is constructed, it will live forever.
-JoinInviteService? _joinInviteService;
-
-final joinInviteServiceProvider = Provider<JoinInviteService>((ref) {
-  _joinInviteService ??= JoinInviteService(ref);
-  return _joinInviteService!;
-});

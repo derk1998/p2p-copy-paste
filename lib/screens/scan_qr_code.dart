@@ -1,24 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
 
-class ScanQRCodeScreen extends ConsumerWidget {
-  const ScanQRCodeScreen({super.key});
+class ScanQRCodeScreen extends StatefulWidget {
+  const ScanQRCodeScreen({super.key, required this.viewModel});
+
+  final ScanQrCodeScreenViewModel viewModel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelProvider =
-        joinWithQrCodeScreenViewModelProvider(Navigator.of(context));
-    final viewModel = ref.watch(viewModelProvider.notifier);
+  State<ScanQRCodeScreen> createState() => _ScanQRCodeScreenState();
+}
 
+class _ScanQRCodeScreenState extends State<ScanQRCodeScreen> {
+  QRViewController? qrViewController;
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+
+  @override
+  void initState() {
+    widget.viewModel.init();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    qrViewController?.dispose();
+    widget.viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(viewModel.title),
+          title: Text(widget.viewModel.title),
         ),
         body: QRView(
-          key: viewModel.qrKey,
-          onQRViewCreated: viewModel.onCreated,
+          key: qrKey,
+          onQRViewCreated: (controller) {
+            qrViewController = controller;
+            qrViewController?.scannedDataStream.listen((scanData) {
+              if (scanData.code != null) {
+                widget.viewModel.onQrCodeScanned(scanData.code!);
+              }
+            });
+          },
           overlay: QrScannerOverlayShape(
             borderColor: Colors.red,
             borderRadius: 10,

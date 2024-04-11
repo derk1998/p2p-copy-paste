@@ -1,45 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/widgets/button.dart';
 
-class JoinConnectionScreen extends ConsumerWidget {
-  const JoinConnectionScreen({super.key});
+class JoinConnectionScreen extends StatefulWidget {
+  const JoinConnectionScreen({super.key, required this.viewModel});
+
+  final JoinConnectionScreenViewModel viewModel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelProvider =
-        joinConnectionScreenViewModelProvider(Navigator.of(context));
-    final AsyncValue<String> state = ref.watch(viewModelProvider);
-    final viewModel = ref.read(viewModelProvider.notifier);
+  State<JoinConnectionScreen> createState() => _JoinConnectionScreenState();
+}
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(viewModel.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: viewModel.codeController,
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              Button(viewModel: viewModel.connectButtonViewModel),
-              const SizedBox(
-                height: 16,
-              ),
-              state.isLoading
-                  ? const CircularProgressIndicator()
-                  : Text(state.value == null ? 'no data' : state.value!)
-            ],
+class _JoinConnectionScreenState extends State<JoinConnectionScreen> {
+  final codeController = TextEditingController();
+
+  @override
+  void initState() {
+    widget.viewModel.init();
+    codeController.addListener(() {
+      widget.viewModel.code = codeController.text;
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    codeController.dispose();
+    widget.viewModel.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<JoinConnectionScreenState>(
+      stream: widget.viewModel.state,
+      builder: (context, snapshot) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.viewModel.title),
           ),
-        ),
-      ),
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: codeController,
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Button(viewModel: widget.viewModel.connectButtonViewModel),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  !snapshot.hasData || snapshot.data!.loading
+                      ? const CircularProgressIndicator()
+                      : Text(snapshot.data!.status)
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

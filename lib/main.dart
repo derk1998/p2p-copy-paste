@@ -10,6 +10,8 @@ import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 import 'package:p2p_copy_paste/services/firebase_storage.dart';
+import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/services/join_invite.dart';
 import 'package:p2p_copy_paste/services/storage.dart';
 import 'package:get_it/get_it.dart';
 
@@ -23,6 +25,9 @@ void main() async {
   getIt.registerLazySingleton<IInviteRepository>(
       () => FirestoreInviteRepository());
 
+  getIt.registerLazySingleton<IConnectionInfoRepository>(
+      () => FirestoreConnectionInfoRepository());
+
   getIt.registerSingleton<IStorageService>(FirebaseStorageService());
   getIt.registerSingleton<IAuthenticationService>(
       FirebaseAuthenticationService());
@@ -31,6 +36,12 @@ void main() async {
   getIt.registerLazySingleton<ICreateConnectionService>(
       () => CreateConnectionService(FirestoreConnectionInfoRepository()));
   getIt.registerLazySingleton<IClipboardService>(() => ClipboardService());
+  getIt.registerLazySingleton<IJoinConnectionService>(() =>
+      JoinConnectionService(
+          connectionInfoRepository: getIt.get<IConnectionInfoRepository>()));
+  getIt.registerLazySingleton<IJoinInviteService>(() => JoinInviteService(
+      authenticationService: getIt.get<IAuthenticationService>(),
+      inviteRepository: getIt.get<IInviteRepository>()));
 
   await getIt.get<IStorageService>().initialize();
 
