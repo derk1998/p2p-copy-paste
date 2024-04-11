@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:p2p_copy_paste/firebase_options.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
@@ -9,10 +11,8 @@ import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
-import 'package:p2p_copy_paste/services/firebase_storage.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
 import 'package:p2p_copy_paste/services/join_invite.dart';
-import 'package:p2p_copy_paste/services/storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/view_models/home.dart';
 import 'package:p2p_copy_paste/view_models/login.dart';
@@ -23,31 +23,29 @@ final getIt = GetIt.instance;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   getIt.registerSingleton<INavigator>(NavigationManager());
 
-  getIt.registerLazySingleton<IInviteRepository>(
-      () => FirestoreInviteRepository());
+  final inviteRepository = FirestoreInviteRepository();
+  final connectionInfoRepository = FirestoreConnectionInfoRepository();
 
-  getIt.registerLazySingleton<IConnectionInfoRepository>(
-      () => FirestoreConnectionInfoRepository());
-
-  getIt.registerSingleton<IStorageService>(FirebaseStorageService());
   getIt.registerSingleton<IAuthenticationService>(
       FirebaseAuthenticationService());
   getIt
       .registerLazySingleton<ICreateInviteService>(() => CreateInviteService());
   getIt.registerLazySingleton<ICreateConnectionService>(
-      () => CreateConnectionService(FirestoreConnectionInfoRepository()));
+      () => CreateConnectionService(connectionInfoRepository));
   getIt.registerLazySingleton<IClipboardService>(() => ClipboardService());
   getIt.registerLazySingleton<IJoinConnectionService>(() =>
       JoinConnectionService(
-          connectionInfoRepository: getIt.get<IConnectionInfoRepository>()));
+          connectionInfoRepository: connectionInfoRepository));
   getIt.registerLazySingleton<IJoinInviteService>(() => JoinInviteService(
       authenticationService: getIt.get<IAuthenticationService>(),
-      inviteRepository: getIt.get<IInviteRepository>()));
+      inviteRepository: inviteRepository));
   getIt.registerLazySingleton<IFileService>(() => FileService());
-
-  await getIt.get<IStorageService>().initialize();
 
   runApp(P2PCopyPaste(serviceLocator: getIt));
 }
