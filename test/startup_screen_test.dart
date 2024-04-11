@@ -1,107 +1,243 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:p2p_copy_paste/main.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
+import 'package:p2p_copy_paste/screens/create_invite.dart';
+import 'package:p2p_copy_paste/screens/join_connection.dart';
+import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/services/storage.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
+import 'package:p2p_copy_paste/services/create_connection.dart';
+import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/services/file.dart';
+import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/services/join_invite.dart';
+import 'package:p2p_copy_paste/view_models/home.dart';
+import 'package:p2p_copy_paste/view_models/login.dart';
+import 'package:p2p_copy_paste/view_models/startup.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 
 import 'startup_screen_test.mocks.dart';
 
-@GenerateMocks([IStorageService, IAuthenticationService])
+@GenerateMocks([
+  INavigator,
+  IAuthenticationService,
+  IFileService,
+  IClipboardService,
+  ICreateConnectionService,
+  ICreateInviteService,
+  IJoinConnectionService,
+  IJoinInviteService
+])
 void main() {
+  late StartupScreenViewModel viewModel;
+  final mockNavigator = MockINavigator();
   late MockIAuthenticationService mockAuthenticationService;
+  late MockIFileService mockFileService;
 
-  mockAuthenticationService = MockIAuthenticationService();
+  GetIt.I.registerSingleton<INavigator>(mockNavigator);
+  GetIt.I.registerSingleton<IClipboardService>(MockIClipboardService());
+  GetIt.I.registerSingleton<ICreateInviteService>(MockICreateInviteService());
+  GetIt.I.registerSingleton<ICreateConnectionService>(
+      MockICreateConnectionService());
+  GetIt.I
+      .registerSingleton<IJoinConnectionService>(MockIJoinConnectionService());
+  GetIt.I.registerSingleton<IJoinInviteService>(MockIJoinInviteService());
 
-  GetIt.instance.registerSingleton<IStorageService>(MockIStorageService());
-  getIt.registerSingleton<IAuthenticationService>(mockAuthenticationService);
+  setUp(() {
+    mockAuthenticationService = MockIAuthenticationService();
+    mockFileService = MockIFileService();
 
-  testWidgets('Verify if "Get started" is displayed when user is logged out',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(const P2PCopyPaste());
+    viewModel = StartupScreenViewModel(
+        authenticationService: mockAuthenticationService,
+        homeScreenViewModel: HomeScreenViewModel(GetIt.I),
+        loginScreenViewModel: LoginScreenViewModel(
+            authenticationService: mockAuthenticationService,
+            fileService: mockFileService,
+            navigator: mockNavigator));
 
-    verify(mockAuthenticationService.setOnLoginStateChangedListener(captureAny))
-        .captured[0]
-        .call(LoginState.loggedOut);
-
-    await tester.pump();
-
-    expect(find.text('Get started'), findsOneWidget);
+    viewModel.init();
   });
 
-  testWidgets(
-      'Verify if "Create an invite" is displayed when user is logged in',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(const P2PCopyPaste());
+  group('Startup screen', () {
+    test('Verify initial state is loading and logged out', () async {
+      final state = await viewModel.state.first;
 
-    verify(mockAuthenticationService.setOnLoginStateChangedListener(captureAny))
-        .captured[0]
-        .call(LoginState.loggedIn);
+      expect(state.loading, isTrue);
+      expect(state.loginState, LoginState.loggedOut);
+    });
 
-    await tester.pump();
+    test('Verify if login state from auth service is propagated to view',
+        () async {
+      final listener = verify(mockAuthenticationService
+              .setOnLoginStateChangedListener(captureAny))
+          .captured[0];
 
-    expect(find.text('Create an invite'), findsOneWidget);
+      listener(LoginState.loggedIn);
+      var state = await viewModel.state.first;
+      expect(state.loginState, LoginState.loggedIn);
+
+      listener(LoginState.loggedOut);
+      state = await viewModel.state.first;
+      expect(state.loginState, LoginState.loggedOut);
+
+      listener(LoginState.loggingIn);
+      state = await viewModel.state.first;
+      expect(state.loginState, LoginState.loggingIn);
+    });
+
+    test('Verify if screen is loading when logging in', () async {
+      final listener = verify(mockAuthenticationService
+              .setOnLoginStateChangedListener(captureAny))
+          .captured[0];
+
+      listener(LoginState.loggingIn);
+      final state = await viewModel.state.first;
+      expect(state.loading, true);
+    });
+
+    test(
+        'Verify if screen is not loading when logged out after reply from auth service',
+        () async {
+      final listener = verify(mockAuthenticationService
+              .setOnLoginStateChangedListener(captureAny))
+          .captured[0];
+
+      listener(LoginState.loggedOut);
+      final state = await viewModel.state.first;
+      expect(state.loading, false);
+    });
   });
 
-  testWidgets(
-      'Verify if Privacy policy is displayed when user taps "Get started"',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(const P2PCopyPaste());
+  group('Login screen', () {
+    test(
+        'Verify if privacy policy dialog is shown when get started button is pressed',
+        () async {
+      when(mockFileService.loadFile(any))
+          .thenAnswer((realInvocation) => Future(() => 'file'));
+      viewModel.loginScreenViewModel.loginButtonViewModel.onPressed();
 
-    verify(mockAuthenticationService.setOnLoginStateChangedListener(captureAny))
-        .captured[0]
-        .call(LoginState.loggedOut);
+      await untilCalled(mockNavigator.pushDialog(any));
 
-    await tester.pump();
+      expect(verify(mockNavigator.pushDialog(captureAny)).captured[0],
+          isA<CancelConfirmDialog>());
+    });
 
-    await tester.tap(find.text('Get started'));
-    await tester.pump();
+    test(
+        'Verify if privacy policy is loaded when get started button is pressed',
+        () async {
+      when(mockFileService.loadFile(any))
+          .thenAnswer((realInvocation) => Future(() => 'file'));
+      viewModel.loginScreenViewModel.loginButtonViewModel.onPressed();
 
-    expect(find.byType(CancelConfirmDialog), findsOneWidget);
-  });
+      await untilCalled(
+          mockFileService.loadFile('assets/text/privacy-policy.md'));
+    });
 
-  testWidgets('Verify if Privacy policy is dismissed when user disagrees',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(const P2PCopyPaste());
+    test(
+        'Verify if privacy policy dialog is closed when cancel button is pressed',
+        () async {
+      when(mockFileService.loadFile(any))
+          .thenAnswer((realInvocation) => Future(() => 'file'));
+      viewModel.loginScreenViewModel.loginButtonViewModel.onPressed();
 
-    verify(mockAuthenticationService.setOnLoginStateChangedListener(captureAny))
-        .captured[0]
-        .call(LoginState.loggedOut);
+      await untilCalled(mockNavigator.pushDialog(any));
 
-    await tester.pump();
+      final CancelConfirmDialog privacyPolicyDialog =
+          verify(mockNavigator.pushDialog(captureAny)).captured[0];
 
-    await tester.tap(find.text('Get started'));
-    await tester.pump();
+      privacyPolicyDialog.viewModel.cancelButtonViewModel.onPressed();
 
-    expect(find.byType(CancelConfirmDialog), findsOneWidget);
+      verify(mockNavigator.popScreen()).called(1);
+    });
 
-    await tester.tap(find.text('Disagree'));
-    await tester.pump();
+    test(
+        'Verify if privacy policy dialog is closed when confirm button is pressed',
+        () async {
+      when(mockFileService.loadFile(any))
+          .thenAnswer((realInvocation) => Future(() => 'file'));
+      viewModel.loginScreenViewModel.loginButtonViewModel.onPressed();
 
-    expect(find.byType(CancelConfirmDialog), findsNothing);
-  });
+      await untilCalled(mockNavigator.pushDialog(any));
 
-  testWidgets('Verify sign in when user agrees with privacy policy',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(const P2PCopyPaste());
+      final CancelConfirmDialog privacyPolicyDialog =
+          verify(mockNavigator.pushDialog(captureAny)).captured[0];
 
-    verify(mockAuthenticationService.setOnLoginStateChangedListener(captureAny))
-        .captured[0]
-        .call(LoginState.loggedOut);
+      privacyPolicyDialog.viewModel.confirmButtonViewModel.onPressed();
 
-    await tester.pump();
+      verify(mockNavigator.popScreen()).called(1);
+    });
 
-    await tester.tap(find.text('Get started'));
-    await tester.pump();
+    test('Verify if signing in when privacy policy confirm button is pressed',
+        () async* {
+      when(mockFileService.loadFile(any))
+          .thenAnswer((realInvocation) => Future(() => 'file'));
 
-    expect(find.byType(CancelConfirmDialog), findsOneWidget);
+      viewModel.loginScreenViewModel.loginButtonViewModel.onPressed();
 
-    await tester.tap(find.text('Agree'));
-    await tester.pump();
+      await untilCalled(mockNavigator.pushDialog(any));
 
-    verify(mockAuthenticationService.signInAnonymously()).called(1);
+      final CancelConfirmDialog privacyPolicyDialog =
+          verify(mockNavigator.pushDialog(captureAny)).captured[0];
+
+      privacyPolicyDialog.viewModel.confirmButtonViewModel.onPressed();
+      verify(mockAuthenticationService.signInAnonymously()).called(1);
+    });
+
+    test(
+        'Verify if not signing in when privacy policy cancel button is pressed',
+        () async {
+      when(mockFileService.loadFile(any))
+          .thenAnswer((realInvocation) => Future(() => 'file'));
+      viewModel.loginScreenViewModel.loginButtonViewModel.onPressed();
+
+      await untilCalled(mockNavigator.pushDialog(any));
+
+      final CancelConfirmDialog privacyPolicyDialog =
+          verify(mockNavigator.pushDialog(captureAny)).captured[0];
+
+      privacyPolicyDialog.viewModel.cancelButtonViewModel.onPressed();
+
+      verifyNever(mockAuthenticationService.signInAnonymously());
+    });
+
+    group('Home screen', () {
+      test(
+          'Verify if create invite screen is displayed when create invite button is pressed',
+          () async {
+        viewModel.homeScreenViewModel.startNewConnectionButtonViewModel
+            .onPressed();
+
+        expect(verify(mockNavigator.pushScreen(captureAny)).captured[0],
+            isA<CreateInviteScreen>());
+      });
+
+      if (kDebugMode) {
+        test(
+            'Verify if scan qr code screen is displayed when scan qr code button is pressed',
+            () async {
+          viewModel.homeScreenViewModel.joinWithQrCodeButtonViewModel!
+              .onPressed();
+
+          expect(verify(mockNavigator.pushScreen(captureAny)).captured[0],
+              isA<ScanQRCodeScreen>());
+        });
+      }
+
+      test(
+          'Verify if join connection screen is displayed when join connection button is pressed',
+          () async {
+        viewModel.homeScreenViewModel.joinConnectionButtonViewModel!
+            .onPressed();
+
+        expect(verify(mockNavigator.pushScreen(captureAny)).captured[0],
+            isA<JoinConnectionScreen>());
+      });
+    });
   });
 }

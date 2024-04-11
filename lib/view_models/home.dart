@@ -2,7 +2,6 @@ import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/create_invite.dart';
@@ -19,7 +18,14 @@ import 'package:p2p_copy_paste/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
 
 class HomeScreenViewModel {
-  HomeScreenViewModel() {
+  HomeScreenViewModel(GetIt serviceLocator)
+      : navigator = serviceLocator.get<INavigator>(),
+        clipboardService = serviceLocator.get<IClipboardService>(),
+        createInviteService = serviceLocator.get<ICreateInviteService>(),
+        createConnectionService =
+            serviceLocator.get<ICreateConnectionService>(),
+        joinConnectionService = serviceLocator.get<IJoinConnectionService>(),
+        joinInviteService = serviceLocator.get<IJoinInviteService>() {
     startNewConnectionButtonViewModel = ButtonViewModel(
         title: 'Create an invite', onPressed: _onCreateInviteButtonClicked);
 
@@ -37,6 +43,13 @@ class HomeScreenViewModel {
     }
   }
 
+  final INavigator navigator;
+  final IClipboardService clipboardService;
+  final ICreateInviteService createInviteService;
+  final ICreateConnectionService createConnectionService;
+  final IJoinConnectionService joinConnectionService;
+  final IJoinInviteService joinInviteService;
+
   late ButtonViewModel startNewConnectionButtonViewModel;
   ButtonViewModel? joinConnectionButtonViewModel;
   IconButtonViewModel? joinWithQrCodeButtonViewModel;
@@ -44,43 +57,39 @@ class HomeScreenViewModel {
       'Start copying and pasting between devices. Download the app or go to https://cp.xdatwork.com on your other device.';
 
   void _onCreateInviteButtonClicked() async {
-    GetIt.I.get<INavigator>().pushScreen(CreateInviteScreen(
-          viewModel: CreateInviteScreenViewModel(
-            navigator: GetIt.I.get<INavigator>(),
-            createInviteService: GetIt.I.get<ICreateInviteService>(),
-            createConnectionService: GetIt.I.get<ICreateConnectionService>(),
-            clipboardService: GetIt.I.get<IClipboardService>(),
-          ),
-        ));
+    navigator.pushScreen(CreateInviteScreen(
+      viewModel: CreateInviteScreenViewModel(
+        navigator: navigator,
+        createInviteService: createInviteService,
+        createConnectionService: createConnectionService,
+        clipboardService: clipboardService,
+      ),
+    ));
   }
 
   void _onJoinWithQrCodeButtonClicked() {
-    GetIt.I.get<INavigator>().pushScreen(
-          ScanQRCodeScreen(
-            viewModel: ScanQrCodeScreenViewModel(
-              navigator: GetIt.I.get<INavigator>(),
-              clipboardService: GetIt.I.get<IClipboardService>(),
-              joinConnectionService: GetIt.I.get<IJoinConnectionService>(),
-              joinInviteService: GetIt.I.get<IJoinInviteService>(),
-            ),
-          ),
-        );
+    navigator.pushScreen(
+      ScanQRCodeScreen(
+        viewModel: ScanQrCodeScreenViewModel(
+          navigator: navigator,
+          clipboardService: clipboardService,
+          joinConnectionService: joinConnectionService,
+          joinInviteService: joinInviteService,
+        ),
+      ),
+    );
   }
 
   void _onJoinConnectionButtonClicked() {
-    GetIt.I.get<INavigator>().pushScreen(
-          JoinConnectionScreen(
-            viewModel: JoinConnectionScreenViewModel(
-              clipboardService: GetIt.I.get<IClipboardService>(),
-              joinConnectionService: GetIt.I.get<IJoinConnectionService>(),
-              joinInviteService: GetIt.I.get<IJoinInviteService>(),
-              navigator: GetIt.I.get<INavigator>(),
-            ),
-          ),
-        );
+    navigator.pushScreen(
+      JoinConnectionScreen(
+        viewModel: JoinConnectionScreenViewModel(
+          clipboardService: clipboardService,
+          joinConnectionService: joinConnectionService,
+          joinInviteService: joinInviteService,
+          navigator: navigator,
+        ),
+      ),
+    );
   }
 }
-
-final homeScreenViewModelProvider = Provider<HomeScreenViewModel>((ref) {
-  return HomeScreenViewModel();
-});
