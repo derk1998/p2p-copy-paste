@@ -1,36 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/view_models/connect_dialog.dart';
 import 'package:p2p_copy_paste/widgets/pure_icon_button.dart';
 
-class ConnectDialog extends StatefulWidget {
-  const ConnectDialog({super.key, required this.viewModel});
-
-  final ConnectDialogViewModel viewModel;
+class ConnectDialog extends ScreenView<ConnectDialogViewModel> {
+  const ConnectDialog({super.key, required super.viewModel});
 
   @override
   State<ConnectDialog> createState() => _ConnectDialogState();
 }
 
-class _ConnectDialogState extends State<ConnectDialog> {
-  @override
-  void initState() {
-    widget.viewModel.init();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    widget.viewModel.dispose();
-    super.dispose();
-  }
-
+class _ConnectDialogState
+    extends ScreenViewState<ConnectDialog, ConnectDialogViewModel> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<ConnectDialogState>(
-      stream: widget.viewModel.state,
+      stream: viewModel.state,
       builder: (context, snapshot) {
         return Scaffold(
-          appBar: AppBar(title: Text(widget.viewModel.title)),
+          appBar: AppBar(title: Text(viewModel.title)),
           body: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Center(

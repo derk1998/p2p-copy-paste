@@ -1,30 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
 
-class ScanQRCodeScreen extends StatefulWidget {
-  const ScanQRCodeScreen({super.key, required this.viewModel});
-
-  final ScanQrCodeScreenViewModel viewModel;
+class ScanQRCodeScreen extends ScreenView<ScanQrCodeScreenViewModel> {
+  const ScanQRCodeScreen({super.key, required super.viewModel});
 
   @override
   State<ScanQRCodeScreen> createState() => _ScanQRCodeScreenState();
 }
 
-class _ScanQRCodeScreenState extends State<ScanQRCodeScreen> {
+class _ScanQRCodeScreenState
+    extends ScreenViewState<ScanQRCodeScreen, ScanQrCodeScreenViewModel> {
   QRViewController? qrViewController;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   @override
-  void initState() {
-    widget.viewModel.init();
-    super.initState();
-  }
-
-  @override
   void dispose() {
     qrViewController?.dispose();
-    widget.viewModel.dispose();
     super.dispose();
   }
 
@@ -32,7 +25,7 @@ class _ScanQRCodeScreenState extends State<ScanQRCodeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.viewModel.title),
+          title: Text(viewModel.title),
         ),
         body: QRView(
           key: qrKey,
@@ -40,7 +33,7 @@ class _ScanQRCodeScreenState extends State<ScanQRCodeScreen> {
             qrViewController = controller;
             qrViewController?.scannedDataStream.listen((scanData) {
               if (scanData.code != null) {
-                widget.viewModel.onQrCodeScanned(scanData.code!);
+                viewModel.onQrCodeScanned(scanData.code!);
               }
             });
           },

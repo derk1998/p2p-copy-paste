@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
@@ -58,6 +59,7 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   }
 
   void _onDataReceived(String data) {
+    log('data is received! -> $data');
     _updateState(data);
   }
 
@@ -68,6 +70,7 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   void _onPasteButtonPressed() async {
     final data = await clipboardService.get();
     if (data != null) {
+      log('data is $data');
       _updateState(data);
       dataTransceiver.sendData(data);
     }
