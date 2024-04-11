@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/ice_server_configuration.dart';
@@ -21,9 +20,12 @@ abstract class ICreateConnectionService
 
 class CreateConnectionService extends AbstractConnectionService
     implements ICreateConnectionService {
-  CreateConnectionService(this.repository);
+  CreateConnectionService(
+      {required this.connectionInfoRepository,
+      required this.authenticationService});
 
-  final IConnectionInfoRepository repository;
+  final IConnectionInfoRepository connectionInfoRepository;
+  final IAuthenticationService authenticationService;
   void Function(String id)? _onConnectionIdPublished;
   ConnectionInfo? connectionInfo;
   RTCPeerConnection? peerConnection;
@@ -49,8 +51,7 @@ class CreateConnectionService extends AbstractConnectionService
 
   Future<RTCSessionDescription> _configureLocal() async {
     peerConnection = await createPeerConnection(iceServerConfiguration);
-    connectionInfo =
-        ConnectionInfo(id: GetIt.I.get<IAuthenticationService>().getUserId());
+    connectionInfo = ConnectionInfo(id: authenticationService.getUserId());
 
     //Works on android
     //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
@@ -74,7 +75,7 @@ class CreateConnectionService extends AbstractConnectionService
     peerConnection!.onIceCandidate = (candidate) async {
       await _roomCreation!.future;
       connectionInfo!.addIceCandidateA(candidate);
-      repository.updateRoom(connectionInfo!);
+      connectionInfoRepository.updateRoom(connectionInfo!);
     };
 
     //Responsible for gathering ice candidates
@@ -84,7 +85,7 @@ class CreateConnectionService extends AbstractConnectionService
 
   Future<void> _configureRemote(RTCSessionDescription offer) async {
     connectionInfo!.setOffer(offer);
-    connectionInfo = await repository.addRoom(connectionInfo!);
+    connectionInfo = await connectionInfoRepository.addRoom(connectionInfo!);
     _roomCreation!.complete();
 
     _handleSignalingAnswers();
@@ -95,8 +96,9 @@ class CreateConnectionService extends AbstractConnectionService
   }
 
   void _handleSignalingAnswers() {
-    _subscription =
-        repository.roomSnapshots(connectionInfo!.id!).listen((connectionInfo) {
+    _subscription = connectionInfoRepository
+        .roomSnapshots(connectionInfo!.id!)
+        .listen((connectionInfo) {
       if (connectionInfo!.answer != null &&
           peerConnection!.signalingState !=
               RTCSignalingState.RTCSignalingStateStable &&

@@ -34,10 +34,13 @@ void main() async {
 
   getIt.registerSingleton<IAuthenticationService>(
       FirebaseAuthenticationService());
-  getIt
-      .registerLazySingleton<ICreateInviteService>(() => CreateInviteService());
-  getIt.registerLazySingleton<ICreateConnectionService>(
-      () => CreateConnectionService(connectionInfoRepository));
+  getIt.registerLazySingleton<ICreateInviteService>(() => CreateInviteService(
+      authenticationService: getIt<IAuthenticationService>(),
+      inviteRepository: inviteRepository));
+  getIt.registerLazySingleton<ICreateConnectionService>(() =>
+      CreateConnectionService(
+          connectionInfoRepository: connectionInfoRepository,
+          authenticationService: getIt.get<IAuthenticationService>()));
   getIt.registerLazySingleton<IClipboardService>(() => ClipboardService());
   getIt.registerLazySingleton<IJoinConnectionService>(() =>
       JoinConnectionService(

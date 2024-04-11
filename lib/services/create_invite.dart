@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
@@ -32,6 +31,12 @@ class CreateInviteService extends ICreateInviteService {
   Invite? _invite;
   var _done = false;
 
+  CreateInviteService(
+      {required this.authenticationService, required this.inviteRepository});
+
+  final IAuthenticationService authenticationService;
+  final IInviteRepository inviteRepository;
+
   @override
   Future<void> create(
       void Function(CreateInviteUpdate update) onCreateInviteUpdate,
@@ -40,13 +45,11 @@ class CreateInviteService extends ICreateInviteService {
     _done = false;
     lifeTime.target?.setOnExpiringListener(_cancelSubscription);
 
-    final ownUid = GetIt.I.get<IAuthenticationService>().getUserId();
-    await GetIt.I.get<IInviteRepository>().addInvite(Invite(ownUid));
+    final ownUid = authenticationService.getUserId();
+    await inviteRepository.addInvite(Invite(ownUid));
 
-    _inviteSubscription = GetIt.I
-        .get<IInviteRepository>()
-        .snapshots(ownUid)
-        .listen(_onInviteUpdated);
+    _inviteSubscription =
+        inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
 
     _createSubscription = Stream<CreateInviteUpdate>.periodic(
       const Duration(seconds: 1),
@@ -60,7 +63,7 @@ class CreateInviteService extends ICreateInviteService {
   Future<bool> accept(Invite invite) async {
     invite.accept();
     try {
-      await GetIt.I.get<IInviteRepository>().addInvite(invite);
+      await inviteRepository.addInvite(invite);
     } catch (e) {
       return false;
     }
@@ -72,7 +75,7 @@ class CreateInviteService extends ICreateInviteService {
   Future<bool> decline(Invite invite) async {
     invite.decline();
     try {
-      await GetIt.I.get<IInviteRepository>().addInvite(invite);
+      await inviteRepository.addInvite(invite);
     } catch (e) {
       return false;
     }
