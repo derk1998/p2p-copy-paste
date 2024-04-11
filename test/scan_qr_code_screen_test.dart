@@ -69,8 +69,8 @@ void main() {
 
     connectDialog.viewModel.init();
 
-    verify(mockJoinInviteService.join(any, captureAny))
-        .captured[0](InviteStatus.inviteDeclined);
+    verify(mockJoinInviteService.join(any, captureAny)).captured[0](
+        invite, InviteStatus.inviteDeclined);
 
     final state = await connectDialog.viewModel.state.first;
     expect(state.refreshButtonViewModel, isNotNull);

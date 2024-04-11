@@ -187,7 +187,10 @@ class MockIJoinInviteService extends _i2.Mock
   @override
   _i4.Future<void> join(
     _i7.Invite? invite,
-    void Function(_i6.InviteStatus)? onInviteStatusChangedListener,
+    void Function(
+      _i7.Invite,
+      _i6.InviteStatus,
+    )? onInviteStatusChangedListener,
   ) =>
       (super.noSuchMethod(
         Invocation.method(

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/connect_dialog.dart';
@@ -80,8 +81,8 @@ void main() {
 
     connectDialog.viewModel.init();
 
-    verify(mockJoinInviteService.join(any, captureAny))
-        .captured[0](InviteStatus.inviteDeclined);
+    verify(mockJoinInviteService.join(any, captureAny)).captured[0](
+        Invite(viewModel.code), InviteStatus.inviteDeclined);
 
     final state = await connectDialog.viewModel.state.first;
     expect(state.refreshButtonViewModel, isNotNull);

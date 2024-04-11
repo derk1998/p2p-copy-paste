@@ -57,7 +57,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(InviteStatus.inviteDeclined);
+    listener(invite, InviteStatus.inviteDeclined);
 
     final state = await viewModel.state.first;
 
@@ -70,7 +70,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(InviteStatus.inviteTimeout);
+    listener(invite, InviteStatus.inviteTimeout);
 
     final state = await viewModel.state.first;
 
@@ -83,7 +83,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(InviteStatus.inviteError);
+    listener(invite, InviteStatus.inviteError);
 
     final state = await viewModel.state.first;
 
@@ -96,7 +96,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(InviteStatus.inviteSent);
+    listener(invite, InviteStatus.inviteSent);
 
     final state = await viewModel.state.first;
 
@@ -109,7 +109,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(InviteStatus.inviteAccepted);
+    listener(invite, InviteStatus.inviteAccepted);
 
     await viewModel.state.first;
 
@@ -120,7 +120,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(InviteStatus.inviteAccepted);
+    listener(invite, InviteStatus.inviteAccepted);
 
     final state = await viewModel.state.first;
 
@@ -136,7 +136,7 @@ void main() {
     when(mockJoinConnectionService.joinConnection(invite.creator))
         .thenThrow(Error());
 
-    listener(InviteStatus.inviteAccepted);
+    listener(invite, InviteStatus.inviteAccepted);
 
     await viewModel.state.first;
 
@@ -160,7 +160,7 @@ void main() {
     when(mockJoinConnectionService.joinConnection(invite.creator))
         .thenThrow(Error());
 
-    listener(InviteStatus.inviteAccepted);
+    listener(invite, InviteStatus.inviteAccepted);
 
     await viewModel.state.first;
 
