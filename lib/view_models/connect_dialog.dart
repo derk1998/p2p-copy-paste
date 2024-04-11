@@ -115,11 +115,6 @@ class ConnectDialogViewModel extends StatefulScreenViewModel {
   }
 
   Future<void> join(Invite invite) async {
-    joinInviteService.join(
-      invite,
-      (inviteStatus) {
-        _onInviteStatusChanged(invite, inviteStatus);
-      },
-    );
+    joinInviteService.join(invite, _onInviteStatusChanged);
   }
 }

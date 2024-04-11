@@ -14,8 +14,10 @@ enum InviteStatus {
 }
 
 abstract class IJoinInviteService {
-  Future<void> join(Invite invite,
-      void Function(InviteStatus inviteStatus) onInviteStatusChangedListener);
+  Future<void> join(
+      Invite invite,
+      void Function(Invite invite, InviteStatus inviteStatus)
+          onInviteStatusChangedListener);
 }
 
 class JoinInviteService implements IJoinInviteService {
@@ -29,7 +31,7 @@ class JoinInviteService implements IJoinInviteService {
   @override
   Future<void> join(
       Invite invite,
-      void Function(InviteStatus inviteStatus)
+      void Function(Invite invite, InviteStatus inviteStatus)
           onInviteStatusChangedListener) async {
     try {
       _subscription?.cancel();
@@ -39,28 +41,33 @@ class JoinInviteService implements IJoinInviteService {
 
       retrievedInvite.joiner = authenticationService.getUserId();
       inviteRepository.updateInvite(retrievedInvite);
-      onInviteStatusChangedListener.call(InviteStatus.inviteSent);
+      onInviteStatusChangedListener.call(
+          retrievedInvite, InviteStatus.inviteSent);
       _subscription =
           inviteRepository.snapshots(retrievedInvite.creator).timeout(
         const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
           _subscription!.cancel();
-          onInviteStatusChangedListener.call(InviteStatus.inviteTimeout);
+          onInviteStatusChangedListener.call(
+              retrievedInvite, InviteStatus.inviteTimeout);
         },
       ).listen((invite) {
         if (invite?.accepted != null) {
           _subscription!.cancel();
-          onInviteStatusChangedListener.call(invite!.accepted!
-              ? InviteStatus.inviteAccepted
-              : InviteStatus.inviteDeclined);
+          onInviteStatusChangedListener.call(
+              invite!,
+              invite.accepted!
+                  ? InviteStatus.inviteAccepted
+                  : InviteStatus.inviteDeclined);
         }
       }, onError: (e) {
         _subscription!.cancel();
-        onInviteStatusChangedListener.call(InviteStatus.inviteError);
+        onInviteStatusChangedListener.call(
+            retrievedInvite, InviteStatus.inviteError);
       });
     } catch (e) {
       _subscription?.cancel();
-      onInviteStatusChangedListener.call(InviteStatus.inviteError);
+      onInviteStatusChangedListener.call(invite, InviteStatus.inviteError);
     }
   }
 }
