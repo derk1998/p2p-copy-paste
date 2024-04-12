@@ -1,5 +1,7 @@
 # P2P Copy Paste
 
+[![Flutter](https://github.com/derk1998/p2p-copy-paste/actions/workflows/flutter.yml/badge.svg)](https://github.com/derk1998/p2p-copy-paste/actions/workflows/flutter.yml)
+
 I keep getting into situations where I need to transfer something, for instance a link, between devices. Either I gather enough patience to manually type it over or send a mail to myself. This should be easier and that's where this project comes in.
 
 ## Some notes about the implementation
