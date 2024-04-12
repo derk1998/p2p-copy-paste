@@ -18,16 +18,23 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-      - run: |
-            echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+
+      - name: Load secrets
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          UPLOAD_KEYSTORE_PASSPHRASE: ${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          UPLOAD_KEYSTORE_ALIAS: ${{ secrets.UPLOAD_KEYSTORE_ALIAS }}
+        run: |
+            echo $GOOGLE_SERVICES_JSON | base64 --decode > android/app/google-services.json
             echo "${{ secrets.FIREBASE_OPTIONS }}" > lib/firebase_options.dart
-            echo "${{ secrets.UPLOAD_KEYSTORE }}" > upload-keystore.asc
-            gpg -d --passphrase "${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}" --batch upload-keystore.asc > android/upload-keystore.jks
+            echo "${{ secrets.UPLOAD_KEYSTORE }}" > android/upload-keystore.asc
+            gpg -d --passphrase $UPLOAD_KEYSTORE_PASSPHRASE --batch android/upload-keystore.asc > android/upload-keystore.jks
             touch android/key.properties
-            echo "storePassword=${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}" >> android/key.properties
-            echo "keyPassword=${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}" >> android/key.properties
-            echo "keyAlias=${{ secrets.UPLOAD_KEYSTORE_ALIAS }}" >> android/key.properties
-            echo "storeFile=android/upload-keystore.jks" >> android/key.properties
+            echo "storePassword=$UPLOAD_KEYSTORE_PASSWORD" >> android/key.properties
+            echo "keyPassword=$UPLOAD_KEYSTORE_PASSWORD" >> android/key.properties
+            echo "keyAlias=$UPLOAD_KEYSTORE_ALIAS" >> android/key.properties
+            echo "storeFile=$PWD/android/upload-keystore.jks" >> android/key.properties
                 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
