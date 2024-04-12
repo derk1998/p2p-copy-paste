@@ -68,6 +68,14 @@ void main() {
     when(mockAuthenticationService.getUserId()).thenReturn('userid');
     when(mockInviteRepository.addInvite(any))
         .thenAnswer((realInvocation) => Future(() => invite));
+    final mockStream = MockStream<Invite?>();
+    final mockStreamSubscription = MockStreamSubscription<Invite?>();
+
+    when(mockInviteRepository.snapshots(any)).thenAnswer(
+      (realInvocation) => mockStream,
+    );
+
+    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
     createInviteService.create((update) {}, WeakReference(mockLifeTime));
 
