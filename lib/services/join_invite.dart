@@ -47,7 +47,7 @@ class JoinInviteService implements IJoinInviteService {
           inviteRepository.snapshots(retrievedInvite.creator).timeout(
         const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
-          _subscription!.cancel();
+          _subscription?.cancel();
           onInviteStatusChangedListener.call(
               retrievedInvite, InviteStatus.inviteTimeout);
         },
