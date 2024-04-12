@@ -45,3 +45,6 @@ app.*.map.json
 
 # Prevent firebase config file to be committed
 firebase_options.dart
+
+# Don't publish test reports
+reports

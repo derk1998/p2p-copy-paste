@@ -5,6 +5,11 @@
 
 name: Flutter
 
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+
 on:
   push:
     branches: [ "main" ]
@@ -12,7 +17,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,4 +48,11 @@ jobs:
       - run: flutter --version
       - run: flutter pub get
       - run: flutter test
-      - run: make build_android
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Tests            # Name of the check run which will be created
+          path: reports/test-results.json    # Path to test results
+          reporter: flutter-json        # Format of test results
