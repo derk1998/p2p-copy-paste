@@ -6,6 +6,10 @@ GITHUB_REPO = git@github.com:$(GITHUB_USER)/$(OUTPUT)
 BUILD_VERSION := $(shell grep 'version:' pubspec.yaml | awk '{print $$2}' | cut -d+ -f1)
 PROJECT_DIR = $(CURDIR)
 
+generate_mocks:
+	@echo "Generating mocks"
+	dart run build_runner build
+
 build_android:
 	@echo "Clean existing repository"
 	flutter clean
@@ -46,4 +50,4 @@ endif
 	@echo "✅ Finished deploy: $(GITHUB_REPO)"
 	@echo "🚀 Flutter web URL: https://$(GITHUB_USER).github.io/$(OUTPUT)/"
 
-.PHONY: deploy_web build_android
+.PHONY: deploy_web build_android generate_mocks

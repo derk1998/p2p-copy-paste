@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/view_models/home.dart';
 import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
-class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key, required this.viewModel});
+
+  final HomeScreenViewModel viewModel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel =
-        ref.read(homeScreenViewModelProvider(Navigator.of(context)));
-
+  Widget build(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),

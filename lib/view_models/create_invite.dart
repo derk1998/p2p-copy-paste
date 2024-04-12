@@ -1,65 +1,103 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/lifetime.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/invite_answered.dart';
 import 'package:p2p_copy_paste/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
+import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/invite_answered.dart';
 import 'package:p2p_copy_paste/view_models/invite_expired.dart';
+import 'package:p2p_copy_paste/view_models/screen.dart';
+import 'package:rxdart/rxdart.dart';
 
-class CreateInviteScreenData {
-  CreateInviteScreenData({this.data, this.seconds});
+class CreateInviteScreenState {
+  CreateInviteScreenState({this.data, this.seconds, this.loading = true});
 
   int? seconds;
   String? data;
+  bool loading;
+
+  CreateInviteScreenState copyWith({
+    int? seconds,
+    String? data,
+    required bool loading,
+  }) {
+    return CreateInviteScreenState(
+        seconds: seconds ?? this.seconds,
+        data: data ?? this.data,
+        loading: loading);
+  }
 }
 
-class CreateInviteScreenViewModel extends AutoDisposeFamilyAsyncNotifier<
-    CreateInviteScreenData, NavigatorState> with LifeTime {
+class CreateInviteScreenViewModel extends StatefulScreenViewModel
+    with LifeTime {
   final String title = 'Create an invite';
 
-  @override
-  FutureOr<CreateInviteScreenData> build(NavigatorState arg) {
-    ref.onDispose(() {
-      expire();
-    });
-    return _connect(arg);
+  CreateInviteScreenViewModel(
+      {required this.navigator,
+      required this.createInviteService,
+      required this.createConnectionService,
+      required this.clipboardService});
+
+  final INavigator navigator;
+  final ICreateInviteService createInviteService;
+  final ICreateConnectionService createConnectionService;
+  final IClipboardService clipboardService;
+  final _stateSubject = BehaviorSubject<CreateInviteScreenState>.seeded(
+      CreateInviteScreenState());
+
+  Stream<CreateInviteScreenState> get state => _stateSubject;
+
+  void _updateState(int? seconds, String? data) {
+    final state = _stateSubject.value;
+    _stateSubject.add(
+      state.copyWith(
+          seconds: seconds,
+          data: data,
+          loading: seconds == null && data == null),
+    );
   }
 
-  Future<CreateInviteScreenData> _connect(NavigatorState navigator) async {
-    state = const AsyncLoading();
-    final completer = Completer<CreateInviteScreenData>();
+  @override
+  void init() {
+    _connect();
+  }
 
-    ref.read(createInviteServiceProvider).create((update) {
+  @override
+  void dispose() {
+    _stateSubject.close();
+    expire();
+  }
+
+  Future<CreateInviteScreenState> _connect() async {
+    final completer = Completer<CreateInviteScreenState>();
+
+    createInviteService.create((update) {
       if (update.state == CreateInviteState.expired) {
-        navigator.pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => InviteExpiredScreen(
-                viewModel: InviteExpiredViewModel(navigator: navigator)),
-          ),
-        );
-        completer.complete(CreateInviteScreenData());
+        navigator.replaceScreen(InviteExpiredScreen(
+            viewModel: InviteExpiredViewModel(
+                navigator: navigator,
+                createInviteService: createInviteService,
+                createConnectionService: createConnectionService,
+                clipboardService: clipboardService)));
+        completer.complete(CreateInviteScreenState());
       } else if (update.state == CreateInviteState.receivedUid) {
-        navigator.pushReplacement(MaterialPageRoute(
-            builder: (context) => InviteAnsweredScreen(
-                viewModel: InviteAnsweredScreenViewModel(
-                    navigator: navigator, invite: update.invite!, ref: ref))));
-        completer.complete(CreateInviteScreenData());
+        navigator.replaceScreen(InviteAnsweredScreen(
+            viewModel: InviteAnsweredScreenViewModel(
+                navigator: navigator,
+                invite: update.invite!,
+                createInviteService: createInviteService,
+                createConnectionService: createConnectionService,
+                clipboardService: clipboardService)));
+        completer.complete(CreateInviteScreenState());
       }
 
-      state = AsyncData(CreateInviteScreenData(
-          seconds: update.seconds, data: update.invite?.toJson()));
+      _updateState(update.seconds, update.invite?.toJson());
     }, WeakReference(this));
 
     return completer.future;
   }
 }
-
-final createInviteScreenViewModelProvider =
-    AutoDisposeAsyncNotifierProviderFamily<CreateInviteScreenViewModel,
-        CreateInviteScreenData, NavigatorState>(() {
-  return CreateInviteScreenViewModel();
-});

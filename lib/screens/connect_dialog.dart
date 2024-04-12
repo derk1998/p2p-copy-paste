@@ -1,50 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/view_models/connect_dialog.dart';
 import 'package:p2p_copy_paste/widgets/pure_icon_button.dart';
 
-class ConnectDialog extends ConsumerWidget {
-  ConnectDialog(
-      {super.key,
-      required Invite invite,
-      required NavigatorState navigator,
-      required MaterialPageRoute Function() getJoinNewInvitePageRoute})
-      : _dependencies = ConnectDialogViewModelDependencies(
-            invite: invite,
-            navigator: navigator,
-            getJoinNewInvitePageRoute: getJoinNewInvitePageRoute);
-
-  final ConnectDialogViewModelDependencies _dependencies;
+class ConnectDialog extends ScreenView<ConnectDialogViewModel> {
+  const ConnectDialog({super.key, required super.viewModel});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelProvider = connectDialogViewModelProvider(_dependencies);
-    final AsyncValue<ConnectDialogViewModelData?> state =
-        ref.watch(viewModelProvider);
-    final viewModel = ref.read(viewModelProvider.notifier);
+  State<ConnectDialog> createState() => _ConnectDialogState();
+}
 
-    return Scaffold(
-      appBar: AppBar(title: Text(viewModel.title)),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: state.isLoading || state.value == null
-              ? const CircularProgressIndicator()
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(state.value!.description),
-                    const SizedBox(
-                      height: 16,
+class _ConnectDialogState
+    extends ScreenViewState<ConnectDialog, ConnectDialogViewModel> {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<ConnectDialogState>(
+      stream: viewModel.state,
+      builder: (context, snapshot) {
+        return Scaffold(
+          appBar: AppBar(title: Text(viewModel.title)),
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: !snapshot.hasData || snapshot.data!.loading
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(snapshot.data!.description),
+                        const SizedBox(
+                          height: 16,
+                        ),
+                        if (snapshot.data!.refreshButtonViewModel != null)
+                          PureIconButton(
+                              viewModel: snapshot.data!.refreshButtonViewModel!)
+                      ],
                     ),
-                    if (state.value!.refreshButtonViewModel != null)
-                      PureIconButton(
-                          viewModel: state.value!.refreshButtonViewModel!)
-                  ],
-                ),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

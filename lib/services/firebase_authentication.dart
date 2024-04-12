@@ -9,6 +9,7 @@ class FirebaseAuthenticationService extends IAuthenticationService {
 
   @override
   Future<void> signInAnonymously() async {
+    _onLoginStateChangedListener?.call(LoginState.loggingIn);
     await FirebaseAuth.instance.signInAnonymously();
   }
 

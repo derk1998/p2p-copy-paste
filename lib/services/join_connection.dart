@@ -1,31 +1,36 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/ice_server_configuration.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
+
+abstract class IJoinConnectionService
+    implements CloseConnectionUseCase, TransceiveDataUseCase {
+  Future<void> joinConnection(String connectionId);
+  void setOnConnectedListener(void Function() onConnectedListener);
+}
 
 class JoinConnectionService extends AbstractConnectionService
-    implements CloseConnectionUseCase {
-  JoinConnectionService(this.ref);
+    implements IJoinConnectionService {
+  JoinConnectionService({required this.connectionInfoRepository});
 
-  final Ref ref;
   ConnectionInfo? _connectionInfo;
   RTCPeerConnection? _peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
+  final IConnectionInfoRepository connectionInfoRepository;
 
+  @override
   Future<void> joinConnection(String connectionId) async {
     if (_subscription != null) {
       await _subscription!.cancel();
     }
 
     //signaling
-    _connectionInfo = await ref
-        .read(connectionInfoRepositoryProvider)
-        .getRoomById(connectionId);
+    _connectionInfo = await connectionInfoRepository.getRoomById(connectionId);
 
     //local config
     _peerConnection = await createPeerConnection(iceServerConfiguration);
@@ -62,13 +67,12 @@ class JoinConnectionService extends AbstractConnectionService
 
     _peerConnection!.onIceCandidate = (candidate) {
       _connectionInfo!.addIceCandidateB(candidate);
-      ref.read(connectionInfoRepositoryProvider).updateRoom(_connectionInfo!);
+      connectionInfoRepository.updateRoom(_connectionInfo!);
     };
 
     _peerConnection!.setRemoteDescription(_connectionInfo!.offer!);
 
-    _subscription = ref
-        .read(connectionInfoRepositoryProvider)
+    _subscription = connectionInfoRepository
         .roomSnapshots(_connectionInfo!.id!)
         .listen((snapshot) {
       if (_connectionInfo!.iceCandidatesA.isNotEmpty) {
@@ -82,10 +86,8 @@ class JoinConnectionService extends AbstractConnectionService
     await _peerConnection!.setLocalDescription(answer);
 
     //signaling
-    _connectionInfo = await ref
-        .read(connectionInfoRepositoryProvider)
-        .updateRoom(
-            ConnectionInfo.join(id: _connectionInfo!.id!, answer: answer));
+    _connectionInfo = await connectionInfoRepository.updateRoom(
+        ConnectionInfo.join(id: _connectionInfo!.id!, answer: answer));
   }
 
   //todo: move to base
@@ -101,13 +103,20 @@ class JoinConnectionService extends AbstractConnectionService
       void Function() onConnectionClosedListener) {
     setOnDisconnectedListener(onConnectionClosedListener);
   }
+
+  @override
+  void setOnConnectedListener(void Function() onConnectedListener) {
+    setOnConnectedListenerImpl(onConnectedListener);
+  }
+
+  @override
+  void sendData(String data) {
+    sendDataImpl(data);
+  }
+
+  @override
+  void setOnReceiveDataListener(
+      void Function(String data) onReceiveDataListener) {
+    setOnReceiveDataListenerImpl(onReceiveDataListener);
+  }
 }
-
-//Currently, there is no good way to detect when to clean up this
-//service. So now once it is constructed, it will live forever.
-JoinConnectionService? _connectionService;
-
-final joinConnectionServiceProvider = Provider<JoinConnectionService>((ref) {
-  _connectionService ??= JoinConnectionService(ref);
-  return _connectionService!;
-});

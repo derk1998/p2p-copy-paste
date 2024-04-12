@@ -38,13 +38,13 @@ dependencies:
   flutter_webrtc: ^0.9.48+hotfix.1
   firebase_core: ^2.27.0
   cloud_firestore: ^4.15.8
-  flutter_riverpod: ^2.5.1
   qr_flutter: ^4.1.0
   qr_code_scanner: ^1.0.1
   firebase_auth: ^4.17.9
   flutter_launcher_icons: ^0.13.1
   flutter_markdown: ^0.6.22+1
   get_it: ^7.6.8
+  rxdart: ^0.27.7
 
 dev_dependencies:
   flutter_test:

@@ -1,12 +1,19 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-class FirestoreInviteRepository {
+abstract class IInviteRepository {
+  Future<Invite> addInvite(Invite invite);
+  Future<Invite> getInvite(String creator);
+  Future<void> updateInvite(Invite invite);
+  Stream<Invite?> snapshots(String creator);
+}
+
+class FirestoreInviteRepository extends IInviteRepository {
   final _collection = FirebaseFirestore.instance.collection('invites');
 
+  @override
   Future<Invite> addInvite(Invite invite) async {
     final ref = _collection.doc(invite.creator);
     final data = invite.toMap();
@@ -16,6 +23,7 @@ class FirestoreInviteRepository {
     return invite;
   }
 
+  @override
   Future<Invite> getInvite(String creator) async {
     final ref = _collection.doc(creator);
 
@@ -23,18 +31,17 @@ class FirestoreInviteRepository {
     return Invite.fromMap(snapshot.data()!);
   }
 
-  void updateInvite(Invite invite) async {
+  @override
+  Future<void> updateInvite(Invite invite) async {
     final ref = _collection.doc(invite.creator);
     final data = invite.toMap();
     await ref.set(data);
     log('Updating invite: ${invite.toMap().toString()}');
   }
 
+  @override
   Stream<Invite?> snapshots(String creator) {
     return _collection.doc(creator).snapshots().map((snapshot) =>
         snapshot.data() != null ? Invite.fromMap(snapshot.data()!) : null);
   }
 }
-
-final invitesRepositoryProvider =
-    Provider<FirestoreInviteRepository>((ref) => FirestoreInviteRepository());

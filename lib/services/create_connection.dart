@@ -1,20 +1,31 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/ice_server_configuration.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/use_cases/close_connection.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
+
+abstract class ICreateConnectionService
+    implements CloseConnectionUseCase, TransceiveDataUseCase {
+  Future<void> startNewConnection();
+  void setOnConnectionIdPublished(
+      void Function(String id) onConnectionIdPublished);
+
+  void setOnConnectedListener(void Function() onConnectedListener);
+}
 
 class CreateConnectionService extends AbstractConnectionService
-    implements CloseConnectionUseCase {
-  CreateConnectionService(this.ref);
+    implements ICreateConnectionService {
+  CreateConnectionService(
+      {required this.connectionInfoRepository,
+      required this.authenticationService});
 
-  final Ref ref;
+  final IConnectionInfoRepository connectionInfoRepository;
+  final IAuthenticationService authenticationService;
   void Function(String id)? _onConnectionIdPublished;
   ConnectionInfo? connectionInfo;
   RTCPeerConnection? peerConnection;
@@ -40,8 +51,7 @@ class CreateConnectionService extends AbstractConnectionService
 
   Future<RTCSessionDescription> _configureLocal() async {
     peerConnection = await createPeerConnection(iceServerConfiguration);
-    connectionInfo =
-        ConnectionInfo(id: GetIt.I.get<IAuthenticationService>().getUserId());
+    connectionInfo = ConnectionInfo(id: authenticationService.getUserId());
 
     //Works on android
     //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
@@ -65,7 +75,7 @@ class CreateConnectionService extends AbstractConnectionService
     peerConnection!.onIceCandidate = (candidate) async {
       await _roomCreation!.future;
       connectionInfo!.addIceCandidateA(candidate);
-      ref.read(connectionInfoRepositoryProvider).updateRoom(connectionInfo!);
+      connectionInfoRepository.updateRoom(connectionInfo!);
     };
 
     //Responsible for gathering ice candidates
@@ -75,9 +85,7 @@ class CreateConnectionService extends AbstractConnectionService
 
   Future<void> _configureRemote(RTCSessionDescription offer) async {
     connectionInfo!.setOffer(offer);
-    connectionInfo = await ref
-        .read(connectionInfoRepositoryProvider)
-        .addRoom(connectionInfo!);
+    connectionInfo = await connectionInfoRepository.addRoom(connectionInfo!);
     _roomCreation!.complete();
 
     _handleSignalingAnswers();
@@ -88,8 +96,7 @@ class CreateConnectionService extends AbstractConnectionService
   }
 
   void _handleSignalingAnswers() {
-    _subscription = ref
-        .watch(connectionInfoRepositoryProvider)
+    _subscription = connectionInfoRepository
         .roomSnapshots(connectionInfo!.id!)
         .listen((connectionInfo) {
       if (connectionInfo!.answer != null &&
@@ -108,6 +115,7 @@ class CreateConnectionService extends AbstractConnectionService
     });
   }
 
+  @override
   Future<void> startNewConnection() async {
     if (_subscription != null) {
       await _subscription!.cancel();
@@ -120,6 +128,7 @@ class CreateConnectionService extends AbstractConnectionService
     await _configureRemote(offer);
   }
 
+  @override
   void setOnConnectionIdPublished(
       void Function(String id) onConnectionIdPublished) {
     _onConnectionIdPublished = onConnectionIdPublished;
@@ -138,14 +147,20 @@ class CreateConnectionService extends AbstractConnectionService
       void Function() onConnectionClosedListener) {
     setOnDisconnectedListener(onConnectionClosedListener);
   }
+
+  @override
+  void setOnConnectedListener(void Function() onConnectedListener) {
+    setOnConnectedListenerImpl(onConnectedListener);
+  }
+
+  @override
+  void sendData(String data) {
+    sendDataImpl(data);
+  }
+
+  @override
+  void setOnReceiveDataListener(
+      void Function(String data) onReceiveDataListener) {
+    setOnReceiveDataListenerImpl(onReceiveDataListener);
+  }
 }
-
-//Currently, there is no good way to detect when to clean up this
-//service. So now once it is constructed, it will live forever.
-CreateConnectionService? _connectionService;
-
-final createConnectionServiceProvider =
-    Provider<CreateConnectionService>((ref) {
-  _connectionService ??= CreateConnectionService(ref);
-  return _connectionService!;
-});

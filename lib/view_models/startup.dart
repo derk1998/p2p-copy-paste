@@ -1,35 +1,56 @@
-import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/view_models/button.dart';
+import 'package:p2p_copy_paste/view_models/home.dart';
+import 'package:p2p_copy_paste/view_models/login.dart';
+import 'package:p2p_copy_paste/view_models/screen.dart';
+import 'package:rxdart/rxdart.dart';
 
-class StartupScreenViewModel extends AutoDisposeAsyncNotifier<LoginState?> {
+class StartupScreenState {
+  StartupScreenState(
+      {this.loginState = LoginState.loggedOut, this.loading = true});
+
+  LoginState loginState;
+  bool loading;
+}
+
+class StartupScreenViewModel extends StatefulScreenViewModel {
   final String title = 'P2P Copy Paste';
-  late ButtonViewModel loginButtonViewModel;
+
+  StartupScreenViewModel(
+      {required this.authenticationService,
+      required this.homeScreenViewModel,
+      required this.loginScreenViewModel});
+
+  final IAuthenticationService authenticationService;
+  final HomeScreenViewModel homeScreenViewModel;
+  final LoginScreenViewModel loginScreenViewModel;
+  final _stateSubject =
+      BehaviorSubject<StartupScreenState>.seeded(StartupScreenState());
+
+  Stream<StartupScreenState> get state => _stateSubject;
+
+  @override
+  void init() {
+    authenticationService.setOnLoginStateChangedListener(_onLoginStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _stateSubject.close();
+  }
+
+  void _updateState(LoginState loginState, {bool loading = false}) {
+    _stateSubject
+        .add(StartupScreenState(loginState: loginState, loading: loading));
+  }
 
   void _onLoginStateChanged(LoginState loginState) {
     if (loginState == LoginState.loggedIn ||
         loginState == LoginState.loggedOut) {
-      state = AsyncValue.data(loginState);
+      _updateState(loginState);
     } else {
-      state = const AsyncLoading();
+      _updateState(loginState, loading: true);
     }
   }
-
-  @override
-  FutureOr<LoginState?> build() {
-    state = const AsyncLoading();
-    GetIt.I
-        .get<IAuthenticationService>()
-        .setOnLoginStateChangedListener(_onLoginStateChanged);
-    return null;
-  }
 }
-
-final startupScreenViewModelProvider =
-    AutoDisposeAsyncNotifierProvider<StartupScreenViewModel, LoginState?>(() {
-  return StartupScreenViewModel();
-});
