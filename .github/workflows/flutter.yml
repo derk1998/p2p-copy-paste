@@ -18,6 +18,16 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+      - run: |
+            echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+            echo "${{ secrets.UPLOAD_KEYSTORE }}" > upload-keystore.asc
+            gpg -d --passphrase "${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}" --batch upload-keystore.asc > android/upload-keystore.jks
+            touch android/key.properties
+            echo "storePassword=${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}" >> android/key.properties
+            echo "keyPassword=${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}" >> android/key.properties
+            echo "keyAlias=${{ secrets.UPLOAD_KEYSTORE_ALIAS }}" >> android/key.properties
+            echo "storeFile=android/upload-keystore.jks" >> android/key.properties
+                
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
