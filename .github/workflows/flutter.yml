@@ -56,3 +56,6 @@ jobs:
           name: Tests            # Name of the check run which will be created
           path: reports/test-results.json    # Path to test results
           reporter: flutter-json        # Format of test results
+        
+      - run: flutter build apk
+      - run: flutter build web
