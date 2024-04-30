@@ -20,20 +20,25 @@ class StartupScreenViewModel extends StatefulScreenViewModel {
   StartupScreenViewModel(
       {required this.authenticationService,
       required this.homeScreenViewModel,
-      required this.loginScreenViewModel});
+      required this.loginScreenViewModel}) {
+    _stateSubject = BehaviorSubject<StartupScreenState>.seeded(
+      StartupScreenState(),
+      onListen: () {
+        authenticationService
+            .setOnLoginStateChangedListener(_onLoginStateChanged);
+      },
+    );
+  }
 
   final IAuthenticationService authenticationService;
   final HomeScreenViewModel homeScreenViewModel;
   final LoginScreenViewModel loginScreenViewModel;
-  final _stateSubject =
-      BehaviorSubject<StartupScreenState>.seeded(StartupScreenState());
+  late BehaviorSubject<StartupScreenState> _stateSubject;
 
   Stream<StartupScreenState> get state => _stateSubject;
 
   @override
-  void init() {
-    authenticationService.setOnLoginStateChangedListener(_onLoginStateChanged);
-  }
+  void init() {}
 
   @override
   void dispose() {
