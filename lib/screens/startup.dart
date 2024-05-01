@@ -21,7 +21,7 @@ class _StartupScreenState
       builder: (context, snapshot) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(viewModel.title),
+            title: Text(viewModel.title()),
           ),
           body: !snapshot.hasData || snapshot.data!.loading
               ? const Center(

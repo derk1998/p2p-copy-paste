@@ -12,7 +12,6 @@ import 'package:p2p_copy_paste/models/invite.dart';
 
 class ScanQrCodeScreenViewModel extends StatefulScreenViewModel {
   final List<String> _scannedCodes = [];
-  final String title = 'Scan QR code';
 
   ScanQrCodeScreenViewModel(
       {required this.navigator,
@@ -63,5 +62,10 @@ class ScanQrCodeScreenViewModel extends StatefulScreenViewModel {
         //ignore, keep trying
       }
     }
+  }
+
+  @override
+  String title() {
+    return 'Scan QR code';
   }
 }

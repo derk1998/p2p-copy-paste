@@ -4,12 +4,12 @@ import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/invite_answered.dart';
-import 'package:p2p_copy_paste/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/create_invite/screens/invite_answered.dart';
+import 'package:p2p_copy_paste/create_invite/screens/invite_expired.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
-import 'package:p2p_copy_paste/services/create_invite.dart';
-import 'package:p2p_copy_paste/view_models/create_invite.dart';
+import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
+import 'package:p2p_copy_paste/create_invite/view_models/create_invite.dart';
 
 import 'create_invite_screen_test.mocks.dart';
 

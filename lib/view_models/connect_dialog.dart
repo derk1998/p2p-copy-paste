@@ -24,8 +24,6 @@ class ConnectDialogState {
 }
 
 class ConnectDialogViewModel extends StatefulScreenViewModel {
-  final String title = 'Connecting';
-
   ConnectDialogViewModel(
       {required this.invite,
       required this.getJoinNewInvitePageView,
@@ -116,5 +114,10 @@ class ConnectDialogViewModel extends StatefulScreenViewModel {
 
   Future<void> join(Invite invite) async {
     joinInviteService.join(invite, _onInviteStatusChanged);
+  }
+
+  @override
+  String title() {
+    return 'Connecting';
   }
 }

@@ -7,13 +7,13 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/create_invite.dart';
+import 'package:p2p_copy_paste/create_invite/screens/create_invite.dart';
 import 'package:p2p_copy_paste/screens/join_connection.dart';
 import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
-import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
 import 'package:p2p_copy_paste/services/join_invite.dart';

@@ -15,8 +15,6 @@ class StartupScreenState {
 }
 
 class StartupScreenViewModel extends StatefulScreenViewModel {
-  final String title = 'P2P Copy Paste';
-
   StartupScreenViewModel(
       {required this.authenticationService,
       required this.homeScreenViewModel,
@@ -57,5 +55,10 @@ class StartupScreenViewModel extends StatefulScreenViewModel {
     } else {
       _updateState(loginState, loading: true);
     }
+  }
+
+  @override
+  String title() {
+    return 'P2P Copy Paste';
   }
 }

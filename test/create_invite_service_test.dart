@@ -8,7 +8,7 @@ import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 
 import 'create_invite_service_test.mocks.dart';
 

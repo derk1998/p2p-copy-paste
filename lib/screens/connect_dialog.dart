@@ -18,7 +18,7 @@ class _ConnectDialogState
       stream: viewModel.state,
       builder: (context, snapshot) {
         return Scaffold(
-          appBar: AppBar(title: Text(viewModel.title)),
+          appBar: AppBar(title: Text(viewModel.title())),
           body: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Center(

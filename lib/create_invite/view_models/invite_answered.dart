@@ -3,11 +3,12 @@ import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
-import 'package:p2p_copy_paste/services/create_invite.dart';
+import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/clipboard.dart';
+import 'package:p2p_copy_paste/view_models/screen.dart';
 
-class InviteAnsweredScreenViewModel {
+class InviteAnsweredScreenViewModel extends StatefulScreenViewModel {
   InviteAnsweredScreenViewModel(
       {required this.invite,
       required this.navigator,
@@ -23,7 +24,6 @@ class InviteAnsweredScreenViewModel {
   }
 
   final Invite invite;
-  final String title = 'Invite answered';
   late String description;
   final INavigator navigator;
   final ICreateInviteService createInviteService;
@@ -55,5 +55,20 @@ class InviteAnsweredScreenViewModel {
   void _onDeclineInviteButtonPressed() {
     createInviteService.decline(invite);
     navigator.popScreen();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+  }
+
+  @override
+  void init() {
+    // TODO: implement init
+  }
+
+  @override
+  String title() {
+    return 'Invite answered';
   }
 }

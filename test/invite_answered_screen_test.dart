@@ -7,8 +7,8 @@ import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
-import 'package:p2p_copy_paste/services/create_invite.dart';
-import 'package:p2p_copy_paste/view_models/invite_answered.dart';
+import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
+import 'package:p2p_copy_paste/create_invite/view_models/invite_answered.dart';
 
 import 'invite_expired_screen_test.mocks.dart';
 

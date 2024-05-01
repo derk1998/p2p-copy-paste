@@ -25,7 +25,7 @@ class _ScanQRCodeScreenState
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(viewModel.title),
+          title: Text(viewModel.title()),
         ),
         body: QRView(
           key: qrKey,

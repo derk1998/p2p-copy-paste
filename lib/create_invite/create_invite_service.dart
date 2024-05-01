@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:p2p_copy_paste/config.dart';
-import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
+import 'package:rxdart/rxdart.dart';
 
 enum CreateInviteState { waiting, expired, receivedUid }
 
@@ -17,19 +17,20 @@ class CreateInviteUpdate {
 }
 
 abstract class ICreateInviteService {
-  Future<void> create(
-      void Function(CreateInviteUpdate update) onCreateInviteUpdate,
-      WeakReference<LifeTime> lifeTime);
+  Future<void> create();
 
   Future<bool> accept(Invite invite);
   Future<bool> decline(Invite invite);
+
+  Stream<CreateInviteUpdate> stream();
+  void dispose();
 }
 
 class CreateInviteService extends ICreateInviteService {
-  StreamSubscription<CreateInviteUpdate>? _createSubscription;
   StreamSubscription<Invite?>? _inviteSubscription;
   Invite? _invite;
-  var _done = false;
+  Timer? _timer;
+  final statusUpdateSubject = PublishSubject<CreateInviteUpdate>();
 
   CreateInviteService(
       {required this.authenticationService, required this.inviteRepository});
@@ -38,24 +39,18 @@ class CreateInviteService extends ICreateInviteService {
   final IInviteRepository inviteRepository;
 
   @override
-  Future<void> create(
-      void Function(CreateInviteUpdate update) onCreateInviteUpdate,
-      WeakReference<LifeTime> lifeTime) async {
-    _inviteSubscription?.cancel();
-    _done = false;
-    lifeTime.target?.setOnExpiringListener(_cancelSubscription);
-
+  Future<void> create() async {
     final ownUid = authenticationService.getUserId();
     await inviteRepository.addInvite(Invite(ownUid));
 
     _inviteSubscription =
         inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
 
-    _createSubscription = Stream<CreateInviteUpdate>.periodic(
-      const Duration(seconds: 1),
-      _onPeriodicUpdate,
-    ).listen((event) {
-      onCreateInviteUpdate(event);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_onPeriodicUpdate(timer.tick)) {
+        timer.cancel();
+        _inviteSubscription?.cancel();
+      }
     });
   }
 
@@ -83,37 +78,44 @@ class CreateInviteService extends ICreateInviteService {
     return true;
   }
 
-  void _cancelSubscription() {
-    _createSubscription?.cancel();
-  }
-
-  CreateInviteUpdate _onPeriodicUpdate(int secondCount) {
-    if (_done) {
-      _cancelSubscription();
-    }
-
+  bool _onPeriodicUpdate(int secondCount) {
     if (secondCount >= kInviteTimeoutInSeconds) {
-      _done = true;
-      return CreateInviteUpdate(seconds: 0, state: CreateInviteState.expired);
+      statusUpdateSubject.add(
+          CreateInviteUpdate(seconds: 0, state: CreateInviteState.expired));
+      return true;
     }
 
     final currentSeconds = kInviteTimeoutInSeconds - secondCount;
 
     if (_invite?.joiner != null) {
-      _done = true;
-      return CreateInviteUpdate(
+      statusUpdateSubject.add(CreateInviteUpdate(
           seconds: currentSeconds,
           state: CreateInviteState.receivedUid,
-          invite: _invite);
+          invite: _invite));
+      return true;
     }
 
-    return CreateInviteUpdate(
+    statusUpdateSubject.add(CreateInviteUpdate(
         seconds: currentSeconds,
         state: CreateInviteState.waiting,
-        invite: _invite);
+        invite: _invite));
+
+    return false;
   }
 
   void _onInviteUpdated(Invite? invite) {
     _invite = invite;
+  }
+
+  @override
+  Stream<CreateInviteUpdate> stream() {
+    return statusUpdateSubject;
+  }
+
+  @override
+  void dispose() {
+    _inviteSubscription?.cancel();
+    _timer?.cancel();
+    statusUpdateSubject.close();
   }
 }

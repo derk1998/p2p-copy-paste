@@ -35,7 +35,7 @@ class _JoinConnectionScreenState extends ScreenViewState<JoinConnectionScreen,
       builder: (context, snapshot) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(viewModel.title),
+            title: Text(viewModel.title()),
           ),
           body: Padding(
             padding: const EdgeInsets.all(8.0),

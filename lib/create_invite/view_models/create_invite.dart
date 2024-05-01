@@ -1,15 +1,10 @@
-import 'dart:async';
 import 'dart:core';
 
 import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/invite_answered.dart';
-import 'package:p2p_copy_paste/screens/invite_expired.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
-import 'package:p2p_copy_paste/services/create_invite.dart';
-import 'package:p2p_copy_paste/view_models/invite_answered.dart';
-import 'package:p2p_copy_paste/view_models/invite_expired.dart';
+import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -34,8 +29,6 @@ class CreateInviteScreenState {
 
 class CreateInviteScreenViewModel extends StatefulScreenViewModel
     with LifeTime {
-  final String title = 'Create an invite';
-
   CreateInviteScreenViewModel(
       {required this.navigator,
       required this.createInviteService,
@@ -61,9 +54,15 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
     );
   }
 
+  void _onCreateInviteStatusChanged(CreateInviteUpdate createInviteUpdate) {
+    _updateState(
+        createInviteUpdate.seconds, createInviteUpdate.invite?.toJson());
+  }
+
   @override
   void init() {
-    _connect();
+    createInviteService.stream().listen(_onCreateInviteStatusChanged);
+    createInviteService.create();
   }
 
   @override
@@ -72,32 +71,8 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
     expire();
   }
 
-  Future<CreateInviteScreenState> _connect() async {
-    final completer = Completer<CreateInviteScreenState>();
-
-    createInviteService.create((update) {
-      if (update.state == CreateInviteState.expired) {
-        navigator.replaceScreen(InviteExpiredScreen(
-            viewModel: InviteExpiredViewModel(
-                navigator: navigator,
-                createInviteService: createInviteService,
-                createConnectionService: createConnectionService,
-                clipboardService: clipboardService)));
-        completer.complete(CreateInviteScreenState());
-      } else if (update.state == CreateInviteState.receivedUid) {
-        navigator.replaceScreen(InviteAnsweredScreen(
-            viewModel: InviteAnsweredScreenViewModel(
-                navigator: navigator,
-                invite: update.invite!,
-                createInviteService: createInviteService,
-                createConnectionService: createConnectionService,
-                clipboardService: clipboardService)));
-        completer.complete(CreateInviteScreenState());
-      }
-
-      _updateState(update.seconds, update.invite?.toJson());
-    }, WeakReference(this));
-
-    return completer.future;
+  @override
+  String title() {
+    return 'Create an invite';
   }
 }

@@ -21,7 +21,6 @@ class JoinConnectionScreenState {
 
 class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
   late ButtonViewModel connectButtonViewModel;
-  final String title = 'Join connection';
 
   JoinConnectionScreenViewModel(
       {required this.navigator,
@@ -81,5 +80,10 @@ class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
           joinConnectionService: joinConnectionService,
           joinInviteService: joinInviteService),
     ));
+  }
+
+  @override
+  String title() {
+    return 'Join connection';
   }
 }

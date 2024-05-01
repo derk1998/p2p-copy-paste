@@ -96,4 +96,9 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
       ),
     );
   }
+
+  @override
+  String title() {
+    return '';
+  }
 }
