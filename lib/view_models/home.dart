@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_flow.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
+import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/join_connection.dart';
 import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
@@ -16,6 +17,7 @@ import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
 import 'package:p2p_copy_paste/services/join_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
+import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/flow.dart';
 import 'package:p2p_copy_paste/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
@@ -64,14 +66,37 @@ class HomeScreenViewModel {
   void _onCreateInviteButtonClicked() async {
     //todo: to decouple flows per feature, we need to find a way to chain flows
     //for instance, with a onCompletedListener and a onCanceledListener
-    navigator.pushScreen(FlowScreen(
-        viewModel: FlowScreenViewModel(CreateInviteFlow(
-            navigator: navigator,
-            createInviteService: CreateInviteService(
-                authenticationService: authenticationService,
-                inviteRepository: inviteRepository),
-            createConnectionService: createConnectionService,
-            clipboardService: clipboardService))));
+    final flow = CreateInviteFlow(
+        navigator: navigator,
+        createInviteService: CreateInviteService(
+            authenticationService: authenticationService,
+            inviteRepository: inviteRepository),
+        createConnectionService: createConnectionService,
+        clipboardService: clipboardService,
+        onCompleted: _startNewConnection,
+        onCanceled: _closeCreateInviteFlow);
+
+    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+  }
+
+  Future<void> _startNewConnection() async {
+    createConnectionService.setOnConnectedListener(() {
+      navigator.replaceScreen(
+        ClipboardScreen(
+          viewModel: ClipboardScreenViewModel(
+              closeConnectionUseCase: createConnectionService,
+              dataTransceiver: createConnectionService,
+              navigator: navigator,
+              clipboardService: clipboardService),
+        ),
+      );
+    });
+    createConnectionService.startNewConnection();
+  }
+
+  Future<void> _closeCreateInviteFlow() async {
+    // log('Start new connection');
+    navigator.popScreen();
   }
 
   void _onJoinWithQrCodeButtonClicked() {

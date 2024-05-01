@@ -5,10 +5,21 @@ import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:rxdart/rxdart.dart';
 
+enum FlowStatus {
+  canceled,
+  completed,
+  idle,
+}
+
 abstract class Flow<S extends FlowState, ID> {
   final viewChangeSubject = BehaviorSubject<ScreenView>();
   final Map<ID, S> _states = {};
   late S _currentState;
+  Future<void> Function()? onCompleted;
+  Future<void> Function()? onCanceled;
+  FlowStatus _status = FlowStatus.idle;
+
+  Flow({this.onCompleted, this.onCanceled});
 
   String name();
 
@@ -20,11 +31,36 @@ abstract class Flow<S extends FlowState, ID> {
 
   @mustCallSuper
   void dispose() {
+    _currentState.exit();
+
+    if (_status == FlowStatus.idle) {
+      cancel();
+    }
     log('${name()} dispose');
   }
 
   void addState({required S state, required ID stateId}) {
     _states[stateId] = state;
+  }
+
+  void complete() {
+    if (_status == FlowStatus.idle) {
+      _status = FlowStatus.completed;
+      log('${name()} is completed');
+      onCompleted?.call();
+    } else {
+      log('${name()} cannot be completed because it is already completed or canceled');
+    }
+  }
+
+  void cancel() {
+    if (_status == FlowStatus.idle) {
+      _status = FlowStatus.canceled;
+      log('${name()} is canceled');
+      onCanceled?.call();
+    } else {
+      log('${name()} cannot be canceled because it is already completed or canceled');
+    }
   }
 
   void setInitialState(ID stateId) {

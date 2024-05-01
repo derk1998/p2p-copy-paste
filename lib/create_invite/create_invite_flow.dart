@@ -14,7 +14,13 @@ import 'package:p2p_copy_paste/create_invite/view_models/create_invite.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/invite_answered.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/invite_expired.dart';
 
-enum _StateId { start, expired, answered, end }
+enum _StateId {
+  start,
+  expired,
+  answered,
+  accepted,
+  declined,
+}
 
 class CreateInviteFlow extends Flow<FlowState, _StateId> {
   late StreamSubscription<CreateInviteUpdate> createInviteStatusSubscription;
@@ -29,7 +35,9 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
       {required this.navigator,
       required this.createInviteService,
       required this.createConnectionService,
-      required this.clipboardService}) {
+      required this.clipboardService,
+      super.onCompleted,
+      super.onCanceled}) {
     addState(
         state: FlowState(name: 'start', onEntry: _onEntryStartState),
         stateId: _StateId.start);
@@ -40,8 +48,11 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
         state: FlowState(name: 'answered', onEntry: _onEntryAnsweredState),
         stateId: _StateId.answered);
     addState(
-        state: FlowState(name: 'end', onEntry: _onEntryEndState),
-        stateId: _StateId.end);
+        state: FlowState(name: 'accepted', onEntry: _onEntryAcceptedState),
+        stateId: _StateId.accepted);
+    addState(
+        state: FlowState(name: 'declined', onEntry: _onEntryDeclinedState),
+        stateId: _StateId.declined);
 
     setInitialState(_StateId.start);
   }
@@ -78,8 +89,12 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
     viewChangeSubject.add(view);
   }
 
-  void _onEntryEndState() {
-    //todo: check what to do here
+  void _onEntryAcceptedState() {
+    complete();
+  }
+
+  void _onEntryDeclinedState() {
+    cancel();
   }
 
   @override
@@ -96,9 +111,11 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
     } else if (createInviteUpdate.state == CreateInviteState.receivedUid) {
       invite = createInviteUpdate.invite;
       setState(_StateId.answered);
+    } else if (createInviteUpdate.state == CreateInviteState.accepted) {
+      setState(_StateId.accepted);
+    } else if (createInviteUpdate.state == CreateInviteState.declined) {
+      setState(_StateId.declined);
     }
-
-    //todo: when to end
   }
 
   @override

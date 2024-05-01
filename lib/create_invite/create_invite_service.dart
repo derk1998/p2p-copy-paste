@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
@@ -6,7 +7,13 @@ import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:rxdart/rxdart.dart';
 
-enum CreateInviteState { waiting, expired, receivedUid }
+enum CreateInviteState {
+  waiting,
+  expired,
+  receivedUid,
+  accepted,
+  declined,
+}
 
 class CreateInviteUpdate {
   CreateInviteUpdate({required this.state, required this.seconds, this.invite});
@@ -19,8 +26,8 @@ class CreateInviteUpdate {
 abstract class ICreateInviteService {
   Future<void> create();
 
-  Future<bool> accept(Invite invite);
-  Future<bool> decline(Invite invite);
+  Future<void> accept(Invite invite);
+  Future<void> decline(Invite invite);
 
   Stream<CreateInviteUpdate> stream();
   void dispose();
@@ -55,27 +62,29 @@ class CreateInviteService extends ICreateInviteService {
   }
 
   @override
-  Future<bool> accept(Invite invite) async {
+  Future<void> accept(Invite invite) async {
     invite.accept();
     try {
       await inviteRepository.addInvite(invite);
+      statusUpdateSubject.add(
+          CreateInviteUpdate(seconds: 0, state: CreateInviteState.accepted));
     } catch (e) {
-      return false;
+      statusUpdateSubject.add(
+          CreateInviteUpdate(seconds: 0, state: CreateInviteState.expired));
     }
-
-    return true;
   }
 
   @override
-  Future<bool> decline(Invite invite) async {
+  Future<void> decline(Invite invite) async {
     invite.decline();
     try {
       await inviteRepository.addInvite(invite);
     } catch (e) {
-      return false;
+      //ignore
     }
 
-    return true;
+    statusUpdateSubject
+        .add(CreateInviteUpdate(seconds: 0, state: CreateInviteState.declined));
   }
 
   bool _onPeriodicUpdate(int secondCount) {
@@ -117,5 +126,6 @@ class CreateInviteService extends ICreateInviteService {
     _inviteSubscription?.cancel();
     _timer?.cancel();
     statusUpdateSubject.close();
+    log('Create invite service dispose');
   }
 }

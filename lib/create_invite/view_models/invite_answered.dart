@@ -1,11 +1,9 @@
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 
 class InviteAnsweredScreenViewModel extends StatefulScreenViewModel {
@@ -33,28 +31,11 @@ class InviteAnsweredScreenViewModel extends StatefulScreenViewModel {
   late ButtonViewModel declineInviteButton;
 
   void _onAcceptInviteButtonPressed() async {
-    createConnectionService.setOnConnectedListener(() {
-      navigator.pushScreen(
-        ClipboardScreen(
-          viewModel: ClipboardScreenViewModel(
-              closeConnectionUseCase: createConnectionService,
-              dataTransceiver: createConnectionService,
-              navigator: navigator,
-              clipboardService: clipboardService),
-        ),
-      );
-    });
-    await createConnectionService.startNewConnection();
-
-    final result = await createInviteService.accept(invite);
-    if (!result) {
-      createConnectionService.close();
-    }
+    createInviteService.accept(invite);
   }
 
   void _onDeclineInviteButtonPressed() {
     createInviteService.decline(invite);
-    navigator.popScreen();
   }
 
   @override

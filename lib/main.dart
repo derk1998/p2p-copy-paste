@@ -8,7 +8,6 @@ import 'package:p2p_copy_paste/screens/startup.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';

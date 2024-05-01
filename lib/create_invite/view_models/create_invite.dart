@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:core';
 
 import 'package:p2p_copy_paste/lifetime.dart';
@@ -41,6 +42,7 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
   final IClipboardService clipboardService;
   final _stateSubject = BehaviorSubject<CreateInviteScreenState>.seeded(
       CreateInviteScreenState());
+  StreamSubscription<CreateInviteUpdate>? _createInviteUpdateSubscription;
 
   Stream<CreateInviteScreenState> get state => _stateSubject;
 
@@ -61,12 +63,14 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel
 
   @override
   void init() {
-    createInviteService.stream().listen(_onCreateInviteStatusChanged);
+    _createInviteUpdateSubscription =
+        createInviteService.stream().listen(_onCreateInviteStatusChanged);
     createInviteService.create();
   }
 
   @override
   void dispose() {
+    _createInviteUpdateSubscription?.cancel();
     _stateSubject.close();
     expire();
   }
