@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
-import 'package:p2p_copy_paste/view_models/join_connection.dart';
+import 'package:p2p_copy_paste/join_invite/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/widgets/button.dart';
 
 class JoinConnectionScreen extends ScreenView<JoinConnectionScreenViewModel> {
@@ -33,34 +33,27 @@ class _JoinConnectionScreenState extends ScreenViewState<JoinConnectionScreen,
     return StreamBuilder<JoinConnectionScreenState>(
       stream: viewModel.state,
       builder: (context, snapshot) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(viewModel.title()),
-          ),
-          body: Padding(
+        return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: codeController,
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Button(viewModel: viewModel.connectButtonViewModel),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  !snapshot.hasData || snapshot.data!.loading
-                      ? const CircularProgressIndicator()
-                      : Text(snapshot.data!.status)
-                ],
-              ),
-            ),
-          ),
-        );
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: codeController,
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                Button(viewModel: viewModel.connectButtonViewModel),
+                const SizedBox(
+                  height: 16,
+                ),
+                !snapshot.hasData || snapshot.data!.loading
+                    ? const CircularProgressIndicator()
+                    : Text(snapshot.data!.status)
+              ],
+            )));
       },
     );
   }

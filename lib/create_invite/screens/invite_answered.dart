@@ -14,24 +14,26 @@ class _InviteAnsweredScreenState extends ScreenViewState<InviteAnsweredScreen,
     InviteAnsweredScreenViewModel> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(widget.viewModel.description),
-        const SizedBox(
-          height: 16,
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Button(viewModel: widget.viewModel.acceptInviteButton),
-            const SizedBox(
-              width: 8,
-            ),
-            Button(viewModel: widget.viewModel.declineInviteButton)
-          ],
-        )
-      ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(widget.viewModel.description),
+          const SizedBox(
+            height: 16,
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Button(viewModel: widget.viewModel.acceptInviteButton),
+              const SizedBox(
+                width: 8,
+              ),
+              Button(viewModel: widget.viewModel.declineInviteButton)
+            ],
+          )
+        ],
+      ),
     );
   }
 }

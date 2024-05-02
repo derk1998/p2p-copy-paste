@@ -14,12 +14,14 @@ class _InviteExpiredScreenState
     extends ScreenViewState<InviteExpiredScreen, InviteExpiredViewModel> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(widget.viewModel.description),
-        PureIconButton(viewModel: widget.viewModel.iconButtonViewModel)
-      ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(widget.viewModel.description),
+          PureIconButton(viewModel: widget.viewModel.iconButtonViewModel)
+        ],
+      ),
     );
   }
 }

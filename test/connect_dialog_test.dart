@@ -8,8 +8,8 @@ import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
-import 'package:p2p_copy_paste/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
+import 'package:p2p_copy_paste/join_invite/view_models/connect_dialog.dart';
 
 import 'scan_qr_code_screen_test.mocks.dart';
 
@@ -57,7 +57,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(invite, InviteStatus.inviteDeclined);
+    listener(invite, JoinInviteState.inviteDeclined);
 
     final state = await viewModel.state.first;
 
@@ -70,7 +70,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(invite, InviteStatus.inviteTimeout);
+    listener(invite, JoinInviteState.inviteTimeout);
 
     final state = await viewModel.state.first;
 
@@ -83,7 +83,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(invite, InviteStatus.inviteError);
+    listener(invite, JoinInviteState.inviteError);
 
     final state = await viewModel.state.first;
 
@@ -96,7 +96,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(invite, InviteStatus.inviteSent);
+    listener(invite, JoinInviteState.inviteSent);
 
     final state = await viewModel.state.first;
 
@@ -109,7 +109,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(invite, InviteStatus.inviteAccepted);
+    listener(invite, JoinInviteState.inviteAccepted);
 
     await viewModel.state.first;
 
@@ -120,7 +120,7 @@ void main() {
     final listener =
         verify(mockJoinInviteService.join(invite, captureAny)).captured[0];
 
-    listener(invite, InviteStatus.inviteAccepted);
+    listener(invite, JoinInviteState.inviteAccepted);
 
     final state = await viewModel.state.first;
 
@@ -136,7 +136,7 @@ void main() {
     when(mockJoinConnectionService.joinConnection(invite.creator))
         .thenThrow(Error());
 
-    listener(invite, InviteStatus.inviteAccepted);
+    listener(invite, JoinInviteState.inviteAccepted);
 
     await viewModel.state.first;
 
@@ -160,7 +160,7 @@ void main() {
     when(mockJoinConnectionService.joinConnection(invite.creator))
         .thenThrow(Error());
 
-    listener(invite, InviteStatus.inviteAccepted);
+    listener(invite, JoinInviteState.inviteAccepted);
 
     await viewModel.state.first;
 

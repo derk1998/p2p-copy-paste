@@ -4,12 +4,12 @@ import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/connect_dialog.dart';
-import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
+import 'package:p2p_copy_paste/join_invite/screens/connect_dialog.dart';
+import 'package:p2p_copy_paste/join_invite/screens/scan_qr_code.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
-import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
+import 'package:p2p_copy_paste/join_invite/view_models/scan_qr_code.dart';
 
 import 'scan_qr_code_screen_test.mocks.dart';
 
@@ -70,7 +70,7 @@ void main() {
     connectDialog.viewModel.init();
 
     verify(mockJoinInviteService.join(any, captureAny)).captured[0](
-        invite, InviteStatus.inviteDeclined);
+        invite, JoinInviteState.inviteDeclined);
 
     final state = await connectDialog.viewModel.state.first;
     expect(state.refreshButtonViewModel, isNotNull);

@@ -122,7 +122,6 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
     super.dispose();
     createInviteStatusSubscription.cancel();
     createInviteService.dispose();
-    viewChangeSubject.close();
     _restartCondition.close();
   }
 

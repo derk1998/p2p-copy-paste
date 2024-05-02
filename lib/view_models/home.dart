@@ -4,23 +4,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_flow.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_flow.dart';
+import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
-import 'package:p2p_copy_paste/screens/join_connection.dart';
-import 'package:p2p_copy_paste/screens/scan_qr_code.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/flow.dart';
-import 'package:p2p_copy_paste/view_models/join_connection.dart';
-import 'package:p2p_copy_paste/view_models/scan_qr_code.dart';
 
 class HomeScreenViewModel {
   HomeScreenViewModel(GetIt serviceLocator)
@@ -29,7 +27,6 @@ class HomeScreenViewModel {
         createConnectionService =
             serviceLocator.get<ICreateConnectionService>(),
         joinConnectionService = serviceLocator.get<IJoinConnectionService>(),
-        joinInviteService = serviceLocator.get<IJoinInviteService>(),
         authenticationService = serviceLocator.get<IAuthenticationService>(),
         inviteRepository = serviceLocator.get<IInviteRepository>() {
     startNewConnectionButtonViewModel = ButtonViewModel(
@@ -53,9 +50,9 @@ class HomeScreenViewModel {
   final IClipboardService clipboardService;
   final ICreateConnectionService createConnectionService;
   final IJoinConnectionService joinConnectionService;
-  final IJoinInviteService joinInviteService;
   final IAuthenticationService authenticationService;
   final IInviteRepository inviteRepository;
+  Invite? _invite;
 
   late ButtonViewModel startNewConnectionButtonViewModel;
   ButtonViewModel? joinConnectionButtonViewModel;
@@ -90,33 +87,60 @@ class HomeScreenViewModel {
   }
 
   Future<void> _closeCreateInviteFlow() async {
-    // log('Start new connection');
     navigator.popScreen();
   }
 
   void _onJoinWithQrCodeButtonClicked() {
-    navigator.pushScreen(
-      ScanQRCodeScreen(
-        viewModel: ScanQrCodeScreenViewModel(
-          navigator: navigator,
-          clipboardService: clipboardService,
-          joinConnectionService: joinConnectionService,
-          joinInviteService: joinInviteService,
-        ),
-      ),
-    );
+    final flow = JoinInviteFlow(
+        viewType: JoinInviteViewType.camera,
+        onInviteAccepted: _onInviteAccepted,
+        joinInviteService: JoinInviteService(
+            authenticationService: authenticationService,
+            inviteRepository: inviteRepository),
+        onCompleted: _joinNewConnection,
+        onCanceled: _closeJoinInviteFlow);
+
+    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+  }
+
+  Future<void> _closeJoinInviteFlow() async {
+    navigator.popScreen();
+  }
+
+  void _onInviteAccepted(Invite invite) {
+    _invite = invite;
+  }
+
+  Future<void> _joinNewConnection() async {
+    joinConnectionService.setOnConnectedListener(() {
+      navigator.replaceScreen(ClipboardScreen(
+        viewModel: ClipboardScreenViewModel(
+            clipboardService: clipboardService,
+            closeConnectionUseCase: joinConnectionService,
+            dataTransceiver: joinConnectionService,
+            navigator: navigator),
+      ));
+    });
+
+    try {
+      //todo: add loading screen
+      // _updateState('', loading: true);
+      await joinConnectionService.joinConnection(_invite!.creator);
+    } catch (e) {
+      // _updateState('Unable to connect');
+    }
   }
 
   void _onJoinConnectionButtonClicked() {
-    navigator.pushScreen(
-      JoinConnectionScreen(
-        viewModel: JoinConnectionScreenViewModel(
-          clipboardService: clipboardService,
-          joinConnectionService: joinConnectionService,
-          joinInviteService: joinInviteService,
-          navigator: navigator,
-        ),
-      ),
-    );
+    final flow = JoinInviteFlow(
+        viewType: JoinInviteViewType.code,
+        onInviteAccepted: _onInviteAccepted,
+        joinInviteService: JoinInviteService(
+            authenticationService: authenticationService,
+            inviteRepository: inviteRepository),
+        onCompleted: _joinNewConnection,
+        onCanceled: _closeJoinInviteFlow);
+
+    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
   }
 }

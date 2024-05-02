@@ -11,7 +11,7 @@ import 'package:p2p_copy_paste/models/invite.dart' as _i7;
 import 'package:p2p_copy_paste/navigation_manager.dart' as _i5;
 import 'package:p2p_copy_paste/services/clipboard.dart' as _i8;
 import 'package:p2p_copy_paste/services/join_connection.dart' as _i3;
-import 'package:p2p_copy_paste/services/join_invite.dart' as _i6;
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -189,7 +189,7 @@ class MockIJoinInviteService extends _i2.Mock
     _i7.Invite? invite,
     void Function(
       _i7.Invite,
-      _i6.InviteStatus,
+      _i6.JoinInviteState,
     )? onInviteStatusChangedListener,
   ) =>
       (super.noSuchMethod(

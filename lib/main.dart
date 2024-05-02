@@ -11,7 +11,6 @@ import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/view_models/home.dart';
 import 'package:p2p_copy_paste/view_models/login.dart';
@@ -43,9 +42,6 @@ void main() async {
   getIt.registerLazySingleton<IJoinConnectionService>(() =>
       JoinConnectionService(
           connectionInfoRepository: connectionInfoRepository));
-  getIt.registerLazySingleton<IJoinInviteService>(() => JoinInviteService(
-      authenticationService: getIt.get<IAuthenticationService>(),
-      inviteRepository: inviteRepository));
   getIt.registerLazySingleton<IFileService>(() => FileService());
 
   runApp(P2PCopyPaste(serviceLocator: getIt));

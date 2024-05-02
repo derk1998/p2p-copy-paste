@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:p2p_copy_paste/config.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
+import 'package:rxdart/rxdart.dart';
 
-enum InviteStatus {
+enum JoinInviteState {
   inviteSent,
   inviteAccepted,
   inviteDeclined,
@@ -13,11 +15,17 @@ enum InviteStatus {
   inviteError,
 }
 
+class JoinInviteUpdate {
+  JoinInviteUpdate({required this.state, required this.invite});
+
+  final JoinInviteState state;
+  final Invite invite;
+}
+
 abstract class IJoinInviteService {
-  Future<void> join(
-      Invite invite,
-      void Function(Invite invite, InviteStatus inviteStatus)
-          onInviteStatusChangedListener);
+  Future<void> join(Invite invite);
+  Stream<JoinInviteUpdate> stream();
+  void dispose();
 }
 
 class JoinInviteService implements IJoinInviteService {
@@ -27,12 +35,10 @@ class JoinInviteService implements IJoinInviteService {
   StreamSubscription<Invite?>? _subscription;
   final IInviteRepository inviteRepository;
   final IAuthenticationService authenticationService;
+  final statusUpdateSubject = PublishSubject<JoinInviteUpdate>();
 
   @override
-  Future<void> join(
-      Invite invite,
-      void Function(Invite invite, InviteStatus inviteStatus)
-          onInviteStatusChangedListener) async {
+  Future<void> join(Invite invite) async {
     try {
       _subscription?.cancel();
 
@@ -41,33 +47,48 @@ class JoinInviteService implements IJoinInviteService {
 
       retrievedInvite.joiner = authenticationService.getUserId();
       inviteRepository.updateInvite(retrievedInvite);
-      onInviteStatusChangedListener.call(
-          retrievedInvite, InviteStatus.inviteSent);
+
+      statusUpdateSubject.add(JoinInviteUpdate(
+          state: JoinInviteState.inviteSent, invite: retrievedInvite));
+
       _subscription =
           inviteRepository.snapshots(retrievedInvite.creator).timeout(
         const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
           _subscription?.cancel();
-          onInviteStatusChangedListener.call(
-              retrievedInvite, InviteStatus.inviteTimeout);
+          statusUpdateSubject.add(JoinInviteUpdate(
+              state: JoinInviteState.inviteTimeout, invite: retrievedInvite));
         },
       ).listen((invite) {
         if (invite?.accepted != null) {
           _subscription!.cancel();
-          onInviteStatusChangedListener.call(
-              invite!,
-              invite.accepted!
-                  ? InviteStatus.inviteAccepted
-                  : InviteStatus.inviteDeclined);
+
+          statusUpdateSubject.add(JoinInviteUpdate(
+              state: invite!.accepted!
+                  ? JoinInviteState.inviteAccepted
+                  : JoinInviteState.inviteDeclined,
+              invite: invite));
         }
       }, onError: (e) {
         _subscription!.cancel();
-        onInviteStatusChangedListener.call(
-            retrievedInvite, InviteStatus.inviteError);
+        statusUpdateSubject.add(JoinInviteUpdate(
+            state: JoinInviteState.inviteError, invite: retrievedInvite));
       });
     } catch (e) {
       _subscription?.cancel();
-      onInviteStatusChangedListener.call(invite, InviteStatus.inviteError);
+      statusUpdateSubject.add(
+          JoinInviteUpdate(state: JoinInviteState.inviteError, invite: invite));
     }
+  }
+
+  @override
+  Stream<JoinInviteUpdate> stream() {
+    return statusUpdateSubject;
+  }
+
+  @override
+  void dispose() {
+    statusUpdateSubject.close();
+    log('Join invite service dispose');
   }
 }

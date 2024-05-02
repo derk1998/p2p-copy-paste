@@ -18,23 +18,24 @@ class _CreateInviteScreenState
     return StreamBuilder<CreateInviteScreenState>(
       stream: viewModel.state,
       builder: (context, snapshot) {
-        return !snapshot.hasData || snapshot.data!.loading
-            ? const CircularProgressIndicator()
-            : Column(mainAxisSize: MainAxisSize.min, children: [
-                if (kDebugMode && snapshot.data!.data != null)
-                  SelectableText(snapshot.data!.data!),
-                if (snapshot.data!.data != null)
-                  QrImageView(
-                    data: snapshot.data!.data!,
-                    version: QrVersions.auto,
-                    size: 200.0,
-                  ),
-                if (snapshot.data!.seconds != null)
-                  Text(
-                    snapshot.data!.seconds!.toString(),
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  )
-              ]);
+        return Center(
+            child: !snapshot.hasData || snapshot.data!.loading
+                ? const CircularProgressIndicator()
+                : Column(mainAxisSize: MainAxisSize.min, children: [
+                    if (kDebugMode && snapshot.data!.data != null)
+                      SelectableText(snapshot.data!.data!),
+                    if (snapshot.data!.data != null)
+                      QrImageView(
+                        data: snapshot.data!.data!,
+                        version: QrVersions.auto,
+                        size: 200.0,
+                      ),
+                    if (snapshot.data!.seconds != null)
+                      Text(
+                        snapshot.data!.seconds!.toString(),
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      )
+                  ]));
       },
     );
   }

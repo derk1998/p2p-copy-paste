@@ -31,6 +31,10 @@ class FlowScreenViewModel extends ScreenViewModel {
     flow.viewChangeSubject.listen(_onViewChanged);
   }
 
+  void onPopInvoked() {
+    flow.cancel();
+  }
+
   @override
   void dispose() {
     flow.dispose();

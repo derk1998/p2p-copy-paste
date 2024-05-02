@@ -8,7 +8,7 @@ import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
 
 import 'join_invite_service_test.mocks.dart';
 
@@ -69,7 +69,7 @@ void main() {
   test('Verify if invite status is updated to invite sent when invite is sent',
       () async {
     final invite = Invite('creator');
-    InviteStatus? capturedInviteStatus;
+    JoinInviteState? capturedInviteStatus;
     final completer = Completer<void>();
 
     when(mockInviteRepository.getInvite(invite.creator))
@@ -85,14 +85,14 @@ void main() {
     });
 
     await completer.future;
-    expect(capturedInviteStatus, InviteStatus.inviteSent);
+    expect(capturedInviteStatus, JoinInviteState.inviteSent);
   });
 
   test(
       'Verify if invite status is updated to invite error when invite cannot be retrieved',
       () async {
     final invite = Invite('creator');
-    InviteStatus? capturedInviteStatus;
+    JoinInviteState? capturedInviteStatus;
     final completer = Completer<void>();
 
     when(mockInviteRepository.getInvite(invite.creator)).thenThrow(Error());
@@ -107,13 +107,13 @@ void main() {
     });
 
     await completer.future;
-    expect(capturedInviteStatus, InviteStatus.inviteError);
+    expect(capturedInviteStatus, JoinInviteState.inviteError);
   });
 
   test('Verify if invite status is updated to timeout when invite is timed out',
       () async {
     final invite = Invite('creator');
-    InviteStatus? capturedInviteStatus;
+    JoinInviteState? capturedInviteStatus;
     final completer = Completer<void>();
 
     when(mockInviteRepository.getInvite(invite.creator))
@@ -136,7 +136,7 @@ void main() {
 
     joinInviteService.join(invite, (invite, inviteStatus) {
       if (capturedInviteStatus == null &&
-          inviteStatus != InviteStatus.inviteSent) {
+          inviteStatus != JoinInviteState.inviteSent) {
         capturedInviteStatus = inviteStatus;
         completer.complete();
       }
@@ -149,13 +149,13 @@ void main() {
         .captured[0](mockEventSink);
 
     await completer.future;
-    expect(capturedInviteStatus, InviteStatus.inviteTimeout);
+    expect(capturedInviteStatus, JoinInviteState.inviteTimeout);
   });
 
   test('Verify if invite status is updated to accepted when invite is accepted',
       () async {
     final invite = Invite('creator');
-    InviteStatus? capturedInviteStatus;
+    JoinInviteState? capturedInviteStatus;
     final completer = Completer<void>();
 
     when(mockInviteRepository.getInvite(invite.creator))
@@ -177,7 +177,7 @@ void main() {
 
     joinInviteService.join(invite, (invite, inviteStatus) {
       if (capturedInviteStatus == null &&
-          inviteStatus != InviteStatus.inviteSent) {
+          inviteStatus != JoinInviteState.inviteSent) {
         capturedInviteStatus = inviteStatus;
         completer.complete();
       }
@@ -189,13 +189,13 @@ void main() {
         .captured[0](invite..accepted = true);
 
     await completer.future;
-    expect(capturedInviteStatus, InviteStatus.inviteAccepted);
+    expect(capturedInviteStatus, JoinInviteState.inviteAccepted);
   });
 
   test('Verify if invite status is updated to declined when invite is declined',
       () async {
     final invite = Invite('creator');
-    InviteStatus? capturedInviteStatus;
+    JoinInviteState? capturedInviteStatus;
     final completer = Completer<void>();
 
     when(mockInviteRepository.getInvite(invite.creator))
@@ -217,7 +217,7 @@ void main() {
 
     joinInviteService.join(invite, (invite, inviteStatus) {
       if (capturedInviteStatus == null &&
-          inviteStatus != InviteStatus.inviteSent) {
+          inviteStatus != JoinInviteState.inviteSent) {
         capturedInviteStatus = inviteStatus;
         completer.complete();
       }
@@ -229,13 +229,13 @@ void main() {
         .captured[0](invite..accepted = false);
 
     await completer.future;
-    expect(capturedInviteStatus, InviteStatus.inviteDeclined);
+    expect(capturedInviteStatus, JoinInviteState.inviteDeclined);
   });
 
   test('Verify if invite status is updated to error when error occurred',
       () async {
     final invite = Invite('creator');
-    InviteStatus? capturedInviteStatus;
+    JoinInviteState? capturedInviteStatus;
     final completer = Completer<void>();
 
     when(mockInviteRepository.getInvite(invite.creator))
@@ -257,7 +257,7 @@ void main() {
 
     joinInviteService.join(invite, (invite, inviteStatus) {
       if (capturedInviteStatus == null &&
-          inviteStatus != InviteStatus.inviteSent) {
+          inviteStatus != JoinInviteState.inviteSent) {
         capturedInviteStatus = inviteStatus;
         completer.complete();
       }
@@ -269,6 +269,6 @@ void main() {
         .captured[0](Error());
 
     await completer.future;
-    expect(capturedInviteStatus, InviteStatus.inviteError);
+    expect(capturedInviteStatus, JoinInviteState.inviteError);
   });
 }

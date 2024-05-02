@@ -36,6 +36,8 @@ abstract class Flow<S extends FlowState, ID> {
     if (_status == FlowStatus.idle) {
       cancel();
     }
+
+    viewChangeSubject.close();
     log('${name()} dispose');
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
-import 'package:p2p_copy_paste/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/join_invite/view_models/connect_dialog.dart';
 import 'package:p2p_copy_paste/widgets/pure_icon_button.dart';
 
 class ConnectDialog extends ScreenView<ConnectDialogViewModel> {
@@ -17,9 +17,7 @@ class _ConnectDialogState
     return StreamBuilder<ConnectDialogState>(
       stream: viewModel.state,
       builder: (context, snapshot) {
-        return Scaffold(
-          appBar: AppBar(title: Text(viewModel.title())),
-          body: Padding(
+        return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Center(
               child: !snapshot.hasData || snapshot.data!.loading
@@ -36,9 +34,7 @@ class _ConnectDialogState
                               viewModel: snapshot.data!.refreshButtonViewModel!)
                       ],
                     ),
-            ),
-          ),
-        );
+            ));
       },
     );
   }

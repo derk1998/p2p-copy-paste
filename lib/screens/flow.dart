@@ -13,20 +13,26 @@ class _FlowScreenState
     extends ScreenViewState<FlowScreen, FlowScreenViewModel> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FlowScreenState>(
-      stream: viewModel.state,
-      builder: (context, snapshot) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(snapshot.hasData ? snapshot.data!.title : ''),
-          ),
-          body: Center(
-            child: !snapshot.hasData
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+
+        viewModel.onPopInvoked();
+      },
+      child: StreamBuilder<FlowScreenState>(
+        stream: viewModel.state,
+        builder: (context, snapshot) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(snapshot.hasData ? snapshot.data!.title : ''),
+            ),
+            body: !snapshot.hasData
                 ? const CircularProgressIndicator()
                 : snapshot.data!.view,
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

@@ -1,14 +1,9 @@
+import 'dart:async';
 import 'dart:core';
 
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/connect_dialog.dart';
-import 'package:p2p_copy_paste/screens/join_connection.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/connect_dialog.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -23,19 +18,15 @@ class JoinConnectionScreenViewModel extends ScreenViewModel {
   late ButtonViewModel connectButtonViewModel;
 
   JoinConnectionScreenViewModel(
-      {required this.navigator,
-      required this.clipboardService,
-      required this.joinConnectionService,
-      required this.joinInviteService}) {
+      {required this.joinInviteService,
+      required this.inviteRetrievedCondition}) {
     connectButtonViewModel = ButtonViewModel(
         title: 'Connect', onPressed: _onSubmitConnectionIdButtonClicked);
   }
 
-  final INavigator navigator;
-  final IClipboardService clipboardService;
-  final IJoinConnectionService joinConnectionService;
   final IJoinInviteService joinInviteService;
   String code = '';
+  final StreamController<Invite> inviteRetrievedCondition;
 
   final _stateSubject = BehaviorSubject<JoinConnectionScreenState>.seeded(
       JoinConnectionScreenState());
@@ -65,21 +56,7 @@ class JoinConnectionScreenViewModel extends ScreenViewModel {
       return;
     }
 
-    navigator.replaceScreen(ConnectDialog(
-      viewModel: ConnectDialogViewModel(
-          invite: invite,
-          navigator: navigator,
-          getJoinNewInvitePageView: () => JoinConnectionScreen(
-                viewModel: JoinConnectionScreenViewModel(
-                    clipboardService: clipboardService,
-                    joinConnectionService: joinConnectionService,
-                    joinInviteService: joinInviteService,
-                    navigator: navigator),
-              ),
-          clipboardService: clipboardService,
-          joinConnectionService: joinConnectionService,
-          joinInviteService: joinInviteService),
-    ));
+    inviteRetrievedCondition.add(invite);
   }
 
   @override

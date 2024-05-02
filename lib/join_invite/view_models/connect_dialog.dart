@@ -2,16 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/services/join_invite.dart';
+import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
 
+//todo: split off join connection logic
 class ConnectDialogState {
   ConnectDialogState(
       {this.description = '',
@@ -26,20 +22,16 @@ class ConnectDialogState {
 class ConnectDialogViewModel extends ScreenViewModel {
   ConnectDialogViewModel(
       {required this.invite,
-      required this.getJoinNewInvitePageView,
-      required this.navigator,
       required this.joinInviteService,
-      required this.joinConnectionService,
-      required this.clipboardService});
+      required this.restartCondition});
 
   final Invite invite;
-  Widget Function() getJoinNewInvitePageView;
-  final INavigator navigator;
   final IJoinInviteService joinInviteService;
-  final IJoinConnectionService joinConnectionService;
-  final IClipboardService clipboardService;
+  final Subject<bool> restartCondition;
+
   final _stateSubject = BehaviorSubject<ConnectDialogState>.seeded(
       ConnectDialogState(loading: true));
+  StreamSubscription<JoinInviteUpdate>? _joinInviteUpdateSubscription;
 
   Stream<ConnectDialogState> get state => _stateSubject;
 
@@ -51,10 +43,11 @@ class ConnectDialogViewModel extends ScreenViewModel {
   @override
   void dispose() {
     _stateSubject.close();
+    _joinInviteUpdateSubscription?.cancel();
   }
 
   void _onRefreshButtonPressed() {
-    navigator.replaceScreen(getJoinNewInvitePageView());
+    restartCondition.add(true);
   }
 
   void _updateState(String description,
@@ -70,50 +63,32 @@ class ConnectDialogViewModel extends ScreenViewModel {
     );
   }
 
-  void _connect(Invite invite) async {
-    joinConnectionService.setOnConnectedListener(() {
-      navigator.replaceScreen(ClipboardScreen(
-        viewModel: ClipboardScreenViewModel(
-            clipboardService: clipboardService,
-            closeConnectionUseCase: joinConnectionService,
-            dataTransceiver: joinConnectionService,
-            navigator: navigator),
-      ));
-    });
-
-    try {
-      _updateState('', loading: true);
-      await joinConnectionService.joinConnection(invite.creator);
-    } catch (e) {
-      _updateState('Unable to connect');
-    }
-  }
-
-  void _onInviteStatusChanged(Invite invite, InviteStatus inviteStatus) async {
-    switch (inviteStatus) {
-      case InviteStatus.inviteAccepted:
-        _connect(invite);
-        break;
-      case InviteStatus.inviteError:
+  void _onInviteStatusChanged(JoinInviteUpdate joinInviteUpdate) async {
+    switch (joinInviteUpdate.state) {
+      case JoinInviteState.inviteError:
         _updateState('The invite is invalid or outdated. Please try again.');
         break;
-      case InviteStatus.inviteTimeout:
+      case JoinInviteState.inviteTimeout:
         _updateState('The invite is expired. Please try again.');
         break;
-      case InviteStatus.inviteDeclined:
+      case JoinInviteState.inviteDeclined:
         _updateState(
             'The invite is declined by the other device. Please try again.');
         break;
-      case InviteStatus.inviteSent:
+      case JoinInviteState.inviteSent:
         _updateState(
-            'Verify if the following code is displayed on the other device: ${invite.joiner}',
+            'Verify if the following code is displayed on the other device: ${joinInviteUpdate.invite.joiner}',
             refresh: false);
+        break;
+      default:
         break;
     }
   }
 
   Future<void> join(Invite invite) async {
-    joinInviteService.join(invite, _onInviteStatusChanged);
+    _joinInviteUpdateSubscription =
+        joinInviteService.stream().listen(_onInviteStatusChanged);
+    joinInviteService.join(invite);
   }
 
   @override
