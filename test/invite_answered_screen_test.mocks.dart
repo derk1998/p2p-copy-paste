@@ -7,12 +7,11 @@ import 'dart:async' as _i4;
 
 import 'package:flutter/material.dart' as _i1;
 import 'package:mockito/mockito.dart' as _i2;
-import 'package:p2p_copy_paste/lifetime.dart' as _i5;
-import 'package:p2p_copy_paste/models/invite.dart' as _i6;
-import 'package:p2p_copy_paste/navigation_manager.dart' as _i7;
-import 'package:p2p_copy_paste/services/clipboard.dart' as _i9;
-import 'package:p2p_copy_paste/services/create_connection.dart' as _i8;
 import 'package:p2p_copy_paste/create_invite/create_invite_service.dart' as _i3;
+import 'package:p2p_copy_paste/models/invite.dart' as _i5;
+import 'package:p2p_copy_paste/navigation_manager.dart' as _i6;
+import 'package:p2p_copy_paste/services/clipboard.dart' as _i8;
+import 'package:p2p_copy_paste/services/create_connection.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -48,45 +47,58 @@ class MockICreateInviteService extends _i2.Mock
   }
 
   @override
-  _i4.Future<void> create(
-    void Function(_i3.CreateInviteUpdate)? onCreateInviteUpdate,
-    WeakReference<_i5.LifeTime>? lifeTime,
-  ) =>
-      (super.noSuchMethod(
+  _i4.Future<void> create() => (super.noSuchMethod(
         Invocation.method(
           #create,
-          [
-            onCreateInviteUpdate,
-            lifeTime,
-          ],
+          [],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<bool> accept(_i6.Invite? invite) => (super.noSuchMethod(
+  _i4.Future<void> accept(_i5.Invite? invite) => (super.noSuchMethod(
         Invocation.method(
           #accept,
           [invite],
         ),
-        returnValue: _i4.Future<bool>.value(false),
-      ) as _i4.Future<bool>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i4.Future<bool> decline(_i6.Invite? invite) => (super.noSuchMethod(
+  _i4.Future<void> decline(_i5.Invite? invite) => (super.noSuchMethod(
         Invocation.method(
           #decline,
           [invite],
         ),
-        returnValue: _i4.Future<bool>.value(false),
-      ) as _i4.Future<bool>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Stream<_i3.CreateInviteUpdate> stream() => (super.noSuchMethod(
+        Invocation.method(
+          #stream,
+          [],
+        ),
+        returnValue: _i4.Stream<_i3.CreateInviteUpdate>.empty(),
+      ) as _i4.Stream<_i3.CreateInviteUpdate>);
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }
 
 /// A class which mocks [INavigator].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockINavigator extends _i2.Mock implements _i7.INavigator {
+class MockINavigator extends _i2.Mock implements _i6.INavigator {
   MockINavigator() {
     _i2.throwOnMissingStub(this);
   }
@@ -156,7 +168,7 @@ class MockINavigator extends _i2.Mock implements _i7.INavigator {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockICreateConnectionService extends _i2.Mock
-    implements _i8.ICreateConnectionService {
+    implements _i7.ICreateConnectionService {
   MockICreateConnectionService() {
     _i2.throwOnMissingStub(this);
   }
@@ -235,7 +247,7 @@ class MockICreateConnectionService extends _i2.Mock
 /// A class which mocks [IClipboardService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockIClipboardService extends _i2.Mock implements _i9.IClipboardService {
+class MockIClipboardService extends _i2.Mock implements _i8.IClipboardService {
   MockIClipboardService() {
     _i2.throwOnMissingStub(this);
   }

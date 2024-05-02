@@ -1,10 +1,6 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:p2p_copy_paste/lifetime.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
@@ -28,17 +24,10 @@ class CreateInviteScreenState {
   }
 }
 
-class CreateInviteScreenViewModel extends ScreenViewModel with LifeTime {
-  CreateInviteScreenViewModel(
-      {required this.navigator,
-      required this.createInviteService,
-      required this.createConnectionService,
-      required this.clipboardService});
+class CreateInviteScreenViewModel extends ScreenViewModel {
+  CreateInviteScreenViewModel({required this.createInviteService});
 
-  final INavigator navigator;
   final ICreateInviteService createInviteService;
-  final ICreateConnectionService createConnectionService;
-  final IClipboardService clipboardService;
   final _stateSubject = BehaviorSubject<CreateInviteScreenState>.seeded(
       CreateInviteScreenState());
   StreamSubscription<CreateInviteUpdate>? _createInviteUpdateSubscription;
@@ -71,7 +60,6 @@ class CreateInviteScreenViewModel extends ScreenViewModel with LifeTime {
   void dispose() {
     _createInviteUpdateSubscription?.cancel();
     _stateSubject.close();
-    expire();
   }
 
   @override

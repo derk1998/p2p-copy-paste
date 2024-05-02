@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:p2p_copy_paste/lifetime.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
@@ -12,13 +11,8 @@ import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 
 import 'create_invite_service_test.mocks.dart';
 
-@GenerateMocks([
-  IAuthenticationService,
-  IInviteRepository,
-  Stream,
-  StreamSubscription,
-  LifeTime
-])
+@GenerateMocks(
+    [IAuthenticationService, IInviteRepository, Stream, StreamSubscription])
 void main() {
   late CreateInviteService createInviteService;
   late MockIInviteRepository mockInviteRepository;
@@ -60,30 +54,7 @@ void main() {
     expect(invite.accepted, true);
   });
 
-  test('Verify if expiring listener is set on lifetime when invite is created',
-      () async {
-    final mockLifeTime = MockLifeTime();
-    final invite = Invite('creator');
-
-    when(mockAuthenticationService.getUserId()).thenReturn('userid');
-    when(mockInviteRepository.addInvite(any))
-        .thenAnswer((realInvocation) => Future(() => invite));
-    final mockStream = MockStream<Invite?>();
-    final mockStreamSubscription = MockStreamSubscription<Invite?>();
-
-    when(mockInviteRepository.snapshots(any)).thenAnswer(
-      (realInvocation) => mockStream,
-    );
-
-    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
-
-    createInviteService.create((update) {}, WeakReference(mockLifeTime));
-
-    verify(mockLifeTime.setOnExpiringListener(any)).called(1);
-  });
-
   test('Verify if invite is created with user id from auth service', () async {
-    final mockLifeTime = MockLifeTime();
     final invite = Invite('creator');
     const userId = 'userid1234';
     when(mockAuthenticationService.getUserId()).thenReturn(userId);
@@ -98,7 +69,7 @@ void main() {
 
     when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
-    createInviteService.create((update) {}, WeakReference(mockLifeTime));
+    createInviteService.create();
 
     verify(mockAuthenticationService.getUserId()).called(1);
     expect(
@@ -107,7 +78,6 @@ void main() {
   });
 
   test('Verify if service listens to invite changes', () async {
-    final mockLifeTime = MockLifeTime();
     final invite = Invite('creator');
     const userId = 'userid1234';
     when(mockAuthenticationService.getUserId()).thenReturn(userId);
@@ -122,7 +92,7 @@ void main() {
 
     when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
-    createInviteService.create((update) {}, WeakReference(mockLifeTime));
+    createInviteService.create();
     await untilCalled(mockInviteRepository.snapshots(userId));
     verify(mockStream.listen(any)).called(1);
   });

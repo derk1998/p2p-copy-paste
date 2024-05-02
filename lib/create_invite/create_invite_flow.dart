@@ -3,16 +3,14 @@ import 'dart:async';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/create_invite/screens/create_invite.dart';
 import 'package:p2p_copy_paste/create_invite/screens/invite_answered.dart';
 import 'package:p2p_copy_paste/create_invite/screens/invite_expired.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/create_invite.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/invite_answered.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/invite_expired.dart';
+import 'package:rxdart/rxdart.dart';
 
 enum _StateId {
   start,
@@ -24,25 +22,23 @@ enum _StateId {
 
 class CreateInviteFlow extends Flow<FlowState, _StateId> {
   late StreamSubscription<CreateInviteUpdate> createInviteStatusSubscription;
-  final INavigator navigator;
   final ICreateInviteService createInviteService;
-  final ICreateConnectionService createConnectionService;
-  final IClipboardService clipboardService;
   Invite? invite;
+  final _restartCondition = PublishSubject<bool>();
+  StreamSubscription<bool>? _restartConditionSubscription;
 
-  //kind of a lot of dependencies but we will fix it later
   CreateInviteFlow(
-      {required this.navigator,
-      required this.createInviteService,
-      required this.createConnectionService,
-      required this.clipboardService,
+      {required this.createInviteService,
       super.onCompleted,
       super.onCanceled}) {
     addState(
         state: FlowState(name: 'start', onEntry: _onEntryStartState),
         stateId: _StateId.start);
     addState(
-        state: FlowState(name: 'expired', onEntry: _onEntryExpiredState),
+        state: FlowState(
+            name: 'expired',
+            onEntry: _onEntryExpiredState,
+            onExit: _onExitExpiredState),
         stateId: _StateId.expired);
     addState(
         state: FlowState(name: 'answered', onEntry: _onEntryAnsweredState),
@@ -60,32 +56,35 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
   void _onEntryStartState() {
     final view = CreateInviteScreen(
         viewModel: CreateInviteScreenViewModel(
-      navigator: navigator,
-      createInviteService: createInviteService,
-      createConnectionService: createConnectionService,
-      clipboardService: clipboardService,
-    ));
+            createInviteService: createInviteService));
     viewChangeSubject.add(view);
   }
 
   void _onEntryExpiredState() {
+    _restartConditionSubscription =
+        _restartCondition.listen(_onRestartConditionChanged);
+
     final view = InviteExpiredScreen(
         viewModel: InviteExpiredViewModel(
-            navigator: navigator,
-            createInviteService: createInviteService,
-            createConnectionService: createConnectionService,
-            clipboardService: clipboardService));
+            restartCondition: _restartCondition,
+            createInviteService: createInviteService));
     viewChangeSubject.add(view);
+  }
+
+  void _onRestartConditionChanged(bool restart) {
+    if (restart) {
+      setState(_StateId.start);
+    }
+  }
+
+  void _onExitExpiredState() {
+    _restartConditionSubscription?.cancel();
   }
 
   void _onEntryAnsweredState() {
     final view = InviteAnsweredScreen(
         viewModel: InviteAnsweredScreenViewModel(
-            navigator: navigator,
-            invite: invite!,
-            createInviteService: createInviteService,
-            createConnectionService: createConnectionService,
-            clipboardService: clipboardService));
+            invite: invite!, createInviteService: createInviteService));
     viewChangeSubject.add(view);
   }
 
@@ -124,6 +123,7 @@ class CreateInviteFlow extends Flow<FlowState, _StateId> {
     createInviteStatusSubscription.cancel();
     createInviteService.dispose();
     viewChangeSubject.close();
+    _restartCondition.close();
   }
 
   @override

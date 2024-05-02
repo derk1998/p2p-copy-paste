@@ -1,56 +1,70 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:p2p_copy_paste/models/invite.dart';
 
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/create_invite/screens/invite_answered.dart';
-import 'package:p2p_copy_paste/create_invite/screens/invite_expired.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/create_connection.dart';
 import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/create_invite.dart';
 
 import 'create_invite_screen_test.mocks.dart';
 
-@GenerateMocks([
-  ICreateInviteService,
-  INavigator,
-  ICreateConnectionService,
-  IClipboardService
-])
+@GenerateMocks([ICreateInviteService, Stream, StreamSubscription])
 void main() {
   late CreateInviteScreenViewModel viewModel;
   late MockICreateInviteService mockCreateInviteService;
-  late MockINavigator mockNavigator;
 
   setUp(() {
     mockCreateInviteService = MockICreateInviteService();
-    mockNavigator = MockINavigator();
 
     viewModel = CreateInviteScreenViewModel(
-        createInviteService: mockCreateInviteService,
-        navigator: mockNavigator,
-        createConnectionService: MockICreateConnectionService(),
-        clipboardService: MockIClipboardService());
-
-    viewModel.init();
+        createInviteService: mockCreateInviteService);
   });
 
   test('Verify if initial state starts at loading', () async {
+    final mockStream = MockStream<CreateInviteUpdate>();
+    when(mockCreateInviteService.stream()).thenAnswer(
+      (realInvocation) => mockStream,
+    );
+
+    final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
+
+    viewModel.init();
+
     final state = await viewModel.state.first;
 
     expect(state.loading, true);
   });
 
   test('Verify if invite is created at initialization', () async {
-    verify(mockCreateInviteService.create(any, any)).called(1);
+    final mockStream = MockStream<CreateInviteUpdate>();
+    when(mockCreateInviteService.stream()).thenAnswer(
+      (realInvocation) => mockStream,
+    );
+
+    final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
+
+    viewModel.init();
+
+    verify(mockCreateInviteService.create()).called(1);
   });
 
   test('Verify if seconds are updated when waiting for invite response',
       () async {
+    final mockStream = MockStream<CreateInviteUpdate>();
+    when(mockCreateInviteService.stream()).thenAnswer(
+      (realInvocation) => mockStream,
+    );
+
+    final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
+
+    viewModel.init();
+
     void Function(CreateInviteUpdate) listener =
-        verify(mockCreateInviteService.create(captureAny, any)).captured[0];
+        verify(mockStream.listen(captureAny)).captured[0];
 
     listener(CreateInviteUpdate(seconds: 60, state: CreateInviteState.waiting));
     var state = await viewModel.state.first;
@@ -62,39 +76,70 @@ void main() {
   });
 
   test('Verify if not loading when invite data is updated', () async {
+    final mockStream = MockStream<CreateInviteUpdate>();
+    when(mockCreateInviteService.stream()).thenAnswer(
+      (realInvocation) => mockStream,
+    );
+
+    final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
+
+    viewModel.init();
+
     void Function(CreateInviteUpdate) listener =
-        verify(mockCreateInviteService.create(captureAny, any)).captured[0];
+        verify(mockStream.listen(captureAny)).captured[0];
 
     listener(CreateInviteUpdate(seconds: 60, state: CreateInviteState.waiting));
     var state = await viewModel.state.first;
     expect(state.loading, false);
   });
 
-  test('Verify if invite expired screen is shown when invite is expired',
-      () async {
-    void Function(CreateInviteUpdate) listener =
-        verify(mockCreateInviteService.create(captureAny, any)).captured[0];
+  //these are flow tests...
+  // test('Verify if invite expired screen is shown when invite is expired',
+  //     () async {
+  //   final mockStream = MockStream<CreateInviteUpdate>();
+  //   when(mockCreateInviteService.stream()).thenAnswer(
+  //     (realInvocation) => mockStream,
+  //   );
 
-    listener(CreateInviteUpdate(seconds: 60, state: CreateInviteState.expired));
-    await viewModel.state.first;
+  //   final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+  //   when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
-    expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<InviteExpiredScreen>());
-  });
+  //   viewModel.init();
 
-  test('Verify if invite answered screen is shown when uid is received',
-      () async {
-    void Function(CreateInviteUpdate) listener =
-        verify(mockCreateInviteService.create(captureAny, any)).captured[0];
+  //   void Function(CreateInviteUpdate) listener =
+  //       verify(mockStream.listen(captureAny)).captured[0];
 
-    var invite = Invite('creator');
-    invite.joiner = 'joiner';
+  //   listener(CreateInviteUpdate(seconds: 60, state: CreateInviteState.expired));
+  //   await viewModel.state.first;
 
-    listener(CreateInviteUpdate(
-        seconds: 60, state: CreateInviteState.receivedUid, invite: invite));
-    await viewModel.state.first;
+  //   expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
+  //       isA<InviteExpiredScreen>());
+  // });
 
-    expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<InviteAnsweredScreen>());
-  });
+  // test('Verify if invite answered screen is shown when uid is received',
+  //     () async {
+  //   final mockStream = MockStream<CreateInviteUpdate>();
+  //   when(mockCreateInviteService.stream()).thenAnswer(
+  //     (realInvocation) => mockStream,
+  //   );
+
+  //   final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+  //   when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
+
+  //   viewModel.init();
+
+  //   void Function(CreateInviteUpdate) listener =
+  //       verify(mockStream.listen(captureAny)).captured[0];
+
+  //   var invite = Invite('creator');
+  //   invite.joiner = 'joiner';
+
+  //   listener(CreateInviteUpdate(
+  //       seconds: 60, state: CreateInviteState.receivedUid, invite: invite));
+  //   await viewModel.state.first;
+
+  //   expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
+  //       isA<InviteAnsweredScreen>());
+  // });
 }

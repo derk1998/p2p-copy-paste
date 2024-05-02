@@ -64,15 +64,10 @@ class HomeScreenViewModel {
       'Start copying and pasting between devices. Download the app or go to https://cp.xdatwork.com on your other device.';
 
   void _onCreateInviteButtonClicked() async {
-    //todo: to decouple flows per feature, we need to find a way to chain flows
-    //for instance, with a onCompletedListener and a onCanceledListener
     final flow = CreateInviteFlow(
-        navigator: navigator,
         createInviteService: CreateInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        createConnectionService: createConnectionService,
-        clipboardService: clipboardService,
         onCompleted: _startNewConnection,
         onCanceled: _closeCreateInviteFlow);
 
