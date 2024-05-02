@@ -8,7 +8,7 @@ import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/create_invite/view_models/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 
-class InviteExpiredViewModel extends StatefulScreenViewModel {
+class InviteExpiredViewModel extends ScreenViewModel {
   InviteExpiredViewModel(
       {required this.navigator,
       required this.createInviteService,

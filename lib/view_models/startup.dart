@@ -14,7 +14,7 @@ class StartupScreenState {
   bool loading;
 }
 
-class StartupScreenViewModel extends StatefulScreenViewModel {
+class StartupScreenViewModel extends ScreenViewModel {
   StartupScreenViewModel(
       {required this.authenticationService,
       required this.homeScreenViewModel,

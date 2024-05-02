@@ -6,7 +6,7 @@ import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 
-class InviteAnsweredScreenViewModel extends StatefulScreenViewModel {
+class InviteAnsweredScreenViewModel extends ScreenViewModel {
   InviteAnsweredScreenViewModel(
       {required this.invite,
       required this.navigator,

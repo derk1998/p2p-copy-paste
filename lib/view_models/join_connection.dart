@@ -19,7 +19,7 @@ class JoinConnectionScreenState {
   String status;
 }
 
-class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
+class JoinConnectionScreenViewModel extends ScreenViewModel {
   late ButtonViewModel connectButtonViewModel;
 
   JoinConnectionScreenViewModel(

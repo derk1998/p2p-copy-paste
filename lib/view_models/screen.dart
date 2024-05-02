@@ -1,4 +1,4 @@
-abstract class StatefulScreenViewModel {
+abstract class ScreenViewModel {
   void init();
   void dispose();
 

@@ -23,7 +23,7 @@ class ConnectDialogState {
   final bool loading;
 }
 
-class ConnectDialogViewModel extends StatefulScreenViewModel {
+class ConnectDialogViewModel extends ScreenViewModel {
   ConnectDialogViewModel(
       {required this.invite,
       required this.getJoinNewInvitePageView,

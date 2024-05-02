@@ -28,8 +28,7 @@ class CreateInviteScreenState {
   }
 }
 
-class CreateInviteScreenViewModel extends StatefulScreenViewModel
-    with LifeTime {
+class CreateInviteScreenViewModel extends ScreenViewModel with LifeTime {
   CreateInviteScreenViewModel(
       {required this.navigator,
       required this.createInviteService,

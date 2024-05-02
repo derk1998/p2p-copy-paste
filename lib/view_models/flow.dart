@@ -10,7 +10,7 @@ class FlowScreenState {
   ScreenView? view;
 }
 
-class FlowScreenViewModel extends StatefulScreenViewModel {
+class FlowScreenViewModel extends ScreenViewModel {
   FlowScreenViewModel(this.flow);
 
   final Flow flow;

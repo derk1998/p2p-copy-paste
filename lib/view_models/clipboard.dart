@@ -18,7 +18,7 @@ class ClipboardScreenState {
   final String clipboard;
 }
 
-class ClipboardScreenViewModel implements StatefulScreenViewModel {
+class ClipboardScreenViewModel implements ScreenViewModel {
   late IconButtonViewModel copyButtonViewModel;
   late IconButtonViewModel pasteButtonViewModel;
 
