@@ -17,7 +17,7 @@ import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/join_connection.dart';
 import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
-import 'package:p2p_copy_paste/view_models/home.dart';
+import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/view_models/login.dart';
 import 'package:p2p_copy_paste/view_models/startup.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
@@ -55,7 +55,7 @@ void main() {
 
     viewModel = StartupScreenViewModel(
         authenticationService: mockAuthenticationService,
-        homeScreenViewModel: HomeScreenViewModel(GetIt.I),
+        homeScreenViewModel: MenuScreenViewModel(GetIt.I),
         loginScreenViewModel: LoginScreenViewModel(
             authenticationService: mockAuthenticationService,
             fileService: mockFileService,

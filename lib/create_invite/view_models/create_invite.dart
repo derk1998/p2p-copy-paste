@@ -63,7 +63,7 @@ class CreateInviteScreenViewModel extends ScreenViewModel {
   }
 
   @override
-  String title() {
+  String getTitle() {
     return 'Create an invite';
   }
 }

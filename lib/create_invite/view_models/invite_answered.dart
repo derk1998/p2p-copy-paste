@@ -35,7 +35,7 @@ class InviteAnsweredScreenViewModel extends ScreenViewModel {
   void init() {}
 
   @override
-  String title() {
+  String getTitle() {
     return 'Invite answered';
   }
 }

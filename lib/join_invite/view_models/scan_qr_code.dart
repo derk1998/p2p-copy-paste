@@ -37,7 +37,7 @@ class ScanQrCodeScreenViewModel extends ScreenViewModel {
   }
 
   @override
-  String title() {
+  String getTitle() {
     return 'Scan QR code';
   }
 }

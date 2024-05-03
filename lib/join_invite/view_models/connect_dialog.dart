@@ -92,7 +92,7 @@ class ConnectDialogViewModel extends ScreenViewModel {
   }
 
   @override
-  String title() {
+  String getTitle() {
     return 'Connecting';
   }
 }

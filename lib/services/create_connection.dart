@@ -163,4 +163,6 @@ class CreateConnectionService extends AbstractConnectionService
       void Function(String data) onReceiveDataListener) {
     setOnReceiveDataListenerImpl(onReceiveDataListener);
   }
+
+  void dispose() {}
 }

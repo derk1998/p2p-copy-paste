@@ -60,7 +60,7 @@ class JoinConnectionScreenViewModel extends ScreenViewModel {
   }
 
   @override
-  String title() {
+  String getTitle() {
     return 'Join connection';
   }
 }

@@ -98,7 +98,7 @@ class ClipboardScreenViewModel implements ScreenViewModel {
   }
 
   @override
-  String title() {
+  String getTitle() {
     return '';
   }
 }

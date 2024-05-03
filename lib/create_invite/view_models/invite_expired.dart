@@ -32,7 +32,7 @@ class InviteExpiredViewModel extends ScreenViewModel {
   void init() {}
 
   @override
-  String title() {
+  String getTitle() {
     return 'Invite has expired';
   }
 }

@@ -22,7 +22,7 @@ class FlowScreenViewModel extends ScreenViewModel {
 
   void _onViewChanged(ScreenView view) {
     _stateSubject
-        .add(FlowScreenState(title: view.viewModel.title(), view: view));
+        .add(FlowScreenState(title: view.viewModel.getTitle(), view: view));
   }
 
   @override
@@ -42,7 +42,7 @@ class FlowScreenViewModel extends ScreenViewModel {
   }
 
   @override
-  String title() {
+  String getTitle() {
     return '';
   }
 }
