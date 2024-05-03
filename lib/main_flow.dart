@@ -269,7 +269,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryLoadingState() {
-    //todo: add loading screen
+    loading();
   }
 
   void _onEntryGetStartedState() {

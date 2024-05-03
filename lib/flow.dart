@@ -12,7 +12,7 @@ enum FlowStatus {
 }
 
 abstract class Flow<S extends FlowState, ID> {
-  final viewChangeSubject = BehaviorSubject<ScreenView>();
+  final viewChangeSubject = BehaviorSubject<ScreenView?>();
   final Map<ID, S> _states = {};
   late S _currentState;
   Future<void> Function()? onCompleted;
@@ -43,6 +43,10 @@ abstract class Flow<S extends FlowState, ID> {
 
   void addState({required S state, required ID stateId}) {
     _states[stateId] = state;
+  }
+
+  void loading() {
+    viewChangeSubject.add(null);
   }
 
   void complete() {

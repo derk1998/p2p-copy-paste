@@ -20,9 +20,13 @@ class FlowScreenViewModel extends ScreenViewModel {
 
   Stream<FlowScreenState> get state => _stateSubject;
 
-  void _onViewChanged(ScreenView view) {
-    _stateSubject
-        .add(FlowScreenState(title: view.viewModel.getTitle(), view: view));
+  void _onViewChanged(ScreenView? view) {
+    if (view == null) {
+      _stateSubject.add(_stateSubject.value..view = view);
+    } else {
+      _stateSubject
+          .add(FlowScreenState(title: view.viewModel.getTitle(), view: view));
+    }
   }
 
   @override

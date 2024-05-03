@@ -27,8 +27,8 @@ class _FlowScreenState
             appBar: AppBar(
               title: Text(snapshot.hasData ? snapshot.data!.title : ''),
             ),
-            body: !snapshot.hasData
-                ? const CircularProgressIndicator()
+            body: !snapshot.hasData || snapshot.data!.view == null
+                ? const Center(child: CircularProgressIndicator())
                 : snapshot.data!.view,
           );
         },
