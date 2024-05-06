@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/join_connection.dart';
+import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/widgets/button.dart';
 
 class JoinConnectionScreen extends ScreenView<JoinConnectionScreenViewModel> {

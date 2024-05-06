@@ -3,8 +3,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
-import 'package:p2p_copy_paste/create_invite/view_models/invite_answered.dart';
+import 'package:p2p_copy_paste/create/services/create_invite.dart';
+import 'package:p2p_copy_paste/create/view_models/invite_answered.dart';
 
 import 'invite_answered_screen_test.mocks.dart';
 

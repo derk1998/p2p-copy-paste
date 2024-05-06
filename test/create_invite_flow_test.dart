@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:p2p_copy_paste/create_invite/create_invite_flow.dart';
-import 'package:p2p_copy_paste/create_invite/screens/create_invite.dart';
-import 'package:p2p_copy_paste/create_invite/view_models/invite_expired.dart';
+import 'package:p2p_copy_paste/create/create_flow.dart';
+import 'package:p2p_copy_paste/create/screens/create_invite.dart';
+import 'package:p2p_copy_paste/create/view_models/invite_expired.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-import 'package:p2p_copy_paste/create_invite/screens/invite_answered.dart';
-import 'package:p2p_copy_paste/create_invite/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/create/screens/invite_answered.dart';
+import 'package:p2p_copy_paste/create/screens/invite_expired.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
+import 'package:p2p_copy_paste/create/services/create_invite.dart';
 
 import 'create_invite_screen_test.mocks.dart';
 
@@ -24,7 +24,7 @@ void main() {
   });
 
   test('Verify if flow starts at create invite screen', () async {
-    final flow = CreateInviteFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(createInviteService: mockCreateInviteService);
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -49,7 +49,7 @@ void main() {
 
   test('Verify if invite answered screen is shown when uid is received',
       () async {
-    final flow = CreateInviteFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(createInviteService: mockCreateInviteService);
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -86,7 +86,7 @@ void main() {
   });
 
   test('Verify if invite expired screen is shown when expired', () async {
-    final flow = CreateInviteFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(createInviteService: mockCreateInviteService);
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -126,7 +126,7 @@ void main() {
     bool canceled = false;
     final completer = Completer<void>();
 
-    final flow = CreateInviteFlow(
+    final flow = CreateFlow(
       createInviteService: mockCreateInviteService,
       onCanceled: () async {
         canceled = true;
@@ -159,7 +159,7 @@ void main() {
     bool completed = false;
     final completer = Completer<void>();
 
-    final flow = CreateInviteFlow(
+    final flow = CreateFlow(
       createInviteService: mockCreateInviteService,
       onCompleted: () async {
         completed = true;
@@ -192,7 +192,7 @@ void main() {
       () async {
     //ugly test but it does what it's supposed to do, feel free to improve
 
-    final flow = CreateInviteFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(createInviteService: mockCreateInviteService);
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(

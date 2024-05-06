@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
+import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 

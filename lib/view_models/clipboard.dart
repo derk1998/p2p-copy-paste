@@ -2,14 +2,10 @@ import 'dart:core';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/use_cases/close_connection.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
-import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ClipboardScreenState {
@@ -23,10 +19,7 @@ class ClipboardScreenViewModel implements ScreenViewModel {
   late IconButtonViewModel pasteButtonViewModel;
 
   ClipboardScreenViewModel(
-      {required this.dataTransceiver,
-      required this.closeConnectionUseCase,
-      required this.navigator,
-      required this.clipboardService}) {
+      {required this.dataTransceiver, required this.clipboardService}) {
     copyButtonViewModel = IconButtonViewModel(
         title: 'Copy', onPressed: _onCopyButtonPressed, icon: Icons.copy);
     pasteButtonViewModel = IconButtonViewModel(
@@ -39,13 +32,10 @@ class ClipboardScreenViewModel implements ScreenViewModel {
   Stream<ClipboardScreenState> get state => _stateSubject;
 
   final TransceiveDataUseCase dataTransceiver;
-  final CloseConnectionUseCase closeConnectionUseCase;
-  final INavigator navigator;
   final IClipboardService clipboardService;
 
   @override
   void init() {
-    closeConnectionUseCase.setOnConnectionClosedListener(_onConnectionClosed);
     dataTransceiver.setOnReceiveDataListener(_onDataReceived);
   }
 
@@ -74,27 +64,6 @@ class ClipboardScreenViewModel implements ScreenViewModel {
       _updateState(data);
       dataTransceiver.sendData(data);
     }
-  }
-
-  void _onConnectionClosed() {
-    navigator.goToHome();
-  }
-
-  void onBackPressed() {
-    navigator.pushDialog(
-      CancelConfirmDialog(
-        viewModel: CancelConfirmViewModel(
-          title: 'Are you sure?',
-          description: 'The connection will be lost',
-          onCancelButtonPressed: () {
-            navigator.popScreen();
-          },
-          onConfirmButtonPressed: () {
-            closeConnectionUseCase.close();
-          },
-        ),
-      ),
-    );
   }
 
   @override

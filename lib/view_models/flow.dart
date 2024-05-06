@@ -36,7 +36,7 @@ class FlowScreenViewModel extends ScreenViewModel {
   }
 
   void onPopInvoked() {
-    flow.cancel();
+    flow.onPopInvoked();
   }
 
   @override

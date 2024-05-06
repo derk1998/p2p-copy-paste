@@ -7,7 +7,7 @@ import 'dart:async' as _i2;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart' as _i3;
+import 'package:p2p_copy_paste/create/services/create_invite.dart' as _i3;
 import 'package:p2p_copy_paste/models/invite.dart' as _i4;
 
 // ignore_for_file: type=lint

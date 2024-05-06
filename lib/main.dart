@@ -8,10 +8,10 @@ import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/create_connection.dart';
+import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
-import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:p2p_copy_paste/view_models/flow.dart';
 

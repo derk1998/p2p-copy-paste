@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
+import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 

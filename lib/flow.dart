@@ -59,6 +59,10 @@ abstract class Flow<S extends FlowState, ID> {
     }
   }
 
+  bool isCurrentState(ID state) {
+    return _states[state] == _currentState;
+  }
+
   void cancel() {
     if (_status == FlowStatus.idle) {
       _status = FlowStatus.canceled;
@@ -67,6 +71,10 @@ abstract class Flow<S extends FlowState, ID> {
     } else {
       log('${name()} cannot be canceled because it is already completed or canceled');
     }
+  }
+
+  void onPopInvoked() {
+    cancel();
   }
 
   void setInitialState(ID stateId) {

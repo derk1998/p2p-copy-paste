@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/join/view_models/connect_dialog.dart';
 import 'package:p2p_copy_paste/widgets/pure_icon_button.dart';
 
 class ConnectDialog extends ScreenView<ConnectDialogViewModel> {

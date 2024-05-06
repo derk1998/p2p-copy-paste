@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
+import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';

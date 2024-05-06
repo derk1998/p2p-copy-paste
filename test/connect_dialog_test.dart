@@ -7,9 +7,9 @@ import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/join_connection.dart';
-import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/join/services/join_connection.dart';
+import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
+import 'package:p2p_copy_paste/join/view_models/connect_dialog.dart';
 
 import 'scan_qr_code_screen_test.mocks.dart';
 

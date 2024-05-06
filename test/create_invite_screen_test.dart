@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
-import 'package:p2p_copy_paste/create_invite/view_models/create_invite.dart';
+import 'package:p2p_copy_paste/create/services/create_invite.dart';
+import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
 
 import 'create_invite_screen_test.mocks.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/scan_qr_code.dart';
+import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 
 class ScanQRCodeScreen extends ScreenView<ScanQrCodeScreenViewModel> {
   const ScanQRCodeScreen({super.key, required super.viewModel});

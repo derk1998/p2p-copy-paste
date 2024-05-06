@@ -8,16 +8,15 @@ import 'dart:async' as _i5;
 import 'package:flutter/material.dart' as _i1;
 import 'package:mockito/mockito.dart' as _i2;
 import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart'
-    as _i10;
+import 'package:p2p_copy_paste/create/services/create_invite.dart' as _i10;
 import 'package:p2p_copy_paste/models/invite.dart' as _i11;
 import 'package:p2p_copy_paste/navigation_manager.dart' as _i3;
 import 'package:p2p_copy_paste/services/authentication.dart' as _i4;
 import 'package:p2p_copy_paste/services/clipboard.dart' as _i8;
-import 'package:p2p_copy_paste/services/create_connection.dart' as _i9;
+import 'package:p2p_copy_paste/create/services/create_connection.dart' as _i9;
 import 'package:p2p_copy_paste/services/file.dart' as _i7;
-import 'package:p2p_copy_paste/services/join_connection.dart' as _i12;
-import 'package:p2p_copy_paste/join_invite/join_invite_service.dart' as _i13;
+import 'package:p2p_copy_paste/join/services/join_connection.dart' as _i12;
+import 'package:p2p_copy_paste/join/services/join_invite_service.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

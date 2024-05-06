@@ -2,27 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
-import 'package:p2p_copy_paste/create_invite/create_invite_flow.dart';
-import 'package:p2p_copy_paste/create_invite/create_invite_service.dart';
+import 'package:p2p_copy_paste/create/create_flow.dart';
+import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
-import 'package:p2p_copy_paste/join_invite/join_invite_flow.dart';
-import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
-import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/join/join_flow.dart';
+import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/create_connection.dart';
+import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
-import 'package:p2p_copy_paste/services/join_connection.dart';
+import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
-import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/flow.dart';
 import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
@@ -30,14 +27,11 @@ import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 enum _StateId {
   overview,
   getStarted,
+  privacyPolicy,
   loading,
-  createInvite,
-  createConnection,
-  createClipboard,
-  joinInviteWithQrCode,
-  joinInviteWithCode,
-  joinConnection,
-  privacyPolicy
+  create,
+  joinWithQrCode,
+  joinWithCode,
 }
 
 class MainFlow extends Flow<FlowState, _StateId> {
@@ -47,9 +41,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   final IConnectionInfoRepository connectionInfoRepository;
   final IFileService fileService;
   final IClipboardService clipboardService;
-  CreateConnectionService? createConnectionService;
   JoinConnectionService? joinConnectionService;
-  Invite? _invite;
   late StreamSubscription<LoginState> loginStateSubscription;
 
   MainFlow(
@@ -68,41 +60,22 @@ class MainFlow extends Flow<FlowState, _StateId> {
         state: FlowState(name: 'overview', onEntry: _onEntryOverviewState),
         stateId: _StateId.overview);
     addState(
-        state: FlowState(
-            name: 'create invite', onEntry: _onEntryCreateInviteState),
-        stateId: _StateId.createInvite);
-
+        state: FlowState(name: 'create', onEntry: _onEntryCreateState),
+        stateId: _StateId.create);
     addState(
         state: FlowState(
-            name: 'create connection', onEntry: _onEntryCreateConnectionState),
-        stateId: _StateId.createConnection);
+            name: 'join with qr code', onEntry: _onEntryJoinWithQrCodeState),
+        stateId: _StateId.joinWithQrCode);
     addState(
         state: FlowState(
-            name: 'create clipboard',
-            onEntry: _onEntryCreateClipboardState,
-            onExit: _onExitCreateClipboardState),
-        stateId: _StateId.createClipboard);
-    addState(
-        state: FlowState(
-            name: 'join invite with qr code',
-            onEntry: _onEntryJoinInviteWithQrCodeState),
-        stateId: _StateId.joinInviteWithQrCode);
-    addState(
-        state: FlowState(
-            name: 'join invite with code',
-            onEntry: _onEntryJoinInviteWithCodeState),
-        stateId: _StateId.joinInviteWithCode);
-    addState(
-        state: FlowState(
-            name: 'join connection', onEntry: _onEntryJoinConnectionState),
-        stateId: _StateId.joinConnection);
+            name: 'join with code', onEntry: _onEntryJoinWithCodeState),
+        stateId: _StateId.joinWithCode);
     addState(
         state: FlowState(
             name: 'privacy policy',
             onEntry: _onEntryPrivacyPolicyState,
             onExit: _onExitPrivacyPolicyState),
         stateId: _StateId.privacyPolicy);
-
     addState(
         state: FlowState(name: 'get started', onEntry: _onEntryGetStartedState),
         stateId: _StateId.getStarted);
@@ -115,21 +88,21 @@ class MainFlow extends Flow<FlowState, _StateId> {
       IconButtonViewModel(
           title: 'Create an invite',
           onPressed: () {
-            setState(_StateId.createInvite);
+            setState(_StateId.create);
           },
           icon: material.Icons.add),
       if (kDebugMode)
         IconButtonViewModel(
             title: 'I have a code',
             onPressed: () {
-              setState(_StateId.joinInviteWithCode);
+              setState(_StateId.joinWithCode);
             },
             icon: material.Icons.numbers),
       if (!kIsWeb)
         IconButtonViewModel(
             title: 'I have a QR code',
             onPressed: () {
-              setState(_StateId.joinInviteWithCode);
+              setState(_StateId.joinWithQrCode);
             },
             icon: material.Icons.qr_code)
     ];
@@ -145,66 +118,36 @@ class MainFlow extends Flow<FlowState, _StateId> {
     viewChangeSubject.add(view);
   }
 
-  void _onEntryCreateInviteState() {
-    final flow = CreateInviteFlow(
+  void _onEntryCreateState() {
+    final flow = CreateFlow(
         createInviteService: CreateInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        onCompleted: () async {
-          setState(_StateId.createConnection);
-        },
+        clipboardService: clipboardService,
+        createConnectionService: CreateConnectionService(
+            connectionInfoRepository: connectionInfoRepository,
+            authenticationService: authenticationService),
+        navigator: navigator,
+        onCompleted: _closeScreenAndReturnToOverview,
         onCanceled: _closeScreenAndReturnToOverview);
 
     navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
   }
 
-  void _onEntryCreateConnectionState() {
-    createConnectionService = CreateConnectionService(
-        connectionInfoRepository: connectionInfoRepository,
-        authenticationService: authenticationService);
-
-    createConnectionService!.setOnConnectedListener(() {
-      setState(_StateId.createClipboard);
-    });
-
-    createConnectionService!.startNewConnection();
-  }
-
-  void _onEntryCreateClipboardState() {
-    navigator.replaceScreen(
-      ClipboardScreen(
-        viewModel: ClipboardScreenViewModel(
-            closeConnectionUseCase: createConnectionService!,
-            dataTransceiver: createConnectionService!,
-            navigator: navigator,
-            clipboardService: clipboardService),
-      ),
-    );
-  }
-
-  void _onExitCreateClipboardState() {
-    createConnectionService?.dispose();
-  }
-
-  void _onEntryJoinInviteWithQrCodeState() {
-    final flow = JoinInviteFlow(
-        viewType: JoinInviteViewType.camera,
-        onInviteAccepted: _onInviteAccepted,
+  void _onEntryJoinWithQrCodeState() {
+    final flow = JoinFlow(
+        viewType: JoinViewType.camera,
+        clipboardService: clipboardService,
+        joinConnectionService: JoinConnectionService(
+            connectionInfoRepository: connectionInfoRepository),
+        navigator: navigator,
         joinInviteService: JoinInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        onCompleted: _joinNewConnection,
+        onCompleted: _closeScreenAndReturnToOverview,
         onCanceled: _closeScreenAndReturnToOverview);
 
     navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-  }
-
-  void _onInviteAccepted(Invite invite) {
-    _invite = invite;
-  }
-
-  Future<void> _joinNewConnection() async {
-    setState(_StateId.joinConnection);
   }
 
   Future<void> _closeScreenAndReturnToOverview() async {
@@ -212,35 +155,20 @@ class MainFlow extends Flow<FlowState, _StateId> {
     setState(_StateId.overview);
   }
 
-  void _onEntryJoinInviteWithCodeState() {
-    final flow = JoinInviteFlow(
-        viewType: JoinInviteViewType.code,
-        onInviteAccepted: _onInviteAccepted,
+  void _onEntryJoinWithCodeState() {
+    final flow = JoinFlow(
+        viewType: JoinViewType.code,
+        clipboardService: clipboardService,
+        joinConnectionService: JoinConnectionService(
+            connectionInfoRepository: connectionInfoRepository),
+        navigator: navigator,
         joinInviteService: JoinInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        onCompleted: _joinNewConnection,
+        onCompleted: _closeScreenAndReturnToOverview,
         onCanceled: _closeScreenAndReturnToOverview);
 
     navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-  }
-
-  void _onEntryJoinConnectionState() {
-    joinConnectionService = JoinConnectionService(
-        connectionInfoRepository: connectionInfoRepository);
-
-    joinConnectionService!.setOnConnectedListener(() {
-      navigator.replaceScreen(ClipboardScreen(
-        viewModel: ClipboardScreenViewModel(
-            clipboardService: clipboardService,
-            closeConnectionUseCase: joinConnectionService!,
-            dataTransceiver: joinConnectionService!,
-            navigator: navigator),
-      ));
-    });
-
-    //todo: the state needs to be captured so the state can be changed when connection fails
-    joinConnectionService?.joinConnection(_invite!.creator);
   }
 
   void _onEntryPrivacyPolicyState() {

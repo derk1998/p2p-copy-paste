@@ -2,38 +2,52 @@ import 'dart:async';
 
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
-import 'package:p2p_copy_paste/join_invite/join_invite_service.dart';
-import 'package:p2p_copy_paste/join_invite/screens/connect_dialog.dart';
-import 'package:p2p_copy_paste/join_invite/screens/join_connection.dart';
-import 'package:p2p_copy_paste/join_invite/screens/scan_qr_code.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/connect_dialog.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/join_connection.dart';
-import 'package:p2p_copy_paste/join_invite/view_models/scan_qr_code.dart';
+import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
+import 'package:p2p_copy_paste/join/screens/connect_dialog.dart';
+import 'package:p2p_copy_paste/join/screens/join_connection.dart';
+import 'package:p2p_copy_paste/join/screens/scan_qr_code.dart';
+import 'package:p2p_copy_paste/join/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
+import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
+import 'package:p2p_copy_paste/screens/clipboard.dart';
+import 'package:p2p_copy_paste/services/clipboard.dart';
+import 'package:p2p_copy_paste/join/services/join_connection.dart';
+import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:rxdart/rxdart.dart';
 
-enum _StateId { start, retrieved, accepted }
+enum _StateId {
+  start,
+  retrieved,
+  join,
+  clipboard,
+}
 
-enum JoinInviteViewType { camera, code }
+enum JoinViewType { camera, code }
 
-class JoinInviteFlow extends Flow<FlowState, _StateId> {
+class JoinFlow extends Flow<FlowState, _StateId> {
   final IJoinInviteService joinInviteService;
+  final IJoinConnectionService joinConnectionService;
+  final IClipboardService clipboardService;
+  final INavigator navigator;
   Invite? _invite;
-  final JoinInviteViewType viewType;
+  final JoinViewType viewType;
   final _inviteRetrievedCondition = PublishSubject<Invite>();
   StreamSubscription<JoinInviteUpdate>? _joinInviteUpdateSubscription;
   StreamSubscription<Invite>? _inviteRetrievedConditionSubscription;
   final _restartCondition = PublishSubject<bool>();
   StreamSubscription<bool>? _restartConditionSubscription;
-  void Function(Invite invite) onInviteAccepted;
 
-  JoinInviteFlow(
+  JoinFlow(
       {required this.joinInviteService,
+      required this.joinConnectionService,
+      required this.navigator,
+      required this.clipboardService,
       super.onCompleted,
       super.onCanceled,
-      required this.viewType,
-      required this.onInviteAccepted}) {
+      required this.viewType}) {
     addState(
         state: FlowState(
             name: 'start',
@@ -47,8 +61,11 @@ class JoinInviteFlow extends Flow<FlowState, _StateId> {
             onExit: _onExitRetrievedState),
         stateId: _StateId.retrieved);
     addState(
-        state: FlowState(name: 'accepted', onEntry: _onEntryAcceptedState),
-        stateId: _StateId.accepted);
+        state: FlowState(name: 'join', onEntry: _onEntryJoinState),
+        stateId: _StateId.join);
+    addState(
+        state: FlowState(name: 'clipboard', onEntry: _onEntryClipboardState),
+        stateId: _StateId.clipboard);
 
     setInitialState(_StateId.start);
   }
@@ -58,7 +75,7 @@ class JoinInviteFlow extends Flow<FlowState, _StateId> {
         _inviteRetrievedCondition.listen(_onInviteRetrievedConditionChanged);
 
     ScreenView? view;
-    if (viewType == JoinInviteViewType.camera) {
+    if (viewType == JoinViewType.camera) {
       view = ScanQRCodeScreen(
           viewModel: ScanQrCodeScreenViewModel(
               inviteRetrievedCondition: _inviteRetrievedCondition,
@@ -106,15 +123,32 @@ class JoinInviteFlow extends Flow<FlowState, _StateId> {
     }
   }
 
-  void _onEntryAcceptedState() {
-    onInviteAccepted(_invite!);
-    complete();
-  }
-
   void _onJoinInviteStatusChanged(JoinInviteUpdate joinInviteUpdate) {
     if (joinInviteUpdate.state == JoinInviteState.inviteAccepted) {
-      setState(_StateId.accepted);
+      setState(_StateId.join);
     }
+  }
+
+  void _onEntryJoinState() {
+    joinConnectionService.setOnConnectedListener(() {
+      setState(_StateId.clipboard);
+    });
+
+    //todo: the state needs to be captured so the state can be changed when connection fails
+    joinConnectionService.joinConnection(_invite!.creator);
+  }
+
+  void _onEntryClipboardState() {
+    joinConnectionService.setOnConnectionClosedListener(() {
+      complete();
+    });
+
+    navigator.replaceScreen(ClipboardScreen(
+      viewModel: ClipboardScreenViewModel(
+        clipboardService: clipboardService,
+        dataTransceiver: joinConnectionService,
+      ),
+    ));
   }
 
   @override
@@ -135,6 +169,6 @@ class JoinInviteFlow extends Flow<FlowState, _StateId> {
 
   @override
   String name() {
-    return 'Join invite flow';
+    return 'Join flow';
   }
 }
