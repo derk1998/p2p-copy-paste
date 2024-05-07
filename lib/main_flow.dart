@@ -13,7 +13,7 @@ import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
-import 'package:p2p_copy_paste/screens/menu.dart';
+import 'package:p2p_copy_paste/screens/vertical_menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
@@ -104,21 +104,19 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryOverviewState() {
     final buttonViewModelList = [
-      IconButtonViewModel(
+      ButtonViewModel(
           title: 'Create an invite',
           onPressed: () {
             setState(_StateId.create);
-          },
-          icon: material.Icons.add),
+          }),
       if (kDebugMode)
-        IconButtonViewModel(
+        ButtonViewModel(
             title: 'I have a code',
             onPressed: () {
               setState(_StateId.joinWithCode);
-            },
-            icon: material.Icons.numbers),
+            }),
       if (!kIsWeb)
-        IconButtonViewModel(
+        ButtonViewModel(
             title: 'I have a QR code',
             onPressed: () {
               setState(_StateId.joinWithQrCode);
@@ -126,7 +124,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
             icon: material.Icons.qr_code)
     ];
 
-    final view = MenuScreen(
+    final view = VerticalMenuScreen(
         viewModel: MenuScreenViewModel(
       title: 'P2P Copy Paste',
       description:
@@ -222,7 +220,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryGetStartedState() {
     final buttonViewModelList = [
-      IconButtonViewModel(
+      ButtonViewModel(
           title: 'Get started',
           onPressed: () {
             setState(_StateId.privacyPolicy);
@@ -230,7 +228,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
           icon: material.Icons.arrow_forward)
     ];
 
-    final view = MenuScreen(
+    final view = VerticalMenuScreen(
         viewModel: MenuScreenViewModel(
       title: 'P2P Copy Paste',
       description:

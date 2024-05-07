@@ -9,7 +9,7 @@ class RestartViewModel extends ScreenViewModel {
       {required this.title,
       required this.restartCondition,
       required this.description}) {
-    iconButtonViewModel = PureIconButtonViewModel(
+    iconButtonViewModel = ButtonViewModel(
       icon: Icons.refresh,
       onPressed: _pushCreateInviteScreen,
     );
@@ -19,7 +19,7 @@ class RestartViewModel extends ScreenViewModel {
 
   final String title;
   final String description;
-  late PureIconButtonViewModel iconButtonViewModel;
+  late ButtonViewModel iconButtonViewModel;
 
   void _pushCreateInviteScreen() {
     restartCondition.add(true);

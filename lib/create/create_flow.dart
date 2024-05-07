@@ -4,11 +4,12 @@ import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/create/screens/create_invite.dart';
-import 'package:p2p_copy_paste/create/screens/invite_answered.dart';
+import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
-import 'package:p2p_copy_paste/create/view_models/invite_answered.dart';
+import 'package:p2p_copy_paste/view_models/button.dart';
+import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
@@ -99,11 +100,33 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryReceivedUidState() {
-    final view = InviteAnsweredScreen(
-        viewModel: InviteAnsweredScreenViewModel(
-            invite: CreatorInvite.fromInvite(invite!),
-            createInviteService: createInviteService,
-            createConnectionService: createConnectionService));
+    final buttonViewModelList = [
+      ButtonViewModel(
+          title: 'Yes',
+          onPressed: () {
+            createConnectionService
+                .setVisitor(invite!.creator, invite!.joiner!)
+                .then(
+              (value) {
+                createInviteService.accept(CreatorInvite.fromInvite(invite!));
+              },
+            );
+          }),
+      ButtonViewModel(
+          title: 'No',
+          onPressed: () {
+            createInviteService.decline(CreatorInvite.fromInvite(invite!));
+          })
+    ];
+
+    final view = HorizontalMenuScreen(
+        viewModel: MenuScreenViewModel(
+      title: 'Invite answered',
+      description:
+          'Your invite has been answered. Did you accept the invite with code: ${invite!.joiner!}?',
+      buttonViewModelList: buttonViewModelList,
+    ));
+
     viewChangeSubject.add(view);
   }
 

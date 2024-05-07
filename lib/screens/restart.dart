@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
-import 'package:p2p_copy_paste/widgets/pure_icon_button.dart';
+import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
 class RestartScreen extends ScreenView<RestartViewModel> {
   const RestartScreen({super.key, required super.viewModel});
@@ -19,7 +19,7 @@ class _InviteExpiredScreenState
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(widget.viewModel.description),
-          PureIconButton(viewModel: widget.viewModel.iconButtonViewModel)
+          btn.Button(viewModel: widget.viewModel.iconButtonViewModel)
         ],
       ),
     );

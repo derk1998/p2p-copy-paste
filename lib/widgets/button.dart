@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 
-class Button extends ElevatedButton {
-  Button({super.key, required ButtonViewModel viewModel})
-      : super(child: Text(viewModel.title), onPressed: viewModel.onPressed);
-}
+class Button extends StatelessWidget {
+  const Button({super.key, required this.viewModel});
 
-//Wrap ElevatedButton.icon because it's not possible to extend like
-// a normal ElevatedButton
-class IconButton extends StatelessWidget {
-  const IconButton({super.key, required this.viewModel});
-
-  final IconButtonViewModel viewModel;
+  final ButtonViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-        onPressed: viewModel.onPressed,
-        icon: Icon(viewModel.icon),
-        label: Text(viewModel.title));
+    return (viewModel.title != null && viewModel.icon != null)
+        ? ElevatedButton.icon(
+            onPressed: viewModel.onPressed,
+            icon: Icon(viewModel.icon),
+            label: Text(viewModel.title!))
+        : (viewModel.icon == null)
+            ? ElevatedButton(
+                onPressed: viewModel.onPressed, child: Text(viewModel.title!))
+            : IconButton(
+                onPressed: viewModel.onPressed, icon: Icon(viewModel.icon));
   }
 }
 
@@ -34,7 +33,7 @@ class DialogButton extends StatelessWidget {
         textStyle: Theme.of(context).textTheme.labelLarge,
       ),
       onPressed: viewModel.onPressed,
-      child: Text(viewModel.title),
+      child: Text(viewModel.title!),
     );
   }
 }

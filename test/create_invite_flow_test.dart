@@ -8,7 +8,7 @@ import 'package:p2p_copy_paste/create/screens/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/invite_expired.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-import 'package:p2p_copy_paste/create/screens/invite_answered.dart';
+import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
@@ -82,7 +82,7 @@ void main() {
         invite: Invite('creator')..joiner = 'joiner'));
 
     await completer.future;
-    expect(view, isA<InviteAnsweredScreen>());
+    expect(view, isA<HorizontalMenuScreen>());
   });
 
   test('Verify if invite expired screen is shown when expired', () async {

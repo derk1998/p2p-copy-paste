@@ -28,8 +28,8 @@ class _ClipboardScreenState
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  btn.IconButton(viewModel: viewModel.copyButtonViewModel),
-                  btn.IconButton(viewModel: viewModel.pasteButtonViewModel),
+                  btn.Button(viewModel: viewModel.copyButtonViewModel),
+                  btn.Button(viewModel: viewModel.pasteButtonViewModel),
                 ],
               )
             ],

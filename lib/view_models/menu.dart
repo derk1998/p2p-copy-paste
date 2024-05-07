@@ -9,7 +9,7 @@ class MenuScreenViewModel extends ScreenViewModel {
       required this.description,
       required this.title});
 
-  final List<IconButtonViewModel> buttonViewModelList;
+  final List<ButtonViewModel> buttonViewModelList;
   final String title;
   final String description;
 

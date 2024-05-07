@@ -15,14 +15,14 @@ class ClipboardScreenState {
 }
 
 class ClipboardScreenViewModel implements ScreenViewModel {
-  late IconButtonViewModel copyButtonViewModel;
-  late IconButtonViewModel pasteButtonViewModel;
+  late ButtonViewModel copyButtonViewModel;
+  late ButtonViewModel pasteButtonViewModel;
 
   ClipboardScreenViewModel(
       {required this.dataTransceiver, required this.clipboardService}) {
-    copyButtonViewModel = IconButtonViewModel(
+    copyButtonViewModel = ButtonViewModel(
         title: 'Copy', onPressed: _onCopyButtonPressed, icon: Icons.copy);
-    pasteButtonViewModel = IconButtonViewModel(
+    pasteButtonViewModel = ButtonViewModel(
         title: 'Paste', onPressed: _onPasteButtonPressed, icon: Icons.paste);
   }
 
