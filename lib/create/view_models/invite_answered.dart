@@ -24,9 +24,12 @@ class InviteAnsweredScreenViewModel extends ScreenViewModel {
   late ButtonViewModel acceptInviteButton;
   late ButtonViewModel declineInviteButton;
 
-  void _onAcceptInviteButtonPressed() async {
-    await createConnectionService.setVisitor(invite.creator, invite.joiner!);
-    await createInviteService.accept(invite);
+  void _onAcceptInviteButtonPressed() {
+    createConnectionService.setVisitor(invite.creator, invite.joiner!).then(
+      (value) {
+        createInviteService.accept(invite);
+      },
+    );
   }
 
   void _onDeclineInviteButtonPressed() {

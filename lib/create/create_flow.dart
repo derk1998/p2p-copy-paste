@@ -20,6 +20,7 @@ enum _StateId {
   receivedUid,
   declined,
   connect,
+  loading,
 }
 
 class CreateFlow extends Flow<FlowState, _StateId> {
@@ -53,10 +54,12 @@ class CreateFlow extends Flow<FlowState, _StateId> {
     addState(
         state: FlowState(name: 'declined', onEntry: _onEntryDeclinedState),
         stateId: _StateId.declined);
-
     addState(
         state: FlowState(name: 'connect', onEntry: _onEntryConnectState),
         stateId: _StateId.connect);
+    addState(
+        state: FlowState(name: 'loading', onEntry: _onEntryLoadingState),
+        stateId: _StateId.loading);
 
     setInitialState(_StateId.start);
   }
@@ -87,6 +90,10 @@ class CreateFlow extends Flow<FlowState, _StateId> {
     }
   }
 
+  void _onEntryLoadingState() {
+    loading();
+  }
+
   void _onExitExpiredState() {
     _restartConditionSubscription?.cancel();
   }
@@ -113,15 +120,26 @@ class CreateFlow extends Flow<FlowState, _StateId> {
 
   //Transitions
   void _onCreateInviteStatusChanged(CreateInviteUpdate createInviteUpdate) {
-    if (createInviteUpdate.state == CreateInviteState.expired) {
-      setState(_StateId.expired);
-    } else if (createInviteUpdate.state == CreateInviteState.receivedUid) {
-      invite = createInviteUpdate.invite;
-      setState(_StateId.receivedUid);
-    } else if (createInviteUpdate.state == CreateInviteState.accepted) {
-      setState(_StateId.connect);
-    } else if (createInviteUpdate.state == CreateInviteState.declined) {
-      setState(_StateId.declined);
+    invite = createInviteUpdate.invite;
+
+    switch (createInviteUpdate.state) {
+      case CreateInviteState.expired:
+        setState(_StateId.expired);
+        break;
+      case CreateInviteState.receivedUid:
+        setState(_StateId.receivedUid);
+        break;
+      case CreateInviteState.accepted:
+        setState(_StateId.connect);
+        break;
+      case CreateInviteState.declined:
+        setState(_StateId.declined);
+        break;
+      case CreateInviteState.accepting:
+        setState(_StateId.loading);
+        break;
+      case CreateInviteState.waiting:
+        break;
     }
   }
 

@@ -13,6 +13,7 @@ enum CreateInviteState {
   receivedUid,
   accepted,
   declined,
+  accepting,
 }
 
 class CreateInviteUpdate {
@@ -64,6 +65,9 @@ class CreateInviteService extends ICreateInviteService {
 
   @override
   Future<void> accept(CreatorInvite invite) async {
+    statusUpdateSubject.add(
+        CreateInviteUpdate(seconds: 0, state: CreateInviteState.accepting));
+
     invite.accept();
     try {
       await inviteRepository.addInvite(invite);

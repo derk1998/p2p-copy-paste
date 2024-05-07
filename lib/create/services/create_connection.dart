@@ -106,10 +106,7 @@ class CreateConnectionService extends AbstractConnectionService
         return;
       }
 
-      if (connectionInfo.answer != null &&
-          peerConnection!.signalingState !=
-              RTCSignalingState.RTCSignalingStateStable &&
-          !answerSetting) {
+      if (connectionInfo.answer != null && !answerSetting && !answerSet) {
         peerConnection!
             .setRemoteDescription(connectionInfo.answer!)
             .then((value) {
