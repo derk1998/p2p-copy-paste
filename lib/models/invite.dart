@@ -5,27 +5,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 T? cast<T>(x) => x is T ? x : null;
 
 class Invite {
-  Invite(this.creator);
+  Invite({
+    required this.creator,
+    this.joiner,
+    this.timestamp,
+    this.acceptedByCreator,
+    this.acceptedByJoiner,
+  });
 
   String creator;
   String? joiner;
   DateTime? timestamp;
   bool? acceptedByCreator;
   bool? acceptedByJoiner;
-
-  //todo: maybe split invite in two so joiner doesn't see these weird methods
-  void acceptByCreator() {
-    acceptedByCreator = true;
-  }
-
-  void declineByCreator() {
-    acceptedByCreator = false;
-  }
-
-  //todo: maybe split invite in two so creator doesn't see this weird method
-  void acceptByJoiner() {
-    acceptedByJoiner = true;
-  }
 
   Invite.fromMap(Map<String, dynamic> data) : creator = data['creator'] {
     if (data.containsKey('joiner')) {
@@ -68,5 +60,35 @@ class Invite {
         return object;
       },
     );
+  }
+}
+
+class JoinerInvite extends Invite {
+  JoinerInvite.fromInvite(Invite invite)
+      : super(
+            creator: invite.creator,
+            joiner: invite.joiner,
+            acceptedByCreator: invite.acceptedByCreator,
+            acceptedByJoiner: invite.acceptedByJoiner);
+
+  void accept() {
+    acceptedByJoiner = true;
+  }
+}
+
+class CreatorInvite extends Invite {
+  CreatorInvite.fromInvite(Invite invite)
+      : super(
+            creator: invite.creator,
+            joiner: invite.joiner,
+            acceptedByCreator: invite.acceptedByCreator,
+            acceptedByJoiner: invite.acceptedByJoiner);
+
+  void accept() {
+    acceptedByCreator = true;
+  }
+
+  void decline() {
+    acceptedByCreator = false;
   }
 }

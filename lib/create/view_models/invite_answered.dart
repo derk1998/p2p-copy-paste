@@ -17,7 +17,7 @@ class InviteAnsweredScreenViewModel extends ScreenViewModel {
         ButtonViewModel(title: 'No', onPressed: _onDeclineInviteButtonPressed);
   }
 
-  final Invite invite;
+  final CreatorInvite invite;
   late String description;
   final ICreateInviteService createInviteService;
   final ICreateConnectionService createConnectionService;

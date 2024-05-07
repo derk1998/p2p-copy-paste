@@ -26,7 +26,7 @@ abstract class IJoinInviteService {
   Future<void> join(Invite invite);
   Stream<JoinInviteUpdate> stream();
   void dispose();
-  Future<void> accept(Invite invite);
+  Future<void> accept(JoinerInvite invite);
 }
 
 class JoinInviteService implements IJoinInviteService {
@@ -39,8 +39,8 @@ class JoinInviteService implements IJoinInviteService {
   final statusUpdateSubject = PublishSubject<JoinInviteUpdate>();
 
   @override
-  Future<void> accept(Invite invite) async {
-    invite.acceptByJoiner();
+  Future<void> accept(JoinerInvite invite) async {
+    invite.accept();
     await inviteRepository.updateInvite(invite);
   }
 

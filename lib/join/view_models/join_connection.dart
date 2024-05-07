@@ -47,7 +47,7 @@ class JoinConnectionScreenViewModel extends ScreenViewModel {
   }
 
   void _onSubmitConnectionIdButtonClicked() async {
-    final invite = Invite(code);
+    final invite = Invite(creator: code);
     //First some sanity checking
     _updateState('', loading: true);
 

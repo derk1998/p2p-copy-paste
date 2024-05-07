@@ -140,7 +140,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     joinConnectionService
         .addVisitor(_invite!.joiner!, _invite!.creator)
         .then((value) {
-      joinInviteService.accept(_invite!).then((value) {
+      joinInviteService.accept(JoinerInvite.fromInvite(_invite!)).then((value) {
         setState(_StateId.join);
       });
     });

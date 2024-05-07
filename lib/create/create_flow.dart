@@ -92,7 +92,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   void _onEntryReceivedUidState() {
     final view = InviteAnsweredScreen(
         viewModel: InviteAnsweredScreenViewModel(
-            invite: invite!,
+            invite: CreatorInvite.fromInvite(invite!),
             createInviteService: createInviteService,
             createConnectionService: createConnectionService));
     viewChangeSubject.add(view);

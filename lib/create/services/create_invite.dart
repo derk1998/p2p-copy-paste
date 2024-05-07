@@ -26,8 +26,8 @@ class CreateInviteUpdate {
 abstract class ICreateInviteService {
   Future<void> create();
 
-  Future<void> accept(Invite invite);
-  Future<void> decline(Invite invite);
+  Future<void> accept(CreatorInvite invite);
+  Future<void> decline(CreatorInvite invite);
 
   Stream<CreateInviteUpdate> stream();
   void dispose();
@@ -48,7 +48,7 @@ class CreateInviteService extends ICreateInviteService {
   @override
   Future<void> create() async {
     final ownUid = authenticationService.getUserId();
-    await inviteRepository.addInvite(Invite(ownUid));
+    await inviteRepository.addInvite(Invite(creator: ownUid));
 
     _inviteSubscription =
         inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
@@ -63,8 +63,8 @@ class CreateInviteService extends ICreateInviteService {
   }
 
   @override
-  Future<void> accept(Invite invite) async {
-    invite.acceptByCreator();
+  Future<void> accept(CreatorInvite invite) async {
+    invite.accept();
     try {
       await inviteRepository.addInvite(invite);
       final ownUid = authenticationService.getUserId();
@@ -86,8 +86,8 @@ class CreateInviteService extends ICreateInviteService {
   }
 
   @override
-  Future<void> decline(Invite invite) async {
-    invite.declineByCreator();
+  Future<void> decline(CreatorInvite invite) async {
+    invite.decline();
     try {
       await inviteRepository.addInvite(invite);
     } catch (e) {
