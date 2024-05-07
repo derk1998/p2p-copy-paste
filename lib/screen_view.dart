@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 
-abstract class ScreenView<VM extends ScreenViewModel> extends StatefulWidget {
-  const ScreenView({super.key, required this.viewModel});
+abstract class StatelessScreenView<VM extends ScreenViewModel>
+    extends StatelessWidget {
+  const StatelessScreenView({super.key, required this.viewModel});
 
   final VM viewModel;
 }
 
-abstract class ScreenViewState<V extends ScreenView<VM>,
-    VM extends ScreenViewModel> extends State<V> {
+abstract class StatefulScreenView<VM extends StatefulScreenViewModel>
+    extends StatefulWidget {
+  const StatefulScreenView({super.key, required this.viewModel});
+
+  final VM viewModel;
+}
+
+abstract class StatefulScreenViewState<V extends StatefulScreenView<VM>,
+    VM extends StatefulScreenViewModel> extends State<V> {
   VM get viewModel => widget.viewModel;
 
   @mustCallSuper

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/flow.dart';
@@ -84,7 +85,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     _inviteRetrievedConditionSubscription =
         _inviteRetrievedCondition.listen(_onInviteRetrievedConditionChanged);
 
-    ScreenView? view;
+    StatefulScreenView? view;
     if (viewType == JoinViewType.camera) {
       view = ScanQRCodeScreen(
           viewModel: ScanQrCodeScreenViewModel(
@@ -97,7 +98,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
               inviteRetrievedCondition: _inviteRetrievedCondition));
     }
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onExitStartState() {
@@ -121,7 +122,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
             description:
                 'The invite is invalid or outdated. Please try again.'));
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntryTimeoutState() {
@@ -131,7 +132,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
             restartCondition: _restartCondition,
             description: 'The invite is expired. Please try again.'));
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntryDeclinedState() {
@@ -142,7 +143,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
             description:
                 'The invite is declined by the other device. Please try again.'));
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntrySentState() {
@@ -154,7 +155,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
       ),
     );
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onRestartConditionChanged(bool restart) {

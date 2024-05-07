@@ -11,6 +11,7 @@ import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
+import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/vertical_menu.dart';
@@ -132,7 +133,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
       buttonViewModelList: buttonViewModelList,
     ));
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntryCreateState() {
@@ -236,7 +237,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
       buttonViewModelList: buttonViewModelList,
     ));
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onConnected(TransceiveDataUseCase usecase) {
@@ -254,7 +255,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
           clipboardService: clipboardService),
     );
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntryDialogState() {

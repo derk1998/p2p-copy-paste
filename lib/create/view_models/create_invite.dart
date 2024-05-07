@@ -24,7 +24,7 @@ class CreateInviteScreenState {
   }
 }
 
-class CreateInviteScreenViewModel extends ScreenViewModel {
+class CreateInviteScreenViewModel extends StatefulScreenViewModel {
   CreateInviteScreenViewModel({required this.createInviteService});
 
   final ICreateInviteService createInviteService;

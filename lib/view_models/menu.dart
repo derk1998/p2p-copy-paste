@@ -14,12 +14,6 @@ class MenuScreenViewModel extends ScreenViewModel {
   final String description;
 
   @override
-  void dispose() {}
-
-  @override
-  void init() {}
-
-  @override
   String getTitle() {
     return title;
   }

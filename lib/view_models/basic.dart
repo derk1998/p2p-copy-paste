@@ -7,12 +7,6 @@ class BasicViewModel extends ScreenViewModel {
   final String title;
 
   @override
-  void init() {}
-
-  @override
-  void dispose() {}
-
-  @override
   String getTitle() {
     return title;
   }

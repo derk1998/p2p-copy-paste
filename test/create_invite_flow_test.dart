@@ -34,7 +34,7 @@ void main() {
     final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
     when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
-    ScreenView? view;
+    StatefulScreenView? view;
     final completer = Completer<void>();
     flow.viewChangeSubject.listen((value) {
       view = value;
@@ -63,7 +63,7 @@ void main() {
 
     final listener = verify(mockStream.listen(captureAny)).captured[0];
 
-    ScreenView? view;
+    StatefulScreenView? view;
     final completer = Completer<void>();
     const int expectedScreenChanges = 2;
     int actualScreenChanges = 0;
@@ -100,7 +100,7 @@ void main() {
 
     final listener = verify(mockStream.listen(captureAny)).captured[0];
 
-    ScreenView? view;
+    StatefulScreenView? view;
     final completer = Completer<void>();
     const int expectedScreenChanges = 2;
     int actualScreenChanges = 0;
@@ -206,7 +206,7 @@ void main() {
 
     final listener = verify(mockStream.listen(captureAny)).captured[0];
 
-    ScreenView? view;
+    StatefulScreenView? view;
     final completer = Completer<void>();
     final restartedCompleter = Completer<void>();
 

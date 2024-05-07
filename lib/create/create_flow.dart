@@ -4,6 +4,7 @@ import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/create/screens/create_invite.dart';
+import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
@@ -69,7 +70,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
     final view = CreateInviteScreen(
         viewModel: CreateInviteScreenViewModel(
             createInviteService: createInviteService));
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntryExpiredState() {
@@ -82,7 +83,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
             restartCondition: _restartCondition,
             description:
                 'Your invite has expired. Do you want to create a new one?'));
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onRestartConditionChanged(bool restart) {
@@ -127,7 +128,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       buttonViewModelList: buttonViewModelList,
     ));
 
-    viewChangeSubject.add(view);
+    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
   void _onEntryDeclinedState() {

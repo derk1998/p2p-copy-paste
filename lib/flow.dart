@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:p2p_copy_paste/flow_state.dart';
-import 'package:p2p_copy_paste/screen_view.dart';
+import 'package:p2p_copy_paste/screen.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum FlowStatus {
@@ -12,7 +12,7 @@ enum FlowStatus {
 }
 
 abstract class Flow<S extends FlowState, ID> {
-  final viewChangeSubject = BehaviorSubject<ScreenView?>();
+  final viewChangeSubject = BehaviorSubject<Screen?>();
   final Map<ID, S> _states = {};
   late S _currentState;
   Future<void> Function()? onCompleted;
@@ -23,13 +23,13 @@ abstract class Flow<S extends FlowState, ID> {
 
   String name();
 
-  @mustCallSuper
+  @material.mustCallSuper
   void init() {
     log('${name()} init');
     _currentState.entry();
   }
 
-  @mustCallSuper
+  @material.mustCallSuper
   void dispose() {
     _currentState.exit();
 

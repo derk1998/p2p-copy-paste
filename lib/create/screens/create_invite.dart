@@ -4,15 +4,16 @@ import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class CreateInviteScreen extends ScreenView<CreateInviteScreenViewModel> {
+class CreateInviteScreen
+    extends StatefulScreenView<CreateInviteScreenViewModel> {
   const CreateInviteScreen({super.key, required super.viewModel});
 
   @override
   State<CreateInviteScreen> createState() => _CreateInviteScreenState();
 }
 
-class _CreateInviteScreenState
-    extends ScreenViewState<CreateInviteScreen, CreateInviteScreenViewModel> {
+class _CreateInviteScreenState extends StatefulScreenViewState<
+    CreateInviteScreen, CreateInviteScreenViewModel> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<CreateInviteScreenState>(

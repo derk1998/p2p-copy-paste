@@ -26,12 +26,6 @@ class RestartViewModel extends ScreenViewModel {
   }
 
   @override
-  void dispose() {}
-
-  @override
-  void init() {}
-
-  @override
   String getTitle() {
     return title;
   }

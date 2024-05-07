@@ -5,7 +5,7 @@ import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-class ScanQrCodeScreenViewModel extends ScreenViewModel {
+class ScanQrCodeScreenViewModel extends StatefulScreenViewModel {
   final List<String> _scannedCodes = [];
 
   ScanQrCodeScreenViewModel(

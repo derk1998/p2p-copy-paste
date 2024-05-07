@@ -3,15 +3,15 @@ import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 
-class ScanQRCodeScreen extends ScreenView<ScanQrCodeScreenViewModel> {
+class ScanQRCodeScreen extends StatefulScreenView<ScanQrCodeScreenViewModel> {
   const ScanQRCodeScreen({super.key, required super.viewModel});
 
   @override
   State<ScanQRCodeScreen> createState() => _ScanQRCodeScreenState();
 }
 
-class _ScanQRCodeScreenState
-    extends ScreenViewState<ScanQRCodeScreen, ScanQrCodeScreenViewModel> {
+class _ScanQRCodeScreenState extends StatefulScreenViewState<ScanQRCodeScreen,
+    ScanQrCodeScreenViewModel> {
   QRViewController? qrViewController;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 

@@ -3,15 +3,9 @@ import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
-class VerticalMenuScreen extends ScreenView<MenuScreenViewModel> {
+class VerticalMenuScreen extends StatelessScreenView<MenuScreenViewModel> {
   const VerticalMenuScreen({super.key, required super.viewModel});
 
-  @override
-  State<VerticalMenuScreen> createState() => _VerticalMenuScreenState();
-}
-
-class _VerticalMenuScreenState
-    extends ScreenViewState<VerticalMenuScreen, MenuScreenViewModel> {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -21,7 +15,7 @@ class _VerticalMenuScreenState
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              widget.viewModel.description,
+              viewModel.description,
               textAlign: TextAlign.center,
             ),
             for (final buttonViewModel in viewModel.buttonViewModelList)

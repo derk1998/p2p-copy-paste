@@ -3,7 +3,7 @@ import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 
-class ClipboardScreen extends ScreenView<ClipboardScreenViewModel> {
+class ClipboardScreen extends StatefulScreenView<ClipboardScreenViewModel> {
   const ClipboardScreen({super.key, required super.viewModel});
 
   @override
@@ -11,7 +11,7 @@ class ClipboardScreen extends ScreenView<ClipboardScreenViewModel> {
 }
 
 class _ClipboardScreenState
-    extends ScreenViewState<ClipboardScreen, ClipboardScreenViewModel> {
+    extends StatefulScreenViewState<ClipboardScreen, ClipboardScreenViewModel> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<ClipboardScreenState>(

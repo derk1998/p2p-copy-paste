@@ -3,15 +3,16 @@ import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/widgets/button.dart';
 
-class JoinConnectionScreen extends ScreenView<JoinConnectionScreenViewModel> {
+class JoinConnectionScreen
+    extends StatefulScreenView<JoinConnectionScreenViewModel> {
   const JoinConnectionScreen({super.key, required super.viewModel});
 
   @override
   State<JoinConnectionScreen> createState() => _JoinConnectionScreenState();
 }
 
-class _JoinConnectionScreenState extends ScreenViewState<JoinConnectionScreen,
-    JoinConnectionScreenViewModel> {
+class _JoinConnectionScreenState extends StatefulScreenViewState<
+    JoinConnectionScreen, JoinConnectionScreenViewModel> {
   final codeController = TextEditingController();
 
   @override

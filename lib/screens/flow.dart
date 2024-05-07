@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/view_models/flow.dart';
 
-class FlowScreen extends ScreenView<FlowScreenViewModel> {
+class FlowScreen extends StatefulScreenView<FlowScreenViewModel> {
   const FlowScreen({super.key, required super.viewModel});
 
   @override
@@ -10,7 +10,7 @@ class FlowScreen extends ScreenView<FlowScreenViewModel> {
 }
 
 class _FlowScreenState
-    extends ScreenViewState<FlowScreen, FlowScreenViewModel> {
+    extends StatefulScreenViewState<FlowScreen, FlowScreenViewModel> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
