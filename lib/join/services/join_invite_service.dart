@@ -26,6 +26,7 @@ abstract class IJoinInviteService {
   Future<void> join(Invite invite);
   Stream<JoinInviteUpdate> stream();
   void dispose();
+  Future<void> accept(Invite invite);
 }
 
 class JoinInviteService implements IJoinInviteService {
@@ -36,6 +37,12 @@ class JoinInviteService implements IJoinInviteService {
   final IInviteRepository inviteRepository;
   final IAuthenticationService authenticationService;
   final statusUpdateSubject = PublishSubject<JoinInviteUpdate>();
+
+  @override
+  Future<void> accept(Invite invite) async {
+    invite.acceptByJoiner();
+    await inviteRepository.updateInvite(invite);
+  }
 
   @override
   Future<void> join(Invite invite) async {
@@ -59,15 +66,15 @@ class JoinInviteService implements IJoinInviteService {
           statusUpdateSubject.add(JoinInviteUpdate(
               state: JoinInviteState.inviteTimeout, invite: retrievedInvite));
         },
-      ).listen((invite) {
-        if (invite?.accepted != null) {
+      ).listen((inv) async {
+        if (inv?.acceptedByCreator != null) {
           _subscription!.cancel();
 
           statusUpdateSubject.add(JoinInviteUpdate(
-              state: invite!.accepted!
+              state: inv!.acceptedByCreator!
                   ? JoinInviteState.inviteAccepted
                   : JoinInviteState.inviteDeclined,
-              invite: invite));
+              invite: inv));
         }
       }, onError: (e) {
         _subscription!.cancel();

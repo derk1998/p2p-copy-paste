@@ -53,8 +53,9 @@ class CreateInviteService extends ICreateInviteService {
     _inviteSubscription =
         inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
 
+    //todo: is this timer only relevant for front end? Consider moving this to flow.
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_onPeriodicUpdate(timer.tick)) {
+      if (_onPeriodicUpdateUntilReceivedUid(timer.tick)) {
         timer.cancel();
         _inviteSubscription?.cancel();
       }
@@ -63,11 +64,21 @@ class CreateInviteService extends ICreateInviteService {
 
   @override
   Future<void> accept(Invite invite) async {
-    invite.accept();
+    invite.acceptByCreator();
     try {
       await inviteRepository.addInvite(invite);
-      statusUpdateSubject.add(
-          CreateInviteUpdate(seconds: 0, state: CreateInviteState.accepted));
+      final ownUid = authenticationService.getUserId();
+
+      _inviteSubscription =
+          inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
+
+      //todo: is this timer only relevant for front end? Consider moving this to flow.
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_onPeriodicUpdateUntilAcceptedByJoiner(timer.tick)) {
+          timer.cancel();
+          _inviteSubscription?.cancel();
+        }
+      });
     } catch (e) {
       statusUpdateSubject.add(
           CreateInviteUpdate(seconds: 0, state: CreateInviteState.expired));
@@ -76,7 +87,7 @@ class CreateInviteService extends ICreateInviteService {
 
   @override
   Future<void> decline(Invite invite) async {
-    invite.decline();
+    invite.declineByCreator();
     try {
       await inviteRepository.addInvite(invite);
     } catch (e) {
@@ -87,10 +98,10 @@ class CreateInviteService extends ICreateInviteService {
         .add(CreateInviteUpdate(seconds: 0, state: CreateInviteState.declined));
   }
 
-  bool _onPeriodicUpdate(int secondCount) {
+  bool _onPeriodicUpdateUntilReceivedUid(int secondCount) {
     if (secondCount >= kInviteTimeoutInSeconds) {
-      statusUpdateSubject.add(
-          CreateInviteUpdate(seconds: 0, state: CreateInviteState.expired));
+      statusUpdateSubject.add(CreateInviteUpdate(
+          seconds: 0, state: CreateInviteState.expired, invite: _invite));
       return true;
     }
 
@@ -112,8 +123,36 @@ class CreateInviteService extends ICreateInviteService {
     return false;
   }
 
+  bool _onPeriodicUpdateUntilAcceptedByJoiner(int secondCount) {
+    if (secondCount >= kInviteTimeoutInSeconds) {
+      statusUpdateSubject.add(CreateInviteUpdate(
+          seconds: 0, state: CreateInviteState.expired, invite: _invite));
+      return true;
+    }
+
+    final currentSeconds = kInviteTimeoutInSeconds - secondCount;
+
+    if (_invite?.acceptedByJoiner != null) {
+      log('Accepted by joiner');
+      statusUpdateSubject.add(CreateInviteUpdate(
+          seconds: currentSeconds,
+          state: CreateInviteState.accepted,
+          invite: _invite));
+      return true;
+    }
+
+    statusUpdateSubject.add(CreateInviteUpdate(
+        seconds: currentSeconds,
+        state: CreateInviteState.waiting,
+        invite: _invite));
+
+    return false;
+  }
+
   void _onInviteUpdated(Invite? invite) {
     _invite = invite;
+
+    log('Inivte updated: ${invite?.toMap().toString()}');
   }
 
   @override

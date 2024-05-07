@@ -1,37 +1,29 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/ice_server_configuration.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
-import 'package:p2p_copy_paste/use_cases/close_connection.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 
-abstract class ICreateConnectionService
-    implements CloseConnectionUseCase, TransceiveDataUseCase {
-  Future<void> startNewConnection();
-  void setOnConnectionIdPublished(
-      void Function(String id) onConnectionIdPublished);
+abstract class ICreateConnectionService implements TransceiveDataUseCase {
+  Future<void> createConnection(String ownUid, String visitor);
 
   void setOnConnectedListener(void Function() onConnectedListener);
+  Future<void> setVisitor(String ownUid, String visitor);
 }
 
 class CreateConnectionService extends AbstractConnectionService
     implements ICreateConnectionService {
-  CreateConnectionService(
-      {required this.connectionInfoRepository,
-      required this.authenticationService});
+  CreateConnectionService({required this.connectionInfoRepository});
 
   final IConnectionInfoRepository connectionInfoRepository;
-  final IAuthenticationService authenticationService;
-  void Function(String id)? _onConnectionIdPublished;
-  ConnectionInfo? connectionInfo;
+  ConnectionInfo? ownConnectionInfo;
   RTCPeerConnection? peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
   bool answerSet = false;
-  Completer<void>? _roomCreation;
 
   Future<void> _openDataChannel() async {
     setDataChannel(await peerConnection!
@@ -49,9 +41,11 @@ class CreateConnectionService extends AbstractConnectionService
     };
   }
 
-  Future<RTCSessionDescription> _configureLocal() async {
+  Future<RTCSessionDescription> _configureLocal(String ownUid) async {
     peerConnection = await createPeerConnection(iceServerConfiguration);
-    connectionInfo = ConnectionInfo(id: authenticationService.getUserId());
+    ownConnectionInfo = await connectionInfoRepository.getRoomById(ownUid);
+
+    assert(ownConnectionInfo!.visitor != null);
 
     //Works on android
     //not for web: https://github.com/flutter-webrtc/flutter-webrtc/issues/1548
@@ -73,9 +67,9 @@ class CreateConnectionService extends AbstractConnectionService
     final offer = await peerConnection!.createOffer();
 
     peerConnection!.onIceCandidate = (candidate) async {
-      await _roomCreation!.future;
-      connectionInfo!.addIceCandidateA(candidate);
-      connectionInfoRepository.updateRoom(connectionInfo!);
+      ownConnectionInfo!.addIceCandidate(candidate);
+      await connectionInfoRepository.updateRoom(ownConnectionInfo!);
+      log('Ice candidate sent');
     };
 
     //Responsible for gathering ice candidates
@@ -83,63 +77,65 @@ class CreateConnectionService extends AbstractConnectionService
     return offer;
   }
 
-  Future<void> _configureRemote(RTCSessionDescription offer) async {
-    connectionInfo!.setOffer(offer);
-    connectionInfo = await connectionInfoRepository.addRoom(connectionInfo!);
-    _roomCreation!.complete();
+  void _configureRemote(RTCSessionDescription offer, String visitor) {
+    log('Configure remote...');
 
-    _handleSignalingAnswers();
-
-    if (_onConnectionIdPublished != null) {
-      _onConnectionIdPublished!.call(connectionInfo!.id!);
-    }
+    ownConnectionInfo!.setOffer(offer);
+    connectionInfoRepository.updateRoom(ownConnectionInfo!);
+    log('Offer generated and sent');
   }
 
-  void _handleSignalingAnswers() {
+  @override
+  Future<void> setVisitor(String ownUid, String visitor) async {
+    await connectionInfoRepository.deleteRoom(ConnectionInfo(id: ownUid));
+    await connectionInfoRepository
+        .addRoom(ConnectionInfo(id: ownUid)..visitor = visitor);
+  }
+
+  void _handleSignalingAnswers(String visitor) {
+    log('Handling signaling answers...');
+
+    log('visitor: $visitor');
     _subscription = connectionInfoRepository
-        .roomSnapshots(connectionInfo!.id!)
+        .roomSnapshots(visitor)
         .listen((connectionInfo) {
-      if (connectionInfo!.answer != null &&
+      if (connectionInfo == null) {
+        return;
+      }
+
+      if (connectionInfo.answer != null &&
           peerConnection!.signalingState !=
               RTCSignalingState.RTCSignalingStateStable &&
           !answerSet) {
-        peerConnection!.setRemoteDescription(connectionInfo.answer!);
-        answerSet = true;
+        peerConnection!
+            .setRemoteDescription(connectionInfo.answer!)
+            .then((value) {
+          answerSet = true;
+        });
+
+        log('Answer is set');
       }
 
-      if (connectionInfo.iceCandidatesB.isNotEmpty && answerSet) {
-        for (final iceCandidate in connectionInfo.iceCandidatesB) {
-          peerConnection!.addCandidate(iceCandidate);
+      if (connectionInfo.iceCandidates.isNotEmpty && answerSet) {
+        for (final iceCandidate in connectionInfo.iceCandidates) {
+          log('Add ice candidate (create)');
+          try {
+            peerConnection!.addCandidate(iceCandidate);
+          } catch (e) {
+            log('Could not add ice candidate');
+          }
         }
       }
     });
   }
 
   @override
-  Future<void> startNewConnection() async {
-    if (_subscription != null) {
-      await _subscription!.cancel();
-    }
-    connectionInfo = null;
-    _roomCreation = Completer<void>();
-    answerSet = false;
+  Future<void> createConnection(String ownUid, String visitor) async {
+    log('Creating connection...');
+    _handleSignalingAnswers(visitor);
 
-    final offer = await _configureLocal();
-    await _configureRemote(offer);
-  }
-
-  @override
-  void setOnConnectionIdPublished(
-      void Function(String id) onConnectionIdPublished) {
-    _onConnectionIdPublished = onConnectionIdPublished;
-  }
-
-  //todo: move to base
-  @override
-  void close() async {
-    if (peerConnection != null) {
-      await peerConnection!.close();
-    }
+    final offer = await _configureLocal(ownUid);
+    _configureRemote(offer, visitor);
   }
 
   @override
@@ -164,5 +160,11 @@ class CreateConnectionService extends AbstractConnectionService
     setOnReceiveDataListenerImpl(onReceiveDataListener);
   }
 
-  void dispose() {}
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    if (peerConnection != null) {
+      peerConnection!.close();
+    }
+  }
 }

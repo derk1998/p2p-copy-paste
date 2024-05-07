@@ -186,7 +186,7 @@ void main() {
     await untilCalled(mockInviteRepository.snapshots(any));
 
     verify(mockStream.listen(captureAny, onError: anyNamed('onError')))
-        .captured[0](invite..accepted = true);
+        .captured[0](invite..acceptedByCreator = true);
 
     await completer.future;
     expect(capturedInviteStatus, JoinInviteState.inviteAccepted);
@@ -226,7 +226,7 @@ void main() {
     await untilCalled(mockInviteRepository.snapshots(any));
 
     verify(mockStream.listen(captureAny, onError: anyNamed('onError')))
-        .captured[0](invite..accepted = false);
+        .captured[0](invite..acceptedByCreator = false);
 
     await completer.future;
     expect(capturedInviteStatus, JoinInviteState.inviteDeclined);

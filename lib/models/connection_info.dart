@@ -12,17 +12,13 @@ class ConnectionInfo {
 
   RTCSessionDescription? offer;
   RTCSessionDescription? answer;
-  final List<RTCIceCandidate> iceCandidatesB = [];
-  final List<RTCIceCandidate> iceCandidatesA = [];
+  final List<RTCIceCandidate> iceCandidates = [];
 
   String? id;
+  String? visitor;
 
-  void addIceCandidateB(RTCIceCandidate candidate) {
-    iceCandidatesB.add(candidate);
-  }
-
-  void addIceCandidateA(RTCIceCandidate candidate) {
-    iceCandidatesA.add(candidate);
+  void addIceCandidate(RTCIceCandidate candidate) {
+    iceCandidates.add(candidate);
   }
 
   ConnectionInfo.fromMap(Map<String, dynamic> data) {
@@ -31,17 +27,16 @@ class ConnectionInfo {
         offer = RTCSessionDescription(entry.value['sdp'], entry.value['type']);
       } else if (entry.key == 'answer') {
         answer = RTCSessionDescription(entry.value['sdp'], entry.value['type']);
-      } else if (entry.key == 'ice_candidates_b') {
+      } else if (entry.key == 'ice_candidates') {
         for (final value in entry.value as List<dynamic>) {
-          addIceCandidateB(RTCIceCandidate(
-              value['candidate'], value['sdpMid'], value['sdpMLineIndex']));
-        }
-      } else if (entry.key == 'ice_candidates_a') {
-        for (final value in entry.value as List<dynamic>) {
-          addIceCandidateA(RTCIceCandidate(
+          addIceCandidate(RTCIceCandidate(
               value['candidate'], value['sdpMid'], value['sdpMLineIndex']));
         }
       }
+    }
+
+    if (data.containsKey('visitor')) {
+      visitor = data['visitor'];
     }
   }
 
@@ -49,10 +44,9 @@ class ConnectionInfo {
     return {
       if (offer != null) 'offer': offer?.toMap(),
       if (answer != null) 'answer': answer?.toMap(),
-      'ice_candidates_b':
-          iceCandidatesB.map((candidate) => candidate.toMap()).toList(),
-      'ice_candidates_a':
-          iceCandidatesA.map((candidate) => candidate.toMap()).toList(),
+      'ice_candidates':
+          iceCandidates.map((candidate) => candidate.toMap()).toList(),
+      if (visitor != null) 'visitor': visitor,
     };
   }
 }

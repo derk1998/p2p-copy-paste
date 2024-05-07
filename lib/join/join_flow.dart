@@ -10,19 +10,16 @@ import 'package:p2p_copy_paste/join/view_models/connect_dialog.dart';
 import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';
-import 'package:p2p_copy_paste/view_models/clipboard.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum _StateId {
   start,
   retrieved,
+  addVisitor,
   join,
-  clipboard,
 }
 
 enum JoinViewType { camera, code }
@@ -30,8 +27,6 @@ enum JoinViewType { camera, code }
 class JoinFlow extends Flow<FlowState, _StateId> {
   final IJoinInviteService joinInviteService;
   final IJoinConnectionService joinConnectionService;
-  final IClipboardService clipboardService;
-  final INavigator navigator;
   Invite? _invite;
   final JoinViewType viewType;
   final _inviteRetrievedCondition = PublishSubject<Invite>();
@@ -39,12 +34,12 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   StreamSubscription<Invite>? _inviteRetrievedConditionSubscription;
   final _restartCondition = PublishSubject<bool>();
   StreamSubscription<bool>? _restartConditionSubscription;
+  final void Function(TransceiveDataUseCase transceiveDataUseCase) onConnected;
 
   JoinFlow(
       {required this.joinInviteService,
       required this.joinConnectionService,
-      required this.navigator,
-      required this.clipboardService,
+      required this.onConnected,
       super.onCompleted,
       super.onCanceled,
       required this.viewType}) {
@@ -61,11 +56,11 @@ class JoinFlow extends Flow<FlowState, _StateId> {
             onExit: _onExitRetrievedState),
         stateId: _StateId.retrieved);
     addState(
+        state: FlowState(name: 'add visitor', onEntry: _onEntryAddVisitorState),
+        stateId: _StateId.addVisitor);
+    addState(
         state: FlowState(name: 'join', onEntry: _onEntryJoinState),
         stateId: _StateId.join);
-    addState(
-        state: FlowState(name: 'clipboard', onEntry: _onEntryClipboardState),
-        stateId: _StateId.clipboard);
 
     setInitialState(_StateId.start);
   }
@@ -103,6 +98,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     _restartConditionSubscription =
         _restartCondition.listen(_onRestartConditionChanged);
 
+    //todo: this contains multiple states, probably split them up in this flow
     final view = ConnectDialog(
       viewModel: ConnectDialogViewModel(
           invite: _invite!,
@@ -125,30 +121,29 @@ class JoinFlow extends Flow<FlowState, _StateId> {
 
   void _onJoinInviteStatusChanged(JoinInviteUpdate joinInviteUpdate) {
     if (joinInviteUpdate.state == JoinInviteState.inviteAccepted) {
-      setState(_StateId.join);
+      _invite = joinInviteUpdate.invite;
+      setState(_StateId.addVisitor);
     }
   }
 
   void _onEntryJoinState() {
     joinConnectionService.setOnConnectedListener(() {
-      setState(_StateId.clipboard);
-    });
-
-    //todo: the state needs to be captured so the state can be changed when connection fails
-    joinConnectionService.joinConnection(_invite!.creator);
-  }
-
-  void _onEntryClipboardState() {
-    joinConnectionService.setOnConnectionClosedListener(() {
+      onConnected(joinConnectionService);
       complete();
     });
 
-    navigator.replaceScreen(ClipboardScreen(
-      viewModel: ClipboardScreenViewModel(
-        clipboardService: clipboardService,
-        dataTransceiver: joinConnectionService,
-      ),
-    ));
+    //todo: the state needs to be captured so the state can be changed when connection fails
+    joinConnectionService.joinConnection(_invite!.joiner!, _invite!.creator);
+  }
+
+  void _onEntryAddVisitorState() {
+    joinConnectionService
+        .addVisitor(_invite!.joiner!, _invite!.creator)
+        .then((value) {
+      joinInviteService.accept(_invite!).then((value) {
+        setState(_StateId.join);
+      });
+    });
   }
 
   @override

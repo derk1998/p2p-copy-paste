@@ -174,7 +174,7 @@ class MockICreateConnectionService extends _i2.Mock
   }
 
   @override
-  _i4.Future<void> startNewConnection() => (super.noSuchMethod(
+  _i4.Future<void> createConnection() => (super.noSuchMethod(
         Invocation.method(
           #startNewConnection,
           [],

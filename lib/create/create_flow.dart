@@ -10,40 +10,31 @@ import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/invite_answered.dart';
 import 'package:p2p_copy_paste/create/view_models/invite_expired.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
-import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
-import 'package:p2p_copy_paste/view_models/clipboard.dart';
-import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum _StateId {
   start,
   expired,
-  answered,
+  receivedUid,
   declined,
   connect,
-  clipboard,
-  dialog,
 }
 
 class CreateFlow extends Flow<FlowState, _StateId> {
   late StreamSubscription<CreateInviteUpdate> createInviteStatusSubscription;
   final ICreateInviteService createInviteService;
-  final INavigator navigator;
-  final IClipboardService clipboardService;
   Invite? invite;
   final _restartCondition = PublishSubject<bool>();
   StreamSubscription<bool>? _restartConditionSubscription;
   final CreateConnectionService createConnectionService;
+  final void Function(TransceiveDataUseCase transceiveDataUseCase) onConnected;
 
   CreateFlow(
       {required this.createInviteService,
-      required this.navigator,
       required this.createConnectionService,
-      required this.clipboardService,
+      required this.onConnected,
       super.onCompleted,
       super.onCanceled}) {
     addState(
@@ -56,8 +47,9 @@ class CreateFlow extends Flow<FlowState, _StateId> {
             onExit: _onExitExpiredState),
         stateId: _StateId.expired);
     addState(
-        state: FlowState(name: 'answered', onEntry: _onEntryAnsweredState),
-        stateId: _StateId.answered);
+        state:
+            FlowState(name: 'received uid', onEntry: _onEntryReceivedUidState),
+        stateId: _StateId.receivedUid);
     addState(
         state: FlowState(name: 'declined', onEntry: _onEntryDeclinedState),
         stateId: _StateId.declined);
@@ -65,15 +57,6 @@ class CreateFlow extends Flow<FlowState, _StateId> {
     addState(
         state: FlowState(name: 'connect', onEntry: _onEntryConnectState),
         stateId: _StateId.connect);
-    addState(
-        state: FlowState(
-            name: 'clipboard',
-            onEntry: _onEntryClipboardState,
-            onExit: _onExitClipboardState),
-        stateId: _StateId.clipboard);
-    addState(
-        state: FlowState(name: 'dialog', onEntry: _onEntryDialogState),
-        stateId: _StateId.dialog);
 
     setInitialState(_StateId.start);
   }
@@ -102,23 +85,16 @@ class CreateFlow extends Flow<FlowState, _StateId> {
     }
   }
 
-  @override
-  void onPopInvoked() {
-    if (isCurrentState(_StateId.clipboard)) {
-      setState(_StateId.dialog);
-    } else {
-      cancel();
-    }
-  }
-
   void _onExitExpiredState() {
     _restartConditionSubscription?.cancel();
   }
 
-  void _onEntryAnsweredState() {
+  void _onEntryReceivedUidState() {
     final view = InviteAnsweredScreen(
         viewModel: InviteAnsweredScreenViewModel(
-            invite: invite!, createInviteService: createInviteService));
+            invite: invite!,
+            createInviteService: createInviteService,
+            createConnectionService: createConnectionService));
     viewChangeSubject.add(view);
   }
 
@@ -139,7 +115,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       setState(_StateId.expired);
     } else if (createInviteUpdate.state == CreateInviteState.receivedUid) {
       invite = createInviteUpdate.invite;
-      setState(_StateId.answered);
+      setState(_StateId.receivedUid);
     } else if (createInviteUpdate.state == CreateInviteState.accepted) {
       setState(_StateId.connect);
     } else if (createInviteUpdate.state == CreateInviteState.declined) {
@@ -149,45 +125,11 @@ class CreateFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryConnectState() {
     createConnectionService.setOnConnectedListener(() {
-      setState(_StateId.clipboard);
-    });
-
-    createConnectionService.startNewConnection();
-  }
-
-  void _onEntryClipboardState() {
-    createConnectionService.setOnConnectionClosedListener(() {
+      onConnected(createConnectionService);
       complete();
     });
 
-    navigator.replaceScreen(
-      ClipboardScreen(
-        viewModel: ClipboardScreenViewModel(
-            dataTransceiver: createConnectionService,
-            clipboardService: clipboardService),
-      ),
-    );
-  }
-
-  void _onExitClipboardState() {
-    createConnectionService.dispose();
-  }
-
-  void _onEntryDialogState() {
-    navigator.pushDialog(
-      CancelConfirmDialog(
-        viewModel: CancelConfirmViewModel(
-          title: 'Are you sure?',
-          description: 'The connection will be lost',
-          onCancelButtonPressed: () {
-            navigator.popScreen();
-          },
-          onConfirmButtonPressed: () {
-            createConnectionService.close();
-          },
-        ),
-      ),
-    );
+    createConnectionService.createConnection(invite!.creator, invite!.joiner!);
   }
 
   @override

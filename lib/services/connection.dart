@@ -3,8 +3,6 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 enum ConnectionState { connected, disconnected }
 
 abstract class AbstractConnectionService {
-  AbstractConnectionService();
-
   void Function()? _onConnectedListener;
   void Function()? _onDisconnectedListener;
   void Function(String data)? _onReceiveDataListener;

@@ -37,7 +37,7 @@ void main() {
     final invite = Invite('creator');
 
     createInviteService.decline(invite);
-    expect(invite.accepted, false);
+    expect(invite.acceptedByCreator, false);
   });
 
   test('Verify if add invite is called when invite is accepted', () async {
@@ -51,7 +51,7 @@ void main() {
     final invite = Invite('creator');
 
     createInviteService.accept(invite);
-    expect(invite.accepted, true);
+    expect(invite.acceptedByCreator, true);
   });
 
   test('Verify if invite is created with user id from auth service', () async {

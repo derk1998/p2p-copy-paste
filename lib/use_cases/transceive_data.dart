@@ -3,4 +3,8 @@ abstract class TransceiveDataUseCase {
       void Function(String data) onReceiveDataListener);
 
   void sendData(String data);
+  void dispose();
+
+  void setOnConnectionClosedListener(
+      void Function() onConnectionClosedListener);
 }

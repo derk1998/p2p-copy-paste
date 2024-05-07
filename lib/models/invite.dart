@@ -10,14 +10,21 @@ class Invite {
   String creator;
   String? joiner;
   DateTime? timestamp;
-  bool? accepted;
+  bool? acceptedByCreator;
+  bool? acceptedByJoiner;
 
-  void accept() {
-    accepted = true;
+  //todo: maybe split invite in two so joiner doesn't see these weird methods
+  void acceptByCreator() {
+    acceptedByCreator = true;
   }
 
-  void decline() {
-    accepted = false;
+  void declineByCreator() {
+    acceptedByCreator = false;
+  }
+
+  //todo: maybe split invite in two so creator doesn't see this weird method
+  void acceptByJoiner() {
+    acceptedByJoiner = true;
   }
 
   Invite.fromMap(Map<String, dynamic> data) : creator = data['creator'] {
@@ -32,8 +39,12 @@ class Invite {
       }
     }
 
-    if (data.containsKey('accepted')) {
-      accepted = data['accepted'];
+    if (data.containsKey('acceptedByCreator')) {
+      acceptedByCreator = data['acceptedByCreator'];
+    }
+
+    if (data.containsKey('acceptedByJoiner')) {
+      acceptedByJoiner = data['acceptedByJoiner'];
     }
   }
 
@@ -42,7 +53,8 @@ class Invite {
       'creator': creator,
       if (joiner != null) 'joiner': joiner,
       if (timestamp != null) 'timestamp': timestamp,
-      if (accepted != null) 'accepted': accepted,
+      if (acceptedByCreator != null) 'acceptedByCreator': acceptedByCreator,
+      if (acceptedByJoiner != null) 'acceptedByJoiner': acceptedByJoiner,
     };
   }
 

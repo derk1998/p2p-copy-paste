@@ -11,6 +11,7 @@ import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
+import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
@@ -18,8 +19,10 @@ import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';
+import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
+import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/flow.dart';
 import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
@@ -32,6 +35,8 @@ enum _StateId {
   create,
   joinWithQrCode,
   joinWithCode,
+  clipboard,
+  dialog,
 }
 
 class MainFlow extends Flow<FlowState, _StateId> {
@@ -43,6 +48,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   final IClipboardService clipboardService;
   JoinConnectionService? joinConnectionService;
   late StreamSubscription<LoginState> loginStateSubscription;
+  TransceiveDataUseCase? transceiveDataUseCase;
 
   MainFlow(
       {required this.authenticationService,
@@ -79,8 +85,21 @@ class MainFlow extends Flow<FlowState, _StateId> {
     addState(
         state: FlowState(name: 'get started', onEntry: _onEntryGetStartedState),
         stateId: _StateId.getStarted);
+    addState(
+        state: FlowState(name: 'clipboard', onEntry: _onEntryClipboardState),
+        stateId: _StateId.clipboard);
+    addState(
+        state: FlowState(name: 'dialog', onEntry: _onEntryDialogState),
+        stateId: _StateId.dialog);
 
     setInitialState(_StateId.loading);
+  }
+
+  @override
+  void onPopInvoked() {
+    if (isCurrentState(_StateId.clipboard)) {
+      setState(_StateId.dialog);
+    }
   }
 
   void _onEntryOverviewState() {
@@ -120,15 +139,13 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryCreateState() {
     final flow = CreateFlow(
+        onConnected: _onConnected,
         createInviteService: CreateInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        clipboardService: clipboardService,
         createConnectionService: CreateConnectionService(
-            connectionInfoRepository: connectionInfoRepository,
-            authenticationService: authenticationService),
-        navigator: navigator,
-        onCompleted: _closeScreenAndReturnToOverview,
+            connectionInfoRepository: connectionInfoRepository),
+        onCompleted: _closeScreenAndOpenClipboard,
         onCanceled: _closeScreenAndReturnToOverview);
 
     navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
@@ -137,14 +154,13 @@ class MainFlow extends Flow<FlowState, _StateId> {
   void _onEntryJoinWithQrCodeState() {
     final flow = JoinFlow(
         viewType: JoinViewType.camera,
-        clipboardService: clipboardService,
+        onConnected: _onConnected,
         joinConnectionService: JoinConnectionService(
             connectionInfoRepository: connectionInfoRepository),
-        navigator: navigator,
         joinInviteService: JoinInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        onCompleted: _closeScreenAndReturnToOverview,
+        onCompleted: _closeScreenAndOpenClipboard,
         onCanceled: _closeScreenAndReturnToOverview);
 
     navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
@@ -155,17 +171,21 @@ class MainFlow extends Flow<FlowState, _StateId> {
     setState(_StateId.overview);
   }
 
+  Future<void> _closeScreenAndOpenClipboard() async {
+    navigator.popScreen();
+    setState(_StateId.clipboard);
+  }
+
   void _onEntryJoinWithCodeState() {
     final flow = JoinFlow(
         viewType: JoinViewType.code,
-        clipboardService: clipboardService,
+        onConnected: _onConnected,
         joinConnectionService: JoinConnectionService(
             connectionInfoRepository: connectionInfoRepository),
-        navigator: navigator,
         joinInviteService: JoinInviteService(
             authenticationService: authenticationService,
             inviteRepository: inviteRepository),
-        onCompleted: _closeScreenAndReturnToOverview,
+        onCompleted: _closeScreenAndOpenClipboard,
         onCanceled: _closeScreenAndReturnToOverview);
 
     navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
@@ -219,6 +239,42 @@ class MainFlow extends Flow<FlowState, _StateId> {
     ));
 
     viewChangeSubject.add(view);
+  }
+
+  void _onConnected(TransceiveDataUseCase usecase) {
+    transceiveDataUseCase = usecase;
+  }
+
+  void _onEntryClipboardState() {
+    transceiveDataUseCase!.setOnConnectionClosedListener(() {
+      setState(_StateId.overview);
+    });
+
+    final view = ClipboardScreen(
+      viewModel: ClipboardScreenViewModel(
+          dataTransceiver: transceiveDataUseCase!,
+          clipboardService: clipboardService),
+    );
+
+    viewChangeSubject.add(view);
+  }
+
+  void _onEntryDialogState() {
+    navigator.pushDialog(
+      CancelConfirmDialog(
+        viewModel: CancelConfirmViewModel(
+          title: 'Are you sure?',
+          description: 'The connection will be lost',
+          onCancelButtonPressed: () {
+            navigator.popScreen();
+          },
+          onConfirmButtonPressed: () {
+            transceiveDataUseCase!.dispose();
+            navigator.popScreen();
+          },
+        ),
+      ),
+    );
   }
 
   void _onLoginStateChanged(LoginState loginState) {
