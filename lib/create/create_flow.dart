@@ -5,11 +5,11 @@ import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/create/screens/create_invite.dart';
 import 'package:p2p_copy_paste/create/screens/invite_answered.dart';
-import 'package:p2p_copy_paste/create/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/invite_answered.dart';
-import 'package:p2p_copy_paste/create/view_models/invite_expired.dart';
+import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:rxdart/rxdart.dart';
@@ -72,10 +72,12 @@ class CreateFlow extends Flow<FlowState, _StateId> {
     _restartConditionSubscription =
         _restartCondition.listen(_onRestartConditionChanged);
 
-    final view = InviteExpiredScreen(
-        viewModel: InviteExpiredViewModel(
+    final view = RestartScreen(
+        viewModel: RestartViewModel(
+            title: 'Invite has expired',
             restartCondition: _restartCondition,
-            createInviteService: createInviteService));
+            description:
+                'Your invite has expired. Do you want to create a new one?'));
     viewChangeSubject.add(view);
   }
 

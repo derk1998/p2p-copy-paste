@@ -9,14 +9,14 @@ import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
-import 'package:p2p_copy_paste/join/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/view_models/basic.dart';
 
 import 'scan_qr_code_screen_test.mocks.dart';
 
 @GenerateMocks(
     [IJoinConnectionService, INavigator, IJoinInviteService, IClipboardService])
 void main() {
-  late ConnectDialogViewModel viewModel;
+  late BasicViewModel viewModel;
   late MockIJoinInviteService mockJoinInviteService;
   late MockINavigator mockNavigator;
   late MockIJoinConnectionService mockJoinConnectionService;
@@ -29,7 +29,7 @@ void main() {
     mockJoinInviteService = MockIJoinInviteService();
     mockJoinConnectionService = MockIJoinConnectionService();
 
-    viewModel = ConnectDialogViewModel(
+    viewModel = BasicViewModel(
         invite: invite,
         getJoinNewInvitePageView: onJoinNewInvitePageView,
         clipboardService: MockIClipboardService(),

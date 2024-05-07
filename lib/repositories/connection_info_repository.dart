@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 
@@ -20,8 +18,6 @@ class FirestoreConnectionInfoRepository implements IConnectionInfoRepository {
     final data = room.toMap();
     data['timestamp'] = FieldValue.serverTimestamp();
     await ref.set(data);
-    // log('Adding room: ${room.toMap().toString()}');
-
     return room;
   }
 

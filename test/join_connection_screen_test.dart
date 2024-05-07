@@ -4,7 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/join/screens/connect_dialog.dart';
+import 'package:p2p_copy_paste/screens/centered_description.dart';
 import 'package:p2p_copy_paste/join/screens/join_connection.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';
@@ -67,7 +67,7 @@ void main() {
     viewModel.connectButtonViewModel.onPressed();
 
     expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<ConnectDialog>());
+        isA<CenteredDescriptionScreen>());
   });
 
   test(
@@ -76,7 +76,7 @@ void main() {
     viewModel.code = 'creator';
     viewModel.connectButtonViewModel.onPressed();
 
-    final ConnectDialog connectDialog =
+    final CenteredDescriptionScreen connectDialog =
         verify(mockNavigator.replaceScreen(captureAny)).captured[0];
 
     connectDialog.viewModel.init();

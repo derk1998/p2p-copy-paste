@@ -23,7 +23,10 @@ class CreateConnectionService extends AbstractConnectionService
   ConnectionInfo? ownConnectionInfo;
   RTCPeerConnection? peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
+
+  //todo: this is a mess
   bool answerSet = false;
+  bool answerSetting = false;
 
   Future<void> _openDataChannel() async {
     setDataChannel(await peerConnection!
@@ -98,7 +101,7 @@ class CreateConnectionService extends AbstractConnectionService
     log('visitor: $visitor');
     _subscription = connectionInfoRepository
         .roomSnapshots(visitor)
-        .listen((connectionInfo) {
+        .listen((connectionInfo) async {
       if (connectionInfo == null) {
         return;
       }
@@ -106,13 +109,13 @@ class CreateConnectionService extends AbstractConnectionService
       if (connectionInfo.answer != null &&
           peerConnection!.signalingState !=
               RTCSignalingState.RTCSignalingStateStable &&
-          !answerSet) {
+          !answerSetting) {
         peerConnection!
             .setRemoteDescription(connectionInfo.answer!)
             .then((value) {
           answerSet = true;
         });
-
+        answerSetting = true;
         log('Answer is set');
       }
 
@@ -120,7 +123,7 @@ class CreateConnectionService extends AbstractConnectionService
         for (final iceCandidate in connectionInfo.iceCandidates) {
           log('Add ice candidate (create)');
           try {
-            peerConnection!.addCandidate(iceCandidate);
+            await peerConnection!.addCandidate(iceCandidate);
           } catch (e) {
             log('Could not add ice candidate');
           }

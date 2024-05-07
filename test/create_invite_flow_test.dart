@@ -9,7 +9,7 @@ import 'package:p2p_copy_paste/create/view_models/invite_expired.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/create/screens/invite_answered.dart';
-import 'package:p2p_copy_paste/create/screens/invite_expired.dart';
+import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
 
@@ -119,7 +119,7 @@ void main() {
         invite: Invite('creator')..joiner = 'joiner'));
 
     await completer.future;
-    expect(view, isA<InviteExpiredScreen>());
+    expect(view, isA<RestartScreen>());
   });
 
   test('Verify if flow is canceled when invite is declined', () async {
@@ -229,7 +229,7 @@ void main() {
         invite: Invite('creator')..joiner = 'joiner'));
 
     await completer.future;
-    expect(view, isA<InviteExpiredScreen>());
+    expect(view, isA<RestartScreen>());
 
     final inviteExpiredViewModel = view!.viewModel as InviteExpiredViewModel;
     inviteExpiredViewModel.iconButtonViewModel.onPressed();

@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:p2p_copy_paste/screens/restart.dart';
+import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
-import 'package:p2p_copy_paste/join/screens/connect_dialog.dart';
+import 'package:p2p_copy_paste/screens/centered_description.dart';
 import 'package:p2p_copy_paste/join/screens/join_connection.dart';
 import 'package:p2p_copy_paste/join/screens/scan_qr_code.dart';
-import 'package:p2p_copy_paste/join/view_models/connect_dialog.dart';
+import 'package:p2p_copy_paste/view_models/basic.dart';
 import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
@@ -18,6 +20,10 @@ import 'package:rxdart/rxdart.dart';
 enum _StateId {
   start,
   retrieved,
+  error,
+  timeout,
+  declined,
+  sent,
   addVisitor,
   join,
 }
@@ -50,11 +56,20 @@ class JoinFlow extends Flow<FlowState, _StateId> {
             onExit: _onExitStartState),
         stateId: _StateId.start);
     addState(
-        state: FlowState(
-            name: 'retrieved',
-            onEntry: _onEntryRetrievedState,
-            onExit: _onExitRetrievedState),
+        state: FlowState(name: 'retrieved', onEntry: _onEntryRetrievedState),
         stateId: _StateId.retrieved);
+    addState(
+        state: FlowState(name: 'error', onEntry: _onEntryErrorState),
+        stateId: _StateId.error);
+    addState(
+        state: FlowState(name: 'timeout', onEntry: _onEntryTimeoutState),
+        stateId: _StateId.timeout);
+    addState(
+        state: FlowState(name: 'declined', onEntry: _onEntryDeclinedState),
+        stateId: _StateId.declined);
+    addState(
+        state: FlowState(name: 'sent', onEntry: _onEntrySentState),
+        stateId: _StateId.sent);
     addState(
         state: FlowState(name: 'add visitor', onEntry: _onEntryAddVisitorState),
         stateId: _StateId.addVisitor);
@@ -95,22 +110,51 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryRetrievedState() {
-    _restartConditionSubscription =
-        _restartCondition.listen(_onRestartConditionChanged);
+    joinInviteService.join(_invite!);
+  }
 
-    //todo: this contains multiple states, probably split them up in this flow
-    final view = ConnectDialog(
-      viewModel: ConnectDialogViewModel(
-          invite: _invite!,
-          joinInviteService: joinInviteService,
-          restartCondition: _restartCondition),
-    );
+  void _onEntryErrorState() {
+    final view = RestartScreen(
+        viewModel: RestartViewModel(
+            title: 'Invalid invite',
+            restartCondition: _restartCondition,
+            description:
+                'The invite is invalid or outdated. Please try again.'));
 
     viewChangeSubject.add(view);
   }
 
-  void _onExitRetrievedState() {
-    _restartConditionSubscription?.cancel();
+  void _onEntryTimeoutState() {
+    final view = RestartScreen(
+        viewModel: RestartViewModel(
+            title: 'Invite has expired',
+            restartCondition: _restartCondition,
+            description: 'The invite is expired. Please try again.'));
+
+    viewChangeSubject.add(view);
+  }
+
+  void _onEntryDeclinedState() {
+    final view = RestartScreen(
+        viewModel: RestartViewModel(
+            title: 'Invite is declined',
+            restartCondition: _restartCondition,
+            description:
+                'The invite is declined by the other device. Please try again.'));
+
+    viewChangeSubject.add(view);
+  }
+
+  void _onEntrySentState() {
+    final view = CenteredDescriptionScreen(
+      viewModel: BasicViewModel(
+        title: 'Verify',
+        description:
+            'Verify if the following code is displayed on the other device: ${_invite!.joiner}',
+      ),
+    );
+
+    viewChangeSubject.add(view);
   }
 
   void _onRestartConditionChanged(bool restart) {
@@ -120,13 +164,29 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onJoinInviteStatusChanged(JoinInviteUpdate joinInviteUpdate) {
-    if (joinInviteUpdate.state == JoinInviteState.inviteAccepted) {
-      _invite = joinInviteUpdate.invite;
-      setState(_StateId.addVisitor);
+    _invite = joinInviteUpdate.invite;
+
+    switch (joinInviteUpdate.state) {
+      case JoinInviteState.inviteAccepted:
+        setState(_StateId.addVisitor);
+        break;
+      case JoinInviteState.inviteError:
+        setState(_StateId.error);
+        break;
+      case JoinInviteState.inviteTimeout:
+        setState(_StateId.timeout);
+        break;
+      case JoinInviteState.inviteDeclined:
+        setState(_StateId.declined);
+        break;
+      case JoinInviteState.inviteSent:
+        setState(_StateId.sent);
+        break;
     }
   }
 
   void _onEntryJoinState() {
+    loading();
     joinConnectionService.setOnConnectedListener(() {
       onConnected(joinConnectionService);
       complete();
@@ -137,6 +197,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryAddVisitorState() {
+    loading();
     joinConnectionService
         .addVisitor(_invite!.joiner!, _invite!.creator)
         .then((value) {
@@ -151,6 +212,9 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     super.init();
     _joinInviteUpdateSubscription =
         joinInviteService.stream().listen(_onJoinInviteStatusChanged);
+
+    _restartConditionSubscription =
+        _restartCondition.listen(_onRestartConditionChanged);
   }
 
   @override
@@ -159,6 +223,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     _joinInviteUpdateSubscription?.cancel();
     joinInviteService.dispose();
     _inviteRetrievedCondition.close();
+    _restartConditionSubscription?.cancel();
     _restartCondition.close();
   }
 

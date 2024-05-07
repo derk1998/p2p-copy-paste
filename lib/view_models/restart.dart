@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 
-class InviteExpiredViewModel extends ScreenViewModel {
-  InviteExpiredViewModel(
-      {required this.restartCondition, required this.createInviteService}) {
+class RestartViewModel extends ScreenViewModel {
+  RestartViewModel(
+      {required this.title,
+      required this.restartCondition,
+      required this.description}) {
     iconButtonViewModel = PureIconButtonViewModel(
       icon: Icons.refresh,
       onPressed: _pushCreateInviteScreen,
@@ -15,10 +16,9 @@ class InviteExpiredViewModel extends ScreenViewModel {
   }
 
   final StreamController<bool> restartCondition;
-  final ICreateInviteService createInviteService;
 
-  final String description =
-      'Your invite has expired. Do you want to create a new one?';
+  final String title;
+  final String description;
   late PureIconButtonViewModel iconButtonViewModel;
 
   void _pushCreateInviteScreen() {
@@ -33,6 +33,6 @@ class InviteExpiredViewModel extends ScreenViewModel {
 
   @override
   String getTitle() {
-    return 'Invite has expired';
+    return title;
   }
 }
