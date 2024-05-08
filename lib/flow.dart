@@ -52,6 +52,7 @@ abstract class Flow<S extends FlowState, ID> {
   void complete() {
     if (_status == FlowStatus.idle) {
       _status = FlowStatus.completed;
+      _currentState.exit();
       log('${name()} is completed');
       onCompleted?.call();
     } else {
@@ -66,6 +67,7 @@ abstract class Flow<S extends FlowState, ID> {
   void cancel() {
     if (_status == FlowStatus.idle) {
       _status = FlowStatus.canceled;
+      _currentState.exit();
       log('${name()} is canceled');
       onCanceled?.call();
     } else {

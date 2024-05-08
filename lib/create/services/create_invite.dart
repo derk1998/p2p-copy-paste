@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:p2p_copy_paste/config.dart';
+import 'package:p2p_copy_paste/disposable.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
@@ -24,14 +25,13 @@ class CreateInviteUpdate {
   Invite? invite;
 }
 
-abstract class ICreateInviteService {
+abstract class ICreateInviteService extends Disposable {
   Future<void> create();
 
   Future<void> accept(CreatorInvite invite);
   Future<void> decline(CreatorInvite invite);
 
   Stream<CreateInviteUpdate> stream();
-  void dispose();
 }
 
 class CreateInviteService extends ICreateInviteService {

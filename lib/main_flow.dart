@@ -3,23 +3,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:p2p_copy_paste/create/create_flow.dart';
-import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/join/join_flow.dart';
-import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
-import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/vertical_menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
-import 'package:p2p_copy_paste/join/services/join_connection.dart';
+import 'package:p2p_copy_paste/system_manager.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
@@ -37,27 +32,25 @@ enum _StateId {
   joinWithQrCode,
   joinWithCode,
   clipboard,
-  dialog,
 }
 
 class MainFlow extends Flow<FlowState, _StateId> {
-  final IAuthenticationService authenticationService;
   final INavigator navigator;
-  final IInviteRepository inviteRepository;
-  final IConnectionInfoRepository connectionInfoRepository;
-  final IFileService fileService;
-  final IClipboardService clipboardService;
-  JoinConnectionService? joinConnectionService;
   late StreamSubscription<LoginState> loginStateSubscription;
-  TransceiveDataUseCase? transceiveDataUseCase;
+  final ISystemManager systemManager;
+
+  StreamSubscription<IAuthenticationService>? _authenticationStreamSubscription;
+  IAuthenticationService? _authenticationService;
+
+  StreamSubscription<IFileService>? _fileStreamSubscription;
+  StreamSubscription<IClipboardService>? _clipboardStreamSubscription;
+
+  StreamSubscription<TransceiveDataUseCase>? _transceiveDataStreamSubscription;
+  TransceiveDataUseCase? _transceiveDataUseCase;
 
   MainFlow(
-      {required this.authenticationService,
-      required this.navigator,
-      required this.inviteRepository,
-      required this.connectionInfoRepository,
-      required this.fileService,
-      required this.clipboardService,
+      {required this.navigator,
+      required this.systemManager,
       super.onCompleted,
       super.onCanceled}) {
     addState(
@@ -87,11 +80,11 @@ class MainFlow extends Flow<FlowState, _StateId> {
         state: FlowState(name: 'get started', onEntry: _onEntryGetStartedState),
         stateId: _StateId.getStarted);
     addState(
-        state: FlowState(name: 'clipboard', onEntry: _onEntryClipboardState),
+        state: FlowState(
+            name: 'clipboard',
+            onEntry: _onEntryClipboardState,
+            onExit: _onExitClipboardState),
         stateId: _StateId.clipboard);
-    addState(
-        state: FlowState(name: 'dialog', onEntry: _onEntryDialogState),
-        stateId: _StateId.dialog);
 
     setInitialState(_StateId.loading);
   }
@@ -99,11 +92,27 @@ class MainFlow extends Flow<FlowState, _StateId> {
   @override
   void onPopInvoked() {
     if (isCurrentState(_StateId.clipboard)) {
-      setState(_StateId.dialog);
+      navigator.pushDialog(
+        CancelConfirmDialog(
+          viewModel: CancelConfirmViewModel(
+            title: 'Are you sure?',
+            description: 'The connection will be lost',
+            onCancelButtonPressed: () {
+              navigator.popScreen();
+            },
+            onConfirmButtonPressed: () {
+              navigator.popScreen();
+              _transceiveDataUseCase!.close();
+            },
+          ),
+        ),
+      );
     }
   }
 
   void _onEntryOverviewState() {
+    _transceiveDataStreamSubscription?.cancel();
+
     final buttonViewModelList = [
       ButtonViewModel(
           title: 'Create an invite',
@@ -137,32 +146,39 @@ class MainFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryCreateState() {
-    final flow = CreateFlow(
-        onConnected: _onConnected,
-        createInviteService: CreateInviteService(
-            authenticationService: authenticationService,
-            inviteRepository: inviteRepository),
-        createConnectionService: CreateConnectionService(
-            connectionInfoRepository: connectionInfoRepository),
-        onCompleted: _closeScreenAndOpenClipboard,
-        onCanceled: _closeScreenAndReturnToOverview);
+    loading();
 
-    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+    final createConnectionStream =
+        systemManager.createConnectionServiceStream();
+    _transceiveDataStreamSubscription =
+        createConnectionStream.listen((usecase) {
+      _transceiveDataUseCase = usecase;
+      final flow = CreateFlow(
+          createInviteStream: systemManager.createInviteServiceStream(),
+          createConnectionStream: createConnectionStream,
+          onCompleted: _closeScreenAndOpenClipboard,
+          onCanceled: _closeScreenAndReturnToOverview);
+
+      navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+    });
   }
 
   void _onEntryJoinWithQrCodeState() {
-    final flow = JoinFlow(
-        viewType: JoinViewType.camera,
-        onConnected: _onConnected,
-        joinConnectionService: JoinConnectionService(
-            connectionInfoRepository: connectionInfoRepository),
-        joinInviteService: JoinInviteService(
-            authenticationService: authenticationService,
-            inviteRepository: inviteRepository),
-        onCompleted: _closeScreenAndOpenClipboard,
-        onCanceled: _closeScreenAndReturnToOverview);
+    loading();
 
-    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+    final joinConnectionStream = systemManager.joinConnectionServiceStream();
+    _transceiveDataStreamSubscription = joinConnectionStream.listen((usecase) {
+      _transceiveDataUseCase = usecase;
+
+      final flow = JoinFlow(
+          viewType: JoinViewType.camera,
+          joinConnectionStream: systemManager.joinConnectionServiceStream(),
+          joinInviteStream: systemManager.joinInviteServiceStream(),
+          onCompleted: _closeScreenAndOpenClipboard,
+          onCanceled: _closeScreenAndReturnToOverview);
+
+      navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+    });
   }
 
   Future<void> _closeScreenAndReturnToOverview() async {
@@ -176,42 +192,47 @@ class MainFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryJoinWithCodeState() {
-    final flow = JoinFlow(
-        viewType: JoinViewType.code,
-        onConnected: _onConnected,
-        joinConnectionService: JoinConnectionService(
-            connectionInfoRepository: connectionInfoRepository),
-        joinInviteService: JoinInviteService(
-            authenticationService: authenticationService,
-            inviteRepository: inviteRepository),
-        onCompleted: _closeScreenAndOpenClipboard,
-        onCanceled: _closeScreenAndReturnToOverview);
+    final joinConnectionStream = systemManager.joinConnectionServiceStream();
+    _transceiveDataStreamSubscription = joinConnectionStream.listen((usecase) {
+      _transceiveDataUseCase = usecase;
 
-    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+      final flow = JoinFlow(
+          viewType: JoinViewType.code,
+          joinConnectionStream: systemManager.joinConnectionServiceStream(),
+          joinInviteStream: systemManager.joinInviteServiceStream(),
+          onCompleted: _closeScreenAndOpenClipboard,
+          onCanceled: _closeScreenAndReturnToOverview);
+
+      navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+    });
   }
 
   void _onEntryPrivacyPolicyState() {
-    fileService
-        .loadFile('assets/text/privacy-policy.md')
-        .then((privacyPolicyText) {
-      navigator.pushDialog(CancelConfirmDialog(
-        viewModel: CancelConfirmViewModel(
-            isContentMarkdown: true,
-            description: privacyPolicyText,
-            title: 'Read the following',
-            cancelName: 'Disagree',
-            confirmName: 'Agree',
-            onCancelButtonPressed: () {
-              setState(_StateId.getStarted);
-            },
-            onConfirmButtonPressed: () {
-              authenticationService.signInAnonymously();
-            }),
-      ));
+    _fileStreamSubscription =
+        systemManager.fileServiceStream().listen((service) {
+      service
+          .loadFile('assets/text/privacy-policy.md')
+          .then((privacyPolicyText) {
+        navigator.pushDialog(CancelConfirmDialog(
+          viewModel: CancelConfirmViewModel(
+              isContentMarkdown: true,
+              description: privacyPolicyText,
+              title: 'Read the following',
+              cancelName: 'Disagree',
+              confirmName: 'Agree',
+              onCancelButtonPressed: () {
+                setState(_StateId.getStarted);
+              },
+              onConfirmButtonPressed: () {
+                _authenticationService!.signInAnonymously();
+              }),
+        ));
+      });
     });
   }
 
   void _onExitPrivacyPolicyState() {
+    _fileStreamSubscription!.cancel();
     navigator.popScreen();
   }
 
@@ -240,40 +261,27 @@ class MainFlow extends Flow<FlowState, _StateId> {
     viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
-  void _onConnected(TransceiveDataUseCase usecase) {
-    transceiveDataUseCase = usecase;
-  }
-
   void _onEntryClipboardState() {
-    transceiveDataUseCase!.setOnConnectionClosedListener(() {
+    loading();
+    _transceiveDataUseCase!.setOnConnectionClosedListener(() {
       setState(_StateId.overview);
     });
 
-    final view = ClipboardScreen(
-      viewModel: ClipboardScreenViewModel(
-          dataTransceiver: transceiveDataUseCase!,
-          clipboardService: clipboardService),
-    );
+    _clipboardStreamSubscription =
+        systemManager.clipboardServiceStream().listen((service) {
+      final view = ClipboardScreen(
+        viewModel: ClipboardScreenViewModel(
+            dataTransceiver: _transceiveDataUseCase!,
+            clipboardService: service),
+      );
 
-    viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
+      viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
+    });
   }
 
-  void _onEntryDialogState() {
-    navigator.pushDialog(
-      CancelConfirmDialog(
-        viewModel: CancelConfirmViewModel(
-          title: 'Are you sure?',
-          description: 'The connection will be lost',
-          onCancelButtonPressed: () {
-            navigator.popScreen();
-          },
-          onConfirmButtonPressed: () {
-            transceiveDataUseCase!.dispose();
-            navigator.popScreen();
-          },
-        ),
-      ),
-    );
+  void _onExitClipboardState() {
+    _clipboardStreamSubscription!.cancel();
+    _transceiveDataStreamSubscription!.cancel();
   }
 
   void _onLoginStateChanged(LoginState loginState) {
@@ -293,15 +301,19 @@ class MainFlow extends Flow<FlowState, _StateId> {
   @override
   void init() {
     super.init();
-    loginStateSubscription =
-        authenticationService.stream().listen(_onLoginStateChanged);
+
+    _authenticationStreamSubscription =
+        systemManager.authenticationServiceStream().listen((service) {
+      _authenticationService = service;
+      loginStateSubscription = service.stream().listen(_onLoginStateChanged);
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     loginStateSubscription.cancel();
-    authenticationService.dispose();
+    _authenticationStreamSubscription?.cancel();
   }
 
   @override

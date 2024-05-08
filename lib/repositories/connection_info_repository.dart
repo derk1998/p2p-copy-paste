@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:p2p_copy_paste/disposable.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 
-abstract class IConnectionInfoRepository {
+abstract class IConnectionInfoRepository extends Disposable {
   Future<ConnectionInfo> addRoom(ConnectionInfo room);
   Future<void> deleteRoom(ConnectionInfo room);
   Future<ConnectionInfo> updateRoom(ConnectionInfo room);
@@ -53,4 +54,7 @@ class FirestoreConnectionInfoRepository implements IConnectionInfoRepository {
             ? ConnectionInfo.fromMap(snapshot.data()!)
             : null);
   }
+
+  @override
+  void dispose() {}
 }

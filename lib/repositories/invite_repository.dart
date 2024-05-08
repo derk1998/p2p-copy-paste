@@ -1,9 +1,10 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:p2p_copy_paste/disposable.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-abstract class IInviteRepository {
+abstract class IInviteRepository extends Disposable {
   Future<Invite> addInvite(Invite invite);
   Future<Invite> getInvite(String creator);
   Future<void> updateInvite(Invite invite);
@@ -44,4 +45,7 @@ class FirestoreInviteRepository extends IInviteRepository {
     return _collection.doc(creator).snapshots().map((snapshot) =>
         snapshot.data() != null ? Invite.fromMap(snapshot.data()!) : null);
   }
+
+  @override
+  void dispose() {}
 }

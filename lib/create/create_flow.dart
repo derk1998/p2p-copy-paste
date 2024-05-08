@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
@@ -7,13 +8,11 @@ import 'package:p2p_copy_paste/create/screens/create_invite.dart';
 import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
-import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
-import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum _StateId {
@@ -26,18 +25,24 @@ enum _StateId {
 }
 
 class CreateFlow extends Flow<FlowState, _StateId> {
-  late StreamSubscription<CreateInviteUpdate> createInviteStatusSubscription;
-  final ICreateInviteService createInviteService;
+  StreamSubscription<CreateInviteUpdate>? createInviteStatusSubscription;
+
+  final Stream<ICreateInviteService> createInviteStream;
+  StreamSubscription<ICreateInviteService>? _createInviteStreamSubscription;
+  ICreateInviteService? _createInviteService;
+
   Invite? invite;
   final _restartCondition = PublishSubject<bool>();
   StreamSubscription<bool>? _restartConditionSubscription;
-  final CreateConnectionService createConnectionService;
-  final void Function(TransceiveDataUseCase transceiveDataUseCase) onConnected;
+
+  final Stream<ICreateConnectionService> createConnectionStream;
+  StreamSubscription<ICreateConnectionService>?
+      _createConnectionStreamSubscription;
+  ICreateConnectionService? _createConnectionService;
 
   CreateFlow(
-      {required this.createInviteService,
-      required this.createConnectionService,
-      required this.onConnected,
+      {required this.createInviteStream,
+      required this.createConnectionStream,
       super.onCompleted,
       super.onCanceled}) {
     addState(
@@ -63,13 +68,16 @@ class CreateFlow extends Flow<FlowState, _StateId> {
         state: FlowState(name: 'loading', onEntry: _onEntryLoadingState),
         stateId: _StateId.loading);
 
-    setInitialState(_StateId.start);
+    setInitialState(_StateId.loading);
   }
 
   void _onEntryStartState() {
+    createInviteStatusSubscription =
+        _createInviteService!.stream().listen(_onCreateInviteStatusChanged);
+
     final view = CreateInviteScreen(
         viewModel: CreateInviteScreenViewModel(
-            createInviteService: createInviteService));
+            createInviteService: _createInviteService!));
     viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
@@ -105,18 +113,18 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       ButtonViewModel(
           title: 'Yes',
           onPressed: () {
-            createConnectionService
+            _createConnectionService!
                 .setVisitor(invite!.creator, invite!.joiner!)
                 .then(
               (value) {
-                createInviteService.accept(CreatorInvite.fromInvite(invite!));
+                _createInviteService!.accept(CreatorInvite.fromInvite(invite!));
               },
             );
           }),
       ButtonViewModel(
           title: 'No',
           onPressed: () {
-            createInviteService.decline(CreatorInvite.fromInvite(invite!));
+            _createInviteService!.decline(CreatorInvite.fromInvite(invite!));
           })
     ];
 
@@ -138,8 +146,22 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   @override
   void init() {
     super.init();
-    createInviteStatusSubscription =
-        createInviteService.stream().listen(_onCreateInviteStatusChanged);
+    _createInviteStreamSubscription = createInviteStream.listen((service) {
+      _createInviteService = service;
+
+      if (_createInviteService != null && _createConnectionService != null) {
+        setState(_StateId.start);
+      }
+    });
+
+    _createConnectionStreamSubscription =
+        createConnectionStream.listen((service) {
+      _createConnectionService = service;
+
+      if (_createInviteService != null && _createConnectionService != null) {
+        setState(_StateId.start);
+      }
+    });
   }
 
   //Transitions
@@ -168,19 +190,20 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryConnectState() {
-    createConnectionService.setOnConnectedListener(() {
-      onConnected(createConnectionService);
+    _createConnectionService!.setOnConnectedListener(() {
       complete();
     });
 
-    createConnectionService.createConnection(invite!.creator, invite!.joiner!);
+    _createConnectionService!
+        .createConnection(invite!.creator, invite!.joiner!);
   }
 
   @override
   void dispose() {
     super.dispose();
-    createInviteStatusSubscription.cancel();
-    createInviteService.dispose();
+    createInviteStatusSubscription?.cancel();
+    _createInviteStreamSubscription!.cancel();
+    _createConnectionStreamSubscription!.cancel();
     _restartCondition.close();
   }
 

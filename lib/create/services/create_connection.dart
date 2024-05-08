@@ -161,10 +161,16 @@ class CreateConnectionService extends AbstractConnectionService
   }
 
   @override
-  void dispose() {
-    _subscription?.cancel();
+  void close() {
     if (peerConnection != null) {
       peerConnection!.close();
     }
+  }
+
+  @override
+  void dispose() {
+    log('Create connection dispose');
+    _subscription?.cancel();
+    close();
   }
 }

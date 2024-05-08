@@ -128,10 +128,15 @@ class JoinConnectionService extends AbstractConnectionService
   }
 
   @override
-  void dispose() {
-    _subscription?.cancel();
+  void close() {
     if (_peerConnection != null) {
       _peerConnection!.close();
     }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    close();
   }
 }

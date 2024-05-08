@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart' as services;
+import 'package:p2p_copy_paste/disposable.dart';
 
-abstract class IClipboardService {
+abstract class IClipboardService extends Disposable {
   Future<String?> get();
   void set(String data);
 }
@@ -22,4 +23,7 @@ class ClipboardService implements IClipboardService {
   void set(String data) {
     services.Clipboard.setData(services.ClipboardData(text: data));
   }
+
+  @override
+  void dispose() {}
 }
