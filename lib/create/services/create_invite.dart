@@ -43,16 +43,16 @@ class CreateInviteService extends ICreateInviteService {
   CreateInviteService(
       {required this.authenticationService, required this.inviteRepository});
 
-  final IAuthenticationService authenticationService;
-  final IInviteRepository inviteRepository;
+  final WeakReference<IAuthenticationService> authenticationService;
+  final WeakReference<IInviteRepository> inviteRepository;
 
   @override
   Future<void> create() async {
-    final ownUid = authenticationService.getUserId();
-    await inviteRepository.addInvite(Invite(creator: ownUid));
+    final ownUid = authenticationService.target!.getUserId();
+    await inviteRepository.target!.addInvite(Invite(creator: ownUid));
 
     _inviteSubscription =
-        inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
+        inviteRepository.target!.snapshots(ownUid).listen(_onInviteUpdated);
 
     //todo: is this timer only relevant for front end? Consider moving this to flow.
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -70,11 +70,11 @@ class CreateInviteService extends ICreateInviteService {
 
     invite.accept();
     try {
-      await inviteRepository.addInvite(invite);
-      final ownUid = authenticationService.getUserId();
+      await inviteRepository.target!.addInvite(invite);
+      final ownUid = authenticationService.target!.getUserId();
 
       _inviteSubscription =
-          inviteRepository.snapshots(ownUid).listen(_onInviteUpdated);
+          inviteRepository.target!.snapshots(ownUid).listen(_onInviteUpdated);
 
       //todo: is this timer only relevant for front end? Consider moving this to flow.
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -93,7 +93,7 @@ class CreateInviteService extends ICreateInviteService {
   Future<void> decline(CreatorInvite invite) async {
     invite.decline();
     try {
-      await inviteRepository.addInvite(invite);
+      await inviteRepository.target!.addInvite(invite);
     } catch (e) {
       //ignore
     }

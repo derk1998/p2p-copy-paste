@@ -14,16 +14,17 @@ import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 
 abstract class ISystemManager {
-  Stream<ICreateInviteService> createInviteServiceStream();
-  Stream<ICreateConnectionService> createConnectionServiceStream();
+  Stream<WeakReference<ICreateInviteService>> createInviteServiceStream();
+  Stream<WeakReference<ICreateConnectionService>>
+      createConnectionServiceStream();
 
-  Stream<IJoinInviteService> joinInviteServiceStream();
-  Stream<IJoinConnectionService> joinConnectionServiceStream();
+  Stream<WeakReference<IJoinInviteService>> joinInviteServiceStream();
+  Stream<WeakReference<IJoinConnectionService>> joinConnectionServiceStream();
 
-  Stream<IAuthenticationService> authenticationServiceStream();
+  Stream<WeakReference<IAuthenticationService>> authenticationServiceStream();
 
-  Stream<IFileService> fileServiceStream();
-  Stream<IClipboardService> clipboardServiceStream();
+  Stream<WeakReference<IFileService>> fileServiceStream();
+  Stream<WeakReference<IClipboardService>> clipboardServiceStream();
 }
 
 class SystemManager extends ISystemManager {
@@ -99,37 +100,38 @@ class SystemManager extends ISystemManager {
   }
 
   @override
-  Stream<ICreateInviteService> createInviteServiceStream() {
+  Stream<WeakReference<ICreateInviteService>> createInviteServiceStream() {
     return _createInviteService.stream();
   }
 
   @override
-  Stream<ICreateConnectionService> createConnectionServiceStream() {
+  Stream<WeakReference<ICreateConnectionService>>
+      createConnectionServiceStream() {
     return _createConnectionService.stream();
   }
 
   @override
-  Stream<IJoinInviteService> joinInviteServiceStream() {
+  Stream<WeakReference<IJoinInviteService>> joinInviteServiceStream() {
     return _joinInviteService.stream();
   }
 
   @override
-  Stream<IJoinConnectionService> joinConnectionServiceStream() {
+  Stream<WeakReference<IJoinConnectionService>> joinConnectionServiceStream() {
     return _joinConnectionService.stream();
   }
 
   @override
-  Stream<IAuthenticationService> authenticationServiceStream() {
+  Stream<WeakReference<IAuthenticationService>> authenticationServiceStream() {
     return _authenticationService.stream();
   }
 
   @override
-  Stream<IClipboardService> clipboardServiceStream() {
+  Stream<WeakReference<IClipboardService>> clipboardServiceStream() {
     return _clipboardService.stream();
   }
 
   @override
-  Stream<IFileService> fileServiceStream() {
+  Stream<WeakReference<IFileService>> fileServiceStream() {
     return _fileService.stream();
   }
 }

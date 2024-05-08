@@ -31,12 +31,12 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
 
   Stream<ClipboardScreenState> get state => _stateSubject;
 
-  final TransceiveDataUseCase dataTransceiver;
-  final IClipboardService clipboardService;
+  final WeakReference<TransceiveDataUseCase> dataTransceiver;
+  final WeakReference<IClipboardService> clipboardService;
 
   @override
   void init() {
-    dataTransceiver.setOnReceiveDataListener(_onDataReceived);
+    dataTransceiver.target!.setOnReceiveDataListener(_onDataReceived);
   }
 
   @override
@@ -54,15 +54,15 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   }
 
   void _onCopyButtonPressed() {
-    clipboardService.set(_stateSubject.value.clipboard);
+    clipboardService.target!.set(_stateSubject.value.clipboard);
   }
 
   void _onPasteButtonPressed() async {
-    final data = await clipboardService.get();
+    final data = await clipboardService.target!.get();
     if (data != null) {
       log('data is $data');
       _updateState(data);
-      dataTransceiver.sendData(data);
+      dataTransceiver.target!.sendData(data);
     }
   }
 

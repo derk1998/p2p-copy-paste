@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
@@ -17,14 +16,11 @@ class JoinConnectionScreenState {
 class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
   late ButtonViewModel connectButtonViewModel;
 
-  JoinConnectionScreenViewModel(
-      {required this.joinInviteService,
-      required this.inviteRetrievedCondition}) {
+  JoinConnectionScreenViewModel({required this.inviteRetrievedCondition}) {
     connectButtonViewModel = ButtonViewModel(
         title: 'Connect', onPressed: _onSubmitConnectionIdButtonClicked);
   }
 
-  final IJoinInviteService joinInviteService;
   String code = '';
   final StreamController<Invite> inviteRetrievedCondition;
 

@@ -27,7 +27,7 @@ class CreateInviteScreenState {
 class CreateInviteScreenViewModel extends StatefulScreenViewModel {
   CreateInviteScreenViewModel({required this.createInviteService});
 
-  final ICreateInviteService createInviteService;
+  final WeakReference<ICreateInviteService> createInviteService;
   final _stateSubject = BehaviorSubject<CreateInviteScreenState>.seeded(
       CreateInviteScreenState());
   StreamSubscription<CreateInviteUpdate>? _createInviteUpdateSubscription;
@@ -51,9 +51,10 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel {
 
   @override
   void init() {
-    _createInviteUpdateSubscription =
-        createInviteService.stream().listen(_onCreateInviteStatusChanged);
-    createInviteService.create();
+    _createInviteUpdateSubscription = createInviteService.target!
+        .stream()
+        .listen(_onCreateInviteStatusChanged);
+    createInviteService.target!.create();
   }
 
   @override

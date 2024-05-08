@@ -34,14 +34,14 @@ class JoinInviteService implements IJoinInviteService {
       {required this.inviteRepository, required this.authenticationService});
 
   StreamSubscription<Invite?>? _subscription;
-  final IInviteRepository inviteRepository;
-  final IAuthenticationService authenticationService;
+  final WeakReference<IInviteRepository> inviteRepository;
+  final WeakReference<IAuthenticationService> authenticationService;
   final statusUpdateSubject = PublishSubject<JoinInviteUpdate>();
 
   @override
   Future<void> accept(JoinerInvite invite) async {
     invite.accept();
-    await inviteRepository.updateInvite(invite);
+    await inviteRepository.target!.updateInvite(invite);
   }
 
   @override
@@ -50,16 +50,16 @@ class JoinInviteService implements IJoinInviteService {
       _subscription?.cancel();
 
       final retrievedInvite =
-          (await inviteRepository.getInvite(invite.creator));
+          (await inviteRepository.target!.getInvite(invite.creator));
 
-      retrievedInvite.joiner = authenticationService.getUserId();
-      inviteRepository.updateInvite(retrievedInvite);
+      retrievedInvite.joiner = authenticationService.target!.getUserId();
+      inviteRepository.target!.updateInvite(retrievedInvite);
 
       statusUpdateSubject.add(JoinInviteUpdate(
           state: JoinInviteState.inviteSent, invite: retrievedInvite));
 
       _subscription =
-          inviteRepository.snapshots(retrievedInvite.creator).timeout(
+          inviteRepository.target!.snapshots(retrievedInvite.creator).timeout(
         const Duration(seconds: kInviteTimeoutInSeconds),
         onTimeout: (sink) {
           _subscription?.cancel();

@@ -8,10 +8,10 @@ class ConditionalObject<T extends Disposable> {
   ConditionalObject(this._creator, {this.dependencies});
 
   List<ConditionalObject<dynamic>>? dependencies;
-  List<StreamSubscription<dynamic>>? _subscriptions;
-  List<dynamic>? _objects;
+  List<StreamSubscription<WeakReference<dynamic>>>? _subscriptions;
+  List<WeakReference<dynamic>>? _objects;
   final T Function(List<dynamic>? dependencies) _creator;
-  BehaviorSubject<T>? _subject;
+  BehaviorSubject<WeakReference<T>>? _subject;
   T? _object;
 
   bool _areDependenciesRetrieved() {
@@ -20,11 +20,11 @@ class ConditionalObject<T extends Disposable> {
 
   void _createObject() {
     _object = _creator(_objects);
-    _subject!.add(_object!);
+    _subject!.add(WeakReference(_object!));
   }
 
-  Stream<T> stream() {
-    _subject ??= BehaviorSubject<T>(onCancel: () {
+  Stream<WeakReference<T>> stream() {
+    _subject ??= BehaviorSubject<WeakReference<T>>(onCancel: () {
       log('Called onCancel()');
       _object!.dispose();
       _subject!.close();
@@ -35,6 +35,10 @@ class ConditionalObject<T extends Disposable> {
           subscription.cancel();
         }
       }
+
+      _subscriptions?.clear();
+      _objects?.clear();
+      _object = null;
     }, onListen: () {
       log('Called onListen()');
       if (dependencies != null) {

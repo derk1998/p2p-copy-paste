@@ -32,13 +32,15 @@ enum _StateId {
 enum JoinViewType { camera, code }
 
 class JoinFlow extends Flow<FlowState, _StateId> {
-  final Stream<IJoinInviteService> joinInviteStream;
-  StreamSubscription<IJoinInviteService>? _joinInviteStreamSubscription;
-  IJoinInviteService? _joinInviteService;
+  final Stream<WeakReference<IJoinInviteService>> joinInviteStream;
+  StreamSubscription<WeakReference<IJoinInviteService>>?
+      _joinInviteStreamSubscription;
+  WeakReference<IJoinInviteService>? _joinInviteService;
 
-  final Stream<IJoinConnectionService> joinConnectionStream;
-  StreamSubscription<IJoinConnectionService>? _joinConnectionStreamSubscription;
-  IJoinConnectionService? _joinConnectionService;
+  final Stream<WeakReference<IJoinConnectionService>> joinConnectionStream;
+  StreamSubscription<WeakReference<IJoinConnectionService>>?
+      _joinConnectionStreamSubscription;
+  WeakReference<IJoinConnectionService>? _joinConnectionService;
 
   Invite? _invite;
   final JoinViewType viewType;
@@ -94,7 +96,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryStartState() {
     _joinInviteUpdateSubscription =
-        _joinInviteService!.stream().listen(_onJoinInviteStatusChanged);
+        _joinInviteService!.target!.stream().listen(_onJoinInviteStatusChanged);
     _inviteRetrievedConditionSubscription =
         _inviteRetrievedCondition.listen(_onInviteRetrievedConditionChanged);
 
@@ -103,11 +105,10 @@ class JoinFlow extends Flow<FlowState, _StateId> {
       view = ScanQRCodeScreen(
           viewModel: ScanQrCodeScreenViewModel(
               inviteRetrievedCondition: _inviteRetrievedCondition,
-              joinInviteService: _joinInviteService!));
+              joinInviteService: _joinInviteService!.target!));
     } else {
       view = JoinConnectionScreen(
           viewModel: JoinConnectionScreenViewModel(
-              joinInviteService: _joinInviteService!,
               inviteRetrievedCondition: _inviteRetrievedCondition));
     }
 
@@ -124,7 +125,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryRetrievedState() {
-    _joinInviteService!.join(_invite!);
+    _joinInviteService!.target!.join(_invite!);
   }
 
   void _onEntryErrorState() {
@@ -201,20 +202,21 @@ class JoinFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryJoinState() {
     loading();
-    _joinConnectionService!.setOnConnectedListener(() {
+    _joinConnectionService!.target!.setOnConnectedListener(() {
       complete();
     });
 
     //todo: the state needs to be captured so the state can be changed when connection fails
-    _joinConnectionService!.joinConnection(_invite!.joiner!, _invite!.creator);
+    _joinConnectionService!.target!
+        .joinConnection(_invite!.joiner!, _invite!.creator);
   }
 
   void _onEntryAddVisitorState() {
     loading();
-    _joinConnectionService!
+    _joinConnectionService!.target!
         .addVisitor(_invite!.joiner!, _invite!.creator)
         .then((value) {
-      _joinInviteService!
+      _joinInviteService!.target!
           .accept(JoinerInvite.fromInvite(_invite!))
           .then((value) {
         setState(_StateId.join);

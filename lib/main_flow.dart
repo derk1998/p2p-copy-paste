@@ -39,14 +39,17 @@ class MainFlow extends Flow<FlowState, _StateId> {
   late StreamSubscription<LoginState> loginStateSubscription;
   final ISystemManager systemManager;
 
-  StreamSubscription<IAuthenticationService>? _authenticationStreamSubscription;
-  IAuthenticationService? _authenticationService;
+  StreamSubscription<WeakReference<IAuthenticationService>>?
+      _authenticationStreamSubscription;
+  WeakReference<IAuthenticationService>? _authenticationService;
 
-  StreamSubscription<IFileService>? _fileStreamSubscription;
-  StreamSubscription<IClipboardService>? _clipboardStreamSubscription;
+  StreamSubscription<WeakReference<IFileService>>? _fileStreamSubscription;
+  StreamSubscription<WeakReference<IClipboardService>>?
+      _clipboardStreamSubscription;
 
-  StreamSubscription<TransceiveDataUseCase>? _transceiveDataStreamSubscription;
-  TransceiveDataUseCase? _transceiveDataUseCase;
+  StreamSubscription<WeakReference<TransceiveDataUseCase>>?
+      _transceiveDataStreamSubscription;
+  WeakReference<TransceiveDataUseCase>? _transceiveDataUseCase;
 
   MainFlow(
       {required this.navigator,
@@ -102,7 +105,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
             },
             onConfirmButtonPressed: () {
               navigator.popScreen();
-              _transceiveDataUseCase!.close();
+              _transceiveDataUseCase!.target!.close();
             },
           ),
         ),
@@ -210,7 +213,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   void _onEntryPrivacyPolicyState() {
     _fileStreamSubscription =
         systemManager.fileServiceStream().listen((service) {
-      service
+      service.target!
           .loadFile('assets/text/privacy-policy.md')
           .then((privacyPolicyText) {
         navigator.pushDialog(CancelConfirmDialog(
@@ -224,7 +227,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
                 setState(_StateId.getStarted);
               },
               onConfirmButtonPressed: () {
-                _authenticationService!.signInAnonymously();
+                _authenticationService!.target!.signInAnonymously();
               }),
         ));
       });
@@ -263,7 +266,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryClipboardState() {
     loading();
-    _transceiveDataUseCase!.setOnConnectionClosedListener(() {
+    _transceiveDataUseCase!.target!.setOnConnectionClosedListener(() {
       setState(_StateId.overview);
     });
 
@@ -305,7 +308,8 @@ class MainFlow extends Flow<FlowState, _StateId> {
     _authenticationStreamSubscription =
         systemManager.authenticationServiceStream().listen((service) {
       _authenticationService = service;
-      loginStateSubscription = service.stream().listen(_onLoginStateChanged);
+      loginStateSubscription =
+          service.target!.stream().listen(_onLoginStateChanged);
     });
   }
 

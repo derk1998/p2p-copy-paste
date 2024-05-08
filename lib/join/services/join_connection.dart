@@ -21,20 +21,22 @@ class JoinConnectionService extends AbstractConnectionService
   ConnectionInfo? _ownConnectionInfo;
   RTCPeerConnection? _peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
-  final IConnectionInfoRepository connectionInfoRepository;
+  final WeakReference<IConnectionInfoRepository> connectionInfoRepository;
   bool offerSet = false;
 
   @override
   Future<void> addVisitor(String ownUid, String visitor) async {
-    await connectionInfoRepository.deleteRoom(ConnectionInfo(id: ownUid));
-    await connectionInfoRepository
+    await connectionInfoRepository.target!
+        .deleteRoom(ConnectionInfo(id: ownUid));
+    await connectionInfoRepository.target!
         .addRoom(ConnectionInfo(id: ownUid)..visitor = visitor);
   }
 
   @override
   Future<void> joinConnection(String ownUid, String visitor) async {
     //signaling
-    _ownConnectionInfo = await connectionInfoRepository.getRoomById(ownUid);
+    _ownConnectionInfo =
+        await connectionInfoRepository.target!.getRoomById(ownUid);
 
     assert(_ownConnectionInfo!.visitor != null);
 
@@ -73,11 +75,11 @@ class JoinConnectionService extends AbstractConnectionService
 
     _peerConnection!.onIceCandidate = (candidate) {
       _ownConnectionInfo!.addIceCandidate(candidate);
-      connectionInfoRepository.updateRoom(_ownConnectionInfo!);
+      connectionInfoRepository.target!.updateRoom(_ownConnectionInfo!);
       log('Sent ice candidate');
     };
 
-    _subscription = connectionInfoRepository
+    _subscription = connectionInfoRepository.target!
         .roomSnapshots(visitor)
         .listen((snapshot) async {
       if (snapshot == null) return;
@@ -90,7 +92,7 @@ class JoinConnectionService extends AbstractConnectionService
 
         //signaling
         _ownConnectionInfo!.answer = answer;
-        await connectionInfoRepository.updateRoom(_ownConnectionInfo!);
+        await connectionInfoRepository.target!.updateRoom(_ownConnectionInfo!);
         log('Answer generated and sent');
 
         offerSet = true;

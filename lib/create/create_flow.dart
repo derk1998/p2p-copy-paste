@@ -27,18 +27,19 @@ enum _StateId {
 class CreateFlow extends Flow<FlowState, _StateId> {
   StreamSubscription<CreateInviteUpdate>? createInviteStatusSubscription;
 
-  final Stream<ICreateInviteService> createInviteStream;
-  StreamSubscription<ICreateInviteService>? _createInviteStreamSubscription;
-  ICreateInviteService? _createInviteService;
+  final Stream<WeakReference<ICreateInviteService>> createInviteStream;
+  StreamSubscription<WeakReference<ICreateInviteService>>?
+      _createInviteStreamSubscription;
+  WeakReference<ICreateInviteService>? _createInviteService;
 
   Invite? invite;
   final _restartCondition = PublishSubject<bool>();
   StreamSubscription<bool>? _restartConditionSubscription;
 
-  final Stream<ICreateConnectionService> createConnectionStream;
-  StreamSubscription<ICreateConnectionService>?
+  final Stream<WeakReference<ICreateConnectionService>> createConnectionStream;
+  StreamSubscription<WeakReference<ICreateConnectionService>>?
       _createConnectionStreamSubscription;
-  ICreateConnectionService? _createConnectionService;
+  WeakReference<ICreateConnectionService>? _createConnectionService;
 
   CreateFlow(
       {required this.createInviteStream,
@@ -72,8 +73,9 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryStartState() {
-    createInviteStatusSubscription =
-        _createInviteService!.stream().listen(_onCreateInviteStatusChanged);
+    createInviteStatusSubscription = _createInviteService!.target!
+        .stream()
+        .listen(_onCreateInviteStatusChanged);
 
     final view = CreateInviteScreen(
         viewModel: CreateInviteScreenViewModel(
@@ -113,18 +115,20 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       ButtonViewModel(
           title: 'Yes',
           onPressed: () {
-            _createConnectionService!
+            _createConnectionService!.target!
                 .setVisitor(invite!.creator, invite!.joiner!)
                 .then(
               (value) {
-                _createInviteService!.accept(CreatorInvite.fromInvite(invite!));
+                _createInviteService!.target!
+                    .accept(CreatorInvite.fromInvite(invite!));
               },
             );
           }),
       ButtonViewModel(
           title: 'No',
           onPressed: () {
-            _createInviteService!.decline(CreatorInvite.fromInvite(invite!));
+            _createInviteService!.target!
+                .decline(CreatorInvite.fromInvite(invite!));
           })
     ];
 
@@ -190,11 +194,11 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryConnectState() {
-    _createConnectionService!.setOnConnectedListener(() {
+    _createConnectionService!.target!.setOnConnectedListener(() {
       complete();
     });
 
-    _createConnectionService!
+    _createConnectionService!.target!
         .createConnection(invite!.creator, invite!.joiner!);
   }
 

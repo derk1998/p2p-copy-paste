@@ -19,7 +19,7 @@ class CreateConnectionService extends AbstractConnectionService
     implements ICreateConnectionService {
   CreateConnectionService({required this.connectionInfoRepository});
 
-  final IConnectionInfoRepository connectionInfoRepository;
+  final WeakReference<IConnectionInfoRepository> connectionInfoRepository;
   ConnectionInfo? ownConnectionInfo;
   RTCPeerConnection? peerConnection;
   StreamSubscription<ConnectionInfo?>? _subscription;
@@ -46,7 +46,8 @@ class CreateConnectionService extends AbstractConnectionService
 
   Future<RTCSessionDescription> _configureLocal(String ownUid) async {
     peerConnection = await createPeerConnection(iceServerConfiguration);
-    ownConnectionInfo = await connectionInfoRepository.getRoomById(ownUid);
+    ownConnectionInfo =
+        await connectionInfoRepository.target!.getRoomById(ownUid);
 
     assert(ownConnectionInfo!.visitor != null);
 
@@ -71,7 +72,7 @@ class CreateConnectionService extends AbstractConnectionService
 
     peerConnection!.onIceCandidate = (candidate) async {
       ownConnectionInfo!.addIceCandidate(candidate);
-      await connectionInfoRepository.updateRoom(ownConnectionInfo!);
+      await connectionInfoRepository.target!.updateRoom(ownConnectionInfo!);
       log('Ice candidate sent');
     };
 
@@ -84,14 +85,15 @@ class CreateConnectionService extends AbstractConnectionService
     log('Configure remote...');
 
     ownConnectionInfo!.setOffer(offer);
-    connectionInfoRepository.updateRoom(ownConnectionInfo!);
+    connectionInfoRepository.target!.updateRoom(ownConnectionInfo!);
     log('Offer generated and sent');
   }
 
   @override
   Future<void> setVisitor(String ownUid, String visitor) async {
-    await connectionInfoRepository.deleteRoom(ConnectionInfo(id: ownUid));
-    await connectionInfoRepository
+    await connectionInfoRepository.target!
+        .deleteRoom(ConnectionInfo(id: ownUid));
+    await connectionInfoRepository.target!
         .addRoom(ConnectionInfo(id: ownUid)..visitor = visitor);
   }
 
@@ -99,7 +101,7 @@ class CreateConnectionService extends AbstractConnectionService
     log('Handling signaling answers...');
 
     log('visitor: $visitor');
-    _subscription = connectionInfoRepository
+    _subscription = connectionInfoRepository.target!
         .roomSnapshots(visitor)
         .listen((connectionInfo) async {
       if (connectionInfo == null) {
