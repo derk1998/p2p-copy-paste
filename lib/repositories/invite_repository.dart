@@ -47,5 +47,7 @@ class FirestoreInviteRepository extends IInviteRepository {
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    log('dispose invite repository');
+  }
 }

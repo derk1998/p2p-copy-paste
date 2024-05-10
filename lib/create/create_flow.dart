@@ -27,23 +27,16 @@ enum _StateId {
 class CreateFlow extends Flow<FlowState, _StateId> {
   StreamSubscription<CreateInviteUpdate>? createInviteStatusSubscription;
 
-  final Stream<WeakReference<ICreateInviteService>> createInviteStream;
-  StreamSubscription<WeakReference<ICreateInviteService>>?
-      _createInviteStreamSubscription;
-  WeakReference<ICreateInviteService>? _createInviteService;
+  WeakReference<ICreateInviteService>? createInviteService;
+  WeakReference<ICreateConnectionService>? createConnectionService;
 
   Invite? invite;
   final _restartCondition = PublishSubject<bool>();
   StreamSubscription<bool>? _restartConditionSubscription;
 
-  final Stream<WeakReference<ICreateConnectionService>> createConnectionStream;
-  StreamSubscription<WeakReference<ICreateConnectionService>>?
-      _createConnectionStreamSubscription;
-  WeakReference<ICreateConnectionService>? _createConnectionService;
-
   CreateFlow(
-      {required this.createInviteStream,
-      required this.createConnectionStream,
+      {required this.createInviteService,
+      required this.createConnectionService,
       super.onCompleted,
       super.onCanceled}) {
     addState(
@@ -69,17 +62,17 @@ class CreateFlow extends Flow<FlowState, _StateId> {
         state: FlowState(name: 'loading', onEntry: _onEntryLoadingState),
         stateId: _StateId.loading);
 
-    setInitialState(_StateId.loading);
+    setInitialState(_StateId.start);
   }
 
   void _onEntryStartState() {
-    createInviteStatusSubscription = _createInviteService!.target!
+    createInviteStatusSubscription = createInviteService!.target!
         .stream()
         .listen(_onCreateInviteStatusChanged);
 
     final view = CreateInviteScreen(
         viewModel: CreateInviteScreenViewModel(
-            createInviteService: _createInviteService!));
+            createInviteService: createInviteService!));
     viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
   }
 
@@ -115,11 +108,11 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       ButtonViewModel(
           title: 'Yes',
           onPressed: () {
-            _createConnectionService!.target!
+            createConnectionService!.target!
                 .setVisitor(invite!.creator, invite!.joiner!)
                 .then(
               (value) {
-                _createInviteService!.target!
+                createInviteService!.target!
                     .accept(CreatorInvite.fromInvite(invite!));
               },
             );
@@ -127,7 +120,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       ButtonViewModel(
           title: 'No',
           onPressed: () {
-            _createInviteService!.target!
+            createInviteService!.target!
                 .decline(CreatorInvite.fromInvite(invite!));
           })
     ];
@@ -145,27 +138,6 @@ class CreateFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryDeclinedState() {
     cancel();
-  }
-
-  @override
-  void init() {
-    super.init();
-    _createInviteStreamSubscription = createInviteStream.listen((service) {
-      _createInviteService = service;
-
-      if (_createInviteService != null && _createConnectionService != null) {
-        setState(_StateId.start);
-      }
-    });
-
-    _createConnectionStreamSubscription =
-        createConnectionStream.listen((service) {
-      _createConnectionService = service;
-
-      if (_createInviteService != null && _createConnectionService != null) {
-        setState(_StateId.start);
-      }
-    });
   }
 
   //Transitions
@@ -194,11 +166,12 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryConnectState() {
-    _createConnectionService!.target!.setOnConnectedListener(() {
+    //todo: check if this prevents the create flow from being garbage collected
+    createConnectionService!.target!.setOnConnectedListener(() {
       complete();
     });
 
-    _createConnectionService!.target!
+    createConnectionService!.target!
         .createConnection(invite!.creator, invite!.joiner!);
   }
 
@@ -206,8 +179,6 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   void dispose() {
     super.dispose();
     createInviteStatusSubscription?.cancel();
-    _createInviteStreamSubscription!.cancel();
-    _createConnectionStreamSubscription!.cancel();
     _restartCondition.close();
   }
 

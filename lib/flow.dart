@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart' as material;
+import 'package:p2p_copy_paste/contextual_object.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/screen.dart';
 import 'package:rxdart/rxdart.dart';
@@ -11,7 +12,7 @@ enum FlowStatus {
   idle,
 }
 
-abstract class Flow<S extends FlowState, ID> {
+abstract class Flow<S extends FlowState, ID> extends ContextualObject {
   final viewChangeSubject = BehaviorSubject<Screen?>();
   final Map<ID, S> _states = {};
   late S _currentState;
@@ -29,7 +30,7 @@ abstract class Flow<S extends FlowState, ID> {
     _currentState.entry();
   }
 
-  @material.mustCallSuper
+  @override
   void dispose() {
     _currentState.exit();
 
@@ -39,6 +40,7 @@ abstract class Flow<S extends FlowState, ID> {
 
     viewChangeSubject.close();
     log('${name()} dispose');
+    super.dispose();
   }
 
   void addState({required S state, required ID stateId}) {

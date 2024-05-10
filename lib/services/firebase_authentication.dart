@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
@@ -40,6 +41,7 @@ class FirebaseAuthenticationService extends IAuthenticationService {
 
   @override
   void dispose() {
+    log('Dispose authentication service');
     loginStateSubject.close();
   }
 }

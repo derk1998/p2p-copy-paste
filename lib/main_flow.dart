@@ -6,14 +6,13 @@ import 'package:p2p_copy_paste/create/create_flow.dart';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/join/join_flow.dart';
+import 'package:p2p_copy_paste/listener.dart';
 import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/vertical_menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/system_manager.dart';
 import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
@@ -39,16 +38,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   late StreamSubscription<LoginState> loginStateSubscription;
   final ISystemManager systemManager;
 
-  StreamSubscription<WeakReference<IAuthenticationService>>?
-      _authenticationStreamSubscription;
   WeakReference<IAuthenticationService>? _authenticationService;
-
-  StreamSubscription<WeakReference<IFileService>>? _fileStreamSubscription;
-  StreamSubscription<WeakReference<IClipboardService>>?
-      _clipboardStreamSubscription;
-
-  StreamSubscription<WeakReference<TransceiveDataUseCase>>?
-      _transceiveDataStreamSubscription;
   WeakReference<TransceiveDataUseCase>? _transceiveDataUseCase;
 
   MainFlow(
@@ -63,15 +53,22 @@ class MainFlow extends Flow<FlowState, _StateId> {
         state: FlowState(name: 'overview', onEntry: _onEntryOverviewState),
         stateId: _StateId.overview);
     addState(
-        state: FlowState(name: 'create', onEntry: _onEntryCreateState),
+        state: FlowState(
+            name: 'create',
+            onEntry: _onEntryCreateState,
+            onExit: _onExitCreateState),
         stateId: _StateId.create);
     addState(
         state: FlowState(
-            name: 'join with qr code', onEntry: _onEntryJoinWithQrCodeState),
+            name: 'join with qr code',
+            onEntry: _onEntryJoinWithQrCodeState,
+            onExit: _onExitJoinWithQrCodeState),
         stateId: _StateId.joinWithQrCode);
     addState(
         state: FlowState(
-            name: 'join with code', onEntry: _onEntryJoinWithCodeState),
+            name: 'join with code',
+            onEntry: _onEntryJoinWithCodeState,
+            onExit: _onExitJoinWithCodeState),
         stateId: _StateId.joinWithCode);
     addState(
         state: FlowState(
@@ -114,7 +111,8 @@ class MainFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryOverviewState() {
-    _transceiveDataStreamSubscription?.cancel();
+    systemManager.removeCreateConnectionServiceListener(getContext());
+    systemManager.removeJoinConnectionServiceListener(getContext());
 
     final buttonViewModelList = [
       ButtonViewModel(
@@ -151,37 +149,49 @@ class MainFlow extends Flow<FlowState, _StateId> {
   void _onEntryCreateState() {
     loading();
 
-    final createConnectionStream =
-        systemManager.createConnectionServiceStream();
-    _transceiveDataStreamSubscription =
-        createConnectionStream.listen((usecase) {
-      _transceiveDataUseCase = usecase;
-      final flow = CreateFlow(
-          createInviteStream: systemManager.createInviteServiceStream(),
-          createConnectionStream: createConnectionStream,
-          onCompleted: _closeScreenAndOpenClipboard,
-          onCanceled: _closeScreenAndReturnToOverview);
+    systemManager
+        .addCreateConnectionServiceListener(Listener((createConnectionService) {
+      _transceiveDataUseCase = createConnectionService;
 
-      navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-    });
+      systemManager
+          .addCreateInviteServiceListener(Listener((createInviteService) {
+        final flow = CreateFlow(
+            createConnectionService: createConnectionService,
+            createInviteService: createInviteService,
+            onCompleted: _closeScreenAndOpenClipboard,
+            onCanceled: _closeScreenAndReturnToOverview);
+
+        navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+      }, getContext()));
+    }, getContext()));
+  }
+
+  void _onExitCreateState() {
+    systemManager.removeCreateInviteServiceListener(getContext());
   }
 
   void _onEntryJoinWithQrCodeState() {
     loading();
 
-    final joinConnectionStream = systemManager.joinConnectionServiceStream();
-    _transceiveDataStreamSubscription = joinConnectionStream.listen((usecase) {
-      _transceiveDataUseCase = usecase;
+    systemManager
+        .addJoinConnectionServiceListener(Listener((joinConnectionService) {
+      _transceiveDataUseCase = joinConnectionService;
 
-      final flow = JoinFlow(
-          viewType: JoinViewType.camera,
-          joinConnectionStream: systemManager.joinConnectionServiceStream(),
-          joinInviteStream: systemManager.joinInviteServiceStream(),
-          onCompleted: _closeScreenAndOpenClipboard,
-          onCanceled: _closeScreenAndReturnToOverview);
+      systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
+        final flow = JoinFlow(
+            viewType: JoinViewType.camera,
+            onCompleted: _closeScreenAndOpenClipboard,
+            onCanceled: _closeScreenAndReturnToOverview,
+            joinConnectionService: joinConnectionService,
+            joinInviteService: joinInviteService);
 
-      navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-    });
+        navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+      }, getContext()));
+    }, getContext()));
+  }
+
+  void _onExitJoinWithQrCodeState() {
+    systemManager.removeJoinInviteServiceListener(getContext());
   }
 
   Future<void> _closeScreenAndReturnToOverview() async {
@@ -195,24 +205,29 @@ class MainFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryJoinWithCodeState() {
-    final joinConnectionStream = systemManager.joinConnectionServiceStream();
-    _transceiveDataStreamSubscription = joinConnectionStream.listen((usecase) {
-      _transceiveDataUseCase = usecase;
+    systemManager
+        .addJoinConnectionServiceListener(Listener((joinConnectionService) {
+      _transceiveDataUseCase = joinConnectionService;
 
-      final flow = JoinFlow(
-          viewType: JoinViewType.code,
-          joinConnectionStream: systemManager.joinConnectionServiceStream(),
-          joinInviteStream: systemManager.joinInviteServiceStream(),
-          onCompleted: _closeScreenAndOpenClipboard,
-          onCanceled: _closeScreenAndReturnToOverview);
+      systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
+        final flow = JoinFlow(
+            viewType: JoinViewType.code,
+            onCompleted: _closeScreenAndOpenClipboard,
+            onCanceled: _closeScreenAndReturnToOverview,
+            joinConnectionService: joinConnectionService,
+            joinInviteService: joinInviteService);
 
-      navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-    });
+        navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
+      }, getContext()));
+    }, getContext()));
+  }
+
+  void _onExitJoinWithCodeState() {
+    systemManager.removeJoinInviteServiceListener(getContext());
   }
 
   void _onEntryPrivacyPolicyState() {
-    _fileStreamSubscription =
-        systemManager.fileServiceStream().listen((service) {
+    systemManager.addFileServiceListener(Listener((service) {
       service.target!
           .loadFile('assets/text/privacy-policy.md')
           .then((privacyPolicyText) {
@@ -231,11 +246,11 @@ class MainFlow extends Flow<FlowState, _StateId> {
               }),
         ));
       });
-    });
+    }, getContext()));
   }
 
   void _onExitPrivacyPolicyState() {
-    _fileStreamSubscription!.cancel();
+    systemManager.removeFileServiceListener(getContext());
     navigator.popScreen();
   }
 
@@ -270,8 +285,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
       setState(_StateId.overview);
     });
 
-    _clipboardStreamSubscription =
-        systemManager.clipboardServiceStream().listen((service) {
+    systemManager.addClipboardServiceListener(Listener((service) {
       final view = ClipboardScreen(
         viewModel: ClipboardScreenViewModel(
             dataTransceiver: _transceiveDataUseCase!,
@@ -279,12 +293,13 @@ class MainFlow extends Flow<FlowState, _StateId> {
       );
 
       viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
-    });
+    }, getContext()));
   }
 
   void _onExitClipboardState() {
-    _clipboardStreamSubscription!.cancel();
-    _transceiveDataStreamSubscription!.cancel();
+    systemManager.removeClipboardServiceListener(getContext());
+    systemManager.removeCreateConnectionServiceListener(getContext());
+    systemManager.removeJoinConnectionServiceListener(getContext());
   }
 
   void _onLoginStateChanged(LoginState loginState) {
@@ -305,19 +320,17 @@ class MainFlow extends Flow<FlowState, _StateId> {
   void init() {
     super.init();
 
-    _authenticationStreamSubscription =
-        systemManager.authenticationServiceStream().listen((service) {
+    systemManager.addAuthenticationServiceListener(Listener((service) {
       _authenticationService = service;
       loginStateSubscription =
           service.target!.stream().listen(_onLoginStateChanged);
-    });
+    }, getContext()));
   }
 
   @override
   void dispose() {
-    super.dispose();
     loginStateSubscription.cancel();
-    _authenticationStreamSubscription?.cancel();
+    super.dispose();
   }
 
   @override

@@ -1,11 +1,12 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:p2p_copy_paste/conditional_object.dart';
+import 'package:p2p_copy_paste/context.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
+import 'package:p2p_copy_paste/listener.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
@@ -14,17 +15,41 @@ import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 
 abstract class ISystemManager {
-  Stream<WeakReference<ICreateInviteService>> createInviteServiceStream();
-  Stream<WeakReference<ICreateConnectionService>>
-      createConnectionServiceStream();
+  void addCreateInviteServiceListener(
+      Listener<void Function(WeakReference<ICreateInviteService>)> listener);
 
-  Stream<WeakReference<IJoinInviteService>> joinInviteServiceStream();
-  Stream<WeakReference<IJoinConnectionService>> joinConnectionServiceStream();
+  void removeCreateInviteServiceListener(WeakReference<Context> context);
 
-  Stream<WeakReference<IAuthenticationService>> authenticationServiceStream();
+  void addCreateConnectionServiceListener(
+      Listener<void Function(WeakReference<ICreateConnectionService>)>
+          listener);
 
-  Stream<WeakReference<IFileService>> fileServiceStream();
-  Stream<WeakReference<IClipboardService>> clipboardServiceStream();
+  void removeCreateConnectionServiceListener(WeakReference<Context> context);
+
+  void addJoinInviteServiceListener(
+      Listener<void Function(WeakReference<IJoinInviteService>)> listener);
+
+  void removeJoinInviteServiceListener(WeakReference<Context> context);
+
+  void addJoinConnectionServiceListener(
+      Listener<void Function(WeakReference<IJoinConnectionService>)> listener);
+
+  void removeJoinConnectionServiceListener(WeakReference<Context> context);
+
+  void addAuthenticationServiceListener(
+      Listener<void Function(WeakReference<IAuthenticationService>)> listener);
+
+  void removeAuthenticationServiceListener(WeakReference<Context> context);
+
+  void addFileServiceListener(
+      Listener<void Function(WeakReference<IFileService>)> listener);
+
+  void removeFileServiceListener(WeakReference<Context> context);
+
+  void addClipboardServiceListener(
+      Listener<void Function(WeakReference<IClipboardService>)> listener);
+
+  void removeClipboardServiceListener(WeakReference<Context> context);
 }
 
 class SystemManager extends ISystemManager {
@@ -100,38 +125,82 @@ class SystemManager extends ISystemManager {
   }
 
   @override
-  Stream<WeakReference<ICreateInviteService>> createInviteServiceStream() {
-    return _createInviteService.stream();
+  void addClipboardServiceListener(
+      Listener<void Function(WeakReference<IClipboardService>)> listener) {
+    _clipboardService.addListener(listener);
   }
 
   @override
-  Stream<WeakReference<ICreateConnectionService>>
-      createConnectionServiceStream() {
-    return _createConnectionService.stream();
+  void removeClipboardServiceListener(WeakReference<Context> context) {
+    _clipboardService.removeListener(context);
   }
 
   @override
-  Stream<WeakReference<IJoinInviteService>> joinInviteServiceStream() {
-    return _joinInviteService.stream();
+  void addFileServiceListener(
+      Listener<void Function(WeakReference<IFileService>)> listener) {
+    _fileService.addListener(listener);
   }
 
   @override
-  Stream<WeakReference<IJoinConnectionService>> joinConnectionServiceStream() {
-    return _joinConnectionService.stream();
+  void removeFileServiceListener(WeakReference<Context> context) {
+    _fileService.removeListener(context);
   }
 
   @override
-  Stream<WeakReference<IAuthenticationService>> authenticationServiceStream() {
-    return _authenticationService.stream();
+  void addAuthenticationServiceListener(
+      Listener<void Function(WeakReference<IAuthenticationService>)> listener) {
+    log('Add authentication service listener');
+
+    _authenticationService.addListener(listener);
   }
 
   @override
-  Stream<WeakReference<IClipboardService>> clipboardServiceStream() {
-    return _clipboardService.stream();
+  void removeAuthenticationServiceListener(WeakReference<Context> context) {
+    _authenticationService.removeListener(context);
   }
 
   @override
-  Stream<WeakReference<IFileService>> fileServiceStream() {
-    return _fileService.stream();
+  void addCreateInviteServiceListener(
+      Listener<void Function(WeakReference<ICreateInviteService>)> listener) {
+    _createInviteService.addListener(listener);
+  }
+
+  @override
+  void removeCreateInviteServiceListener(WeakReference<Context> context) {
+    _createInviteService.removeListener(context);
+  }
+
+  @override
+  void addCreateConnectionServiceListener(
+      Listener<void Function(WeakReference<ICreateConnectionService>)>
+          listener) {
+    _createConnectionService.addListener(listener);
+  }
+
+  @override
+  void removeCreateConnectionServiceListener(WeakReference<Context> context) {
+    _createConnectionService.removeListener(context);
+  }
+
+  @override
+  void addJoinInviteServiceListener(
+      Listener<void Function(WeakReference<IJoinInviteService>)> listener) {
+    _joinInviteService.addListener(listener);
+  }
+
+  @override
+  void removeJoinInviteServiceListener(WeakReference<Context> context) {
+    _joinInviteService.removeListener(context);
+  }
+
+  @override
+  void addJoinConnectionServiceListener(
+      Listener<void Function(WeakReference<IJoinConnectionService>)> listener) {
+    _joinConnectionService.addListener(listener);
+  }
+
+  @override
+  void removeJoinConnectionServiceListener(WeakReference<Context> context) {
+    _joinConnectionService.removeListener(context);
   }
 }

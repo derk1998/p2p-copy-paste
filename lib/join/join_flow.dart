@@ -26,21 +26,13 @@ enum _StateId {
   sent,
   addVisitor,
   join,
-  loading,
 }
 
 enum JoinViewType { camera, code }
 
 class JoinFlow extends Flow<FlowState, _StateId> {
-  final Stream<WeakReference<IJoinInviteService>> joinInviteStream;
-  StreamSubscription<WeakReference<IJoinInviteService>>?
-      _joinInviteStreamSubscription;
-  WeakReference<IJoinInviteService>? _joinInviteService;
-
-  final Stream<WeakReference<IJoinConnectionService>> joinConnectionStream;
-  StreamSubscription<WeakReference<IJoinConnectionService>>?
-      _joinConnectionStreamSubscription;
-  WeakReference<IJoinConnectionService>? _joinConnectionService;
+  WeakReference<IJoinInviteService>? joinInviteService;
+  WeakReference<IJoinConnectionService>? joinConnectionService;
 
   Invite? _invite;
   final JoinViewType viewType;
@@ -51,8 +43,8 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   StreamSubscription<bool>? _restartConditionSubscription;
 
   JoinFlow(
-      {required this.joinInviteStream,
-      required this.joinConnectionStream,
+      {required this.joinInviteService,
+      required this.joinConnectionService,
       super.onCompleted,
       super.onCanceled,
       required this.viewType}) {
@@ -83,20 +75,13 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     addState(
         state: FlowState(name: 'join', onEntry: _onEntryJoinState),
         stateId: _StateId.join);
-    addState(
-        state: FlowState(name: 'loading', onEntry: _onEntryLoadingState),
-        stateId: _StateId.loading);
 
-    setInitialState(_StateId.loading);
-  }
-
-  void _onEntryLoadingState() {
-    loading();
+    setInitialState(_StateId.start);
   }
 
   void _onEntryStartState() {
     _joinInviteUpdateSubscription =
-        _joinInviteService!.target!.stream().listen(_onJoinInviteStatusChanged);
+        joinInviteService!.target!.stream().listen(_onJoinInviteStatusChanged);
     _inviteRetrievedConditionSubscription =
         _inviteRetrievedCondition.listen(_onInviteRetrievedConditionChanged);
 
@@ -105,7 +90,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
       view = ScanQRCodeScreen(
           viewModel: ScanQrCodeScreenViewModel(
               inviteRetrievedCondition: _inviteRetrievedCondition,
-              joinInviteService: _joinInviteService!.target!));
+              joinInviteService: joinInviteService!.target!));
     } else {
       view = JoinConnectionScreen(
           viewModel: JoinConnectionScreenViewModel(
@@ -125,7 +110,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryRetrievedState() {
-    _joinInviteService!.target!.join(_invite!);
+    joinInviteService!.target!.join(_invite!);
   }
 
   void _onEntryErrorState() {
@@ -202,21 +187,21 @@ class JoinFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryJoinState() {
     loading();
-    _joinConnectionService!.target!.setOnConnectedListener(() {
+    joinConnectionService!.target!.setOnConnectedListener(() {
       complete();
     });
 
     //todo: the state needs to be captured so the state can be changed when connection fails
-    _joinConnectionService!.target!
+    joinConnectionService!.target!
         .joinConnection(_invite!.joiner!, _invite!.creator);
   }
 
   void _onEntryAddVisitorState() {
     loading();
-    _joinConnectionService!.target!
+    joinConnectionService!.target!
         .addVisitor(_invite!.joiner!, _invite!.creator)
         .then((value) {
-      _joinInviteService!.target!
+      joinInviteService!.target!
           .accept(JoinerInvite.fromInvite(_invite!))
           .then((value) {
         setState(_StateId.join);
@@ -228,35 +213,17 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   void init() {
     super.init();
 
-    _joinInviteStreamSubscription = joinInviteStream.listen((service) {
-      _joinInviteService = service;
-
-      if (_joinInviteService != null && _joinConnectionService != null) {
-        setState(_StateId.start);
-      }
-    });
-
-    _joinConnectionStreamSubscription = joinConnectionStream.listen((service) {
-      _joinConnectionService = service;
-
-      if (_joinInviteService != null && _joinConnectionService != null) {
-        setState(_StateId.start);
-      }
-    });
-
     _restartConditionSubscription =
         _restartCondition.listen(_onRestartConditionChanged);
   }
 
   @override
   void dispose() {
-    super.dispose();
     _joinInviteUpdateSubscription?.cancel();
-    _joinConnectionStreamSubscription!.cancel();
-    _joinInviteStreamSubscription!.cancel();
     _inviteRetrievedCondition.close();
     _restartConditionSubscription?.cancel();
     _restartCondition.close();
+    super.dispose();
   }
 
   @override
