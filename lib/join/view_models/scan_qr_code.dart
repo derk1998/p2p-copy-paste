@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
-import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 class ScanQrCodeScreenViewModel extends StatefulScreenViewModel {

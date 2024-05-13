@@ -1,11 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
-import 'package:p2p_copy_paste/flow.dart';
-import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/create/screens/create_invite.dart';
-import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:p2p_copy_paste/screen_view.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/widgets/button.dart' as btn;
 

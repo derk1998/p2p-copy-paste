@@ -1,7 +1,7 @@
 import 'dart:core';
 
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/screen.dart';
 
 class MenuScreenViewModel extends ScreenViewModel {
   MenuScreenViewModel(

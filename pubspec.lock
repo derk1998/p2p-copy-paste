@@ -327,6 +327,15 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_fd:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: b60813b17c477c5ed4ab96486b8cd64515e23f64
+      url: "https://github.com/derk1998/flutter_fd"
+    source: git
+    version: "0.0.1"
   flutter_launcher_icons:
     dependency: "direct main"
     description:

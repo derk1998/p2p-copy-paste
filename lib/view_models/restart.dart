@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/screen.dart';
 
 class RestartViewModel extends ScreenViewModel {
   RestartViewModel(

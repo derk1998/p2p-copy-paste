@@ -1,11 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/firebase_options.dart';
 import 'package:p2p_copy_paste/main_flow.dart';
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/system_manager.dart';
-import 'package:p2p_copy_paste/view_models/flow.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

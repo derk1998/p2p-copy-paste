@@ -1,4 +1,4 @@
-import 'package:p2p_copy_paste/view_models/screen.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 
 class BasicViewModel extends ScreenViewModel {
   BasicViewModel({required this.title, required this.description});

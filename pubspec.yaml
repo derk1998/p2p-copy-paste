@@ -50,6 +50,11 @@ dependencies:
       url: https://github.com/derk1998/fd_dart
       ref: main
 
+  flutter_fd:
+    git:
+      url: https://github.com/derk1998/flutter_fd
+      ref: main
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

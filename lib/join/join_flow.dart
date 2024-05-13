@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:p2p_copy_paste/screen.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
-import 'package:p2p_copy_paste/flow.dart';
-import 'package:p2p_copy_paste/flow_state.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/screens/centered_description.dart';
 import 'package:p2p_copy_paste/join/screens/join_connection.dart';
@@ -14,7 +12,6 @@ import 'package:p2p_copy_paste/view_models/basic.dart';
 import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
-import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum _StateId {

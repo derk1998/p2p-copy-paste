@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:p2p_copy_paste/screen_view.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 

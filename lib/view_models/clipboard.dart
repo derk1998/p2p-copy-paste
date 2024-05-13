@@ -2,10 +2,10 @@ import 'dart:core';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ClipboardScreenState {

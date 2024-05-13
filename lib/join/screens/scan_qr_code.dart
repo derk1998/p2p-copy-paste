@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:p2p_copy_paste/screen_view.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 
