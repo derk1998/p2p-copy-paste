@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:fd_dart/fd_dart.dart';
 import 'package:p2p_copy_paste/config.dart';
-import 'package:p2p_copy_paste/disposable.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';

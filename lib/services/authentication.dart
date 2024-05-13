@@ -1,4 +1,4 @@
-import 'package:p2p_copy_paste/disposable.dart';
+import 'package:fd_dart/fd_dart.dart';
 
 enum LoginState { loggedIn, loggedOut, loggingIn }
 

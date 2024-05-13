@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:p2p_copy_paste/disposable.dart';
+import 'package:fd_dart/fd_dart.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 abstract class IInviteRepository extends Disposable {
