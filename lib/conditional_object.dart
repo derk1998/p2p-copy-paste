@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:p2p_copy_paste/context.dart';
-import 'package:p2p_copy_paste/contextual_object.dart';
 import 'package:p2p_copy_paste/disposable.dart';
 import 'package:p2p_copy_paste/listener.dart';
 import 'package:p2p_copy_paste/weak_key.dart';
 import 'package:rxdart/rxdart.dart';
 
-class ConditionalObject<T extends Disposable> extends ContextualObject {
+class ConditionalObject<T extends Disposable> {
   ConditionalObject(this._creator, {this.dependencies});
 
   final Map<WeakKey<Context>, StreamSubscription<WeakReference<T>>> _listeners =
@@ -34,11 +33,14 @@ class ConditionalObject<T extends Disposable> extends ContextualObject {
     final context = listener.getContext();
 
     if (context.target != null) {
+      final callback = listener.lock();
       context.target!.addExpiringListener(Listener((ctx) {
         removeListener(ctx);
-      }, getContext()));
+      }, context));
       _listeners[WeakKey(context)] = _stream(context).listen((object) {
-        listener.lock()?.call(object);
+        if (object.target != null) {
+          callback!.call(object);
+        }
       });
     }
   }

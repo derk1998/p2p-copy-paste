@@ -17,8 +17,11 @@ class Context extends Disposable {
 
     final context = listener.getContext();
     if (context.target != null) {
+      final callback = listener.lock();
       _listeners[WeakKey(context)] = _subject!.listen((object) {
-        listener.lock()?.call(object);
+        if (object.target != null) {
+          callback!.call(object);
+        }
       });
     }
   }
