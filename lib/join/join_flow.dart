@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/flow.dart';
 import 'package:p2p_copy_paste/flow_state.dart';
@@ -32,7 +32,7 @@ enum JoinViewType { camera, code }
 
 class JoinFlow extends Flow<FlowState, _StateId> {
   WeakReference<IJoinInviteService>? joinInviteService;
-  WeakReference<IJoinConnectionService>? joinConnectionService;
+  WeakReference<IConnectionService>? joinConnectionService;
 
   Invite? _invite;
   final JoinViewType viewType;
@@ -192,14 +192,13 @@ class JoinFlow extends Flow<FlowState, _StateId> {
     });
 
     //todo: the state needs to be captured so the state can be changed when connection fails
-    joinConnectionService!.target!
-        .joinConnection(_invite!.joiner!, _invite!.creator);
+    joinConnectionService!.target!.connect(_invite!.joiner!, _invite!.creator);
   }
 
   void _onEntryAddVisitorState() {
     loading();
     joinConnectionService!.target!
-        .addVisitor(_invite!.joiner!, _invite!.creator)
+        .setVisitor(_invite!.joiner!, _invite!.creator)
         .then((value) {
       joinInviteService!.target!
           .accept(JoinerInvite.fromInvite(_invite!))

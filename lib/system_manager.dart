@@ -11,6 +11,7 @@ import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
 import 'package:p2p_copy_paste/repositories/invite_repository.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 
@@ -21,8 +22,7 @@ abstract class ISystemManager {
   void removeCreateInviteServiceListener(WeakReference<Context> context);
 
   void addCreateConnectionServiceListener(
-      Listener<void Function(WeakReference<ICreateConnectionService>)>
-          listener);
+      Listener<void Function(WeakReference<IConnectionService>)> listener);
 
   void removeCreateConnectionServiceListener(WeakReference<Context> context);
 
@@ -32,7 +32,7 @@ abstract class ISystemManager {
   void removeJoinInviteServiceListener(WeakReference<Context> context);
 
   void addJoinConnectionServiceListener(
-      Listener<void Function(WeakReference<IJoinConnectionService>)> listener);
+      Listener<void Function(WeakReference<IConnectionService>)> listener);
 
   void removeJoinConnectionServiceListener(WeakReference<Context> context);
 
@@ -172,8 +172,7 @@ class SystemManager extends ISystemManager {
 
   @override
   void addCreateConnectionServiceListener(
-      Listener<void Function(WeakReference<ICreateConnectionService>)>
-          listener) {
+      Listener<void Function(WeakReference<IConnectionService>)> listener) {
     _createConnectionService.addListener(listener);
   }
 
@@ -195,7 +194,7 @@ class SystemManager extends ISystemManager {
 
   @override
   void addJoinConnectionServiceListener(
-      Listener<void Function(WeakReference<IJoinConnectionService>)> listener) {
+      Listener<void Function(WeakReference<IConnectionService>)> listener) {
     _joinConnectionService.addListener(listener);
   }
 

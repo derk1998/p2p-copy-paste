@@ -9,10 +9,10 @@ import 'package:p2p_copy_paste/screen.dart';
 import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/create/view_models/create_invite.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
-import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum _StateId {
@@ -28,7 +28,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   StreamSubscription<CreateInviteUpdate>? createInviteStatusSubscription;
 
   WeakReference<ICreateInviteService>? createInviteService;
-  WeakReference<ICreateConnectionService>? createConnectionService;
+  WeakReference<IConnectionService>? createConnectionService;
 
   Invite? invite;
   final _restartCondition = PublishSubject<bool>();
@@ -171,8 +171,7 @@ class CreateFlow extends Flow<FlowState, _StateId> {
       complete();
     });
 
-    createConnectionService!.target!
-        .createConnection(invite!.creator, invite!.joiner!);
+    createConnectionService!.target!.connect(invite!.creator, invite!.joiner!);
   }
 
   @override

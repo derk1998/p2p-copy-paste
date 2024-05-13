@@ -13,8 +13,8 @@ import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/flow.dart';
 import 'package:p2p_copy_paste/screens/vertical_menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/system_manager.dart';
-import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
 import 'package:p2p_copy_paste/view_models/clipboard.dart';
@@ -39,7 +39,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   final ISystemManager systemManager;
 
   WeakReference<IAuthenticationService>? _authenticationService;
-  WeakReference<TransceiveDataUseCase>? _transceiveDataUseCase;
+  WeakReference<IConnectionService>? _connectionService;
 
   MainFlow(
       {required this.navigator,
@@ -102,7 +102,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
             },
             onConfirmButtonPressed: () {
               navigator.popScreen();
-              _transceiveDataUseCase!.target!.close();
+              _connectionService!.target!.close();
             },
           ),
         ),
@@ -151,7 +151,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
     systemManager
         .addCreateConnectionServiceListener(Listener((createConnectionService) {
-      _transceiveDataUseCase = createConnectionService;
+      _connectionService = createConnectionService;
 
       systemManager
           .addCreateInviteServiceListener(Listener((createInviteService) {
@@ -175,7 +175,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
     systemManager
         .addJoinConnectionServiceListener(Listener((joinConnectionService) {
-      _transceiveDataUseCase = joinConnectionService;
+      _connectionService = joinConnectionService;
 
       systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
         final flow = JoinFlow(
@@ -207,7 +207,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   void _onEntryJoinWithCodeState() {
     systemManager
         .addJoinConnectionServiceListener(Listener((joinConnectionService) {
-      _transceiveDataUseCase = joinConnectionService;
+      _connectionService = joinConnectionService;
 
       systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
         final flow = JoinFlow(
@@ -281,15 +281,14 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
   void _onEntryClipboardState() {
     loading();
-    _transceiveDataUseCase!.target!.setOnConnectionClosedListener(() {
+    _connectionService!.target!.setOnDisconnectedListener(() {
       setState(_StateId.overview);
     });
 
     systemManager.addClipboardServiceListener(Listener((service) {
       final view = ClipboardScreen(
         viewModel: ClipboardScreenViewModel(
-            dataTransceiver: _transceiveDataUseCase!,
-            clipboardService: service),
+            connectionService: _connectionService!, clipboardService: service),
       );
 
       viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));

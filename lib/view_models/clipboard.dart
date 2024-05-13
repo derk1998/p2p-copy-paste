@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/screen.dart';
 import 'package:rxdart/rxdart.dart';
@@ -19,7 +19,7 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   late ButtonViewModel pasteButtonViewModel;
 
   ClipboardScreenViewModel(
-      {required this.dataTransceiver, required this.clipboardService}) {
+      {required this.connectionService, required this.clipboardService}) {
     copyButtonViewModel = ButtonViewModel(
         title: 'Copy', onPressed: _onCopyButtonPressed, icon: Icons.copy);
     pasteButtonViewModel = ButtonViewModel(
@@ -31,12 +31,12 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
 
   Stream<ClipboardScreenState> get state => _stateSubject;
 
-  final WeakReference<TransceiveDataUseCase> dataTransceiver;
+  final WeakReference<IConnectionService> connectionService;
   final WeakReference<IClipboardService> clipboardService;
 
   @override
   void init() {
-    dataTransceiver.target!.setOnReceiveDataListener(_onDataReceived);
+    connectionService.target!.setOnReceiveDataListener(_onDataReceived);
   }
 
   @override
@@ -62,7 +62,7 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
     if (data != null) {
       log('data is $data');
       _updateState(data);
-      dataTransceiver.target!.sendData(data);
+      connectionService.target!.sendData(data);
     }
   }
 
