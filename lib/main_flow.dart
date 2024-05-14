@@ -20,11 +20,9 @@ import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 enum _StateId {
   overview,
   getStarted,
-  privacyPolicy,
   loading,
   create,
-  joinWithQrCode,
-  joinWithCode,
+  join,
   clipboard,
 }
 
@@ -32,6 +30,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
   final INavigator navigator;
   late StreamSubscription<LoginState> loginStateSubscription;
   final ISystemManager systemManager;
+  JoinViewType _joinViewType = JoinViewType.camera;
 
   WeakReference<IAuthenticationService>? _authenticationService;
   WeakReference<IConnectionService>? _connectionService;
@@ -55,22 +54,8 @@ class MainFlow extends Flow<FlowState, _StateId> {
         stateId: _StateId.create);
     addState(
         state: FlowState(
-            name: 'join with qr code',
-            onEntry: _onEntryJoinWithQrCodeState,
-            onExit: _onExitJoinWithQrCodeState),
-        stateId: _StateId.joinWithQrCode);
-    addState(
-        state: FlowState(
-            name: 'join with code',
-            onEntry: _onEntryJoinWithCodeState,
-            onExit: _onExitJoinWithCodeState),
-        stateId: _StateId.joinWithCode);
-    addState(
-        state: FlowState(
-            name: 'privacy policy',
-            onEntry: _onEntryPrivacyPolicyState,
-            onExit: _onExitPrivacyPolicyState),
-        stateId: _StateId.privacyPolicy);
+            name: 'join', onEntry: _onEntryJoinState, onExit: _onExitJoinState),
+        stateId: _StateId.join);
     addState(
         state: FlowState(name: 'get started', onEntry: _onEntryGetStartedState),
         stateId: _StateId.getStarted);
@@ -119,13 +104,15 @@ class MainFlow extends Flow<FlowState, _StateId> {
         ButtonViewModel(
             title: 'I have a code',
             onPressed: () {
-              setState(_StateId.joinWithCode);
+              _joinViewType = JoinViewType.code;
+              setState(_StateId.join);
             }),
       if (!kIsWeb)
         ButtonViewModel(
             title: 'I have a QR code',
             onPressed: () {
-              setState(_StateId.joinWithQrCode);
+              _joinViewType = JoinViewType.camera;
+              setState(_StateId.join);
             },
             icon: material.Icons.qr_code)
     ];
@@ -165,7 +152,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
     systemManager.removeCreateInviteServiceListener(getContext());
   }
 
-  void _onEntryJoinWithQrCodeState() {
+  void _onEntryJoinState() {
     loading();
 
     systemManager
@@ -174,7 +161,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
 
       systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
         final flow = JoinFlow(
-            viewType: JoinViewType.camera,
+            viewType: _joinViewType,
             onCompleted: _closeScreenAndOpenClipboard,
             onCanceled: _closeScreenAndReturnToOverview,
             joinConnectionService: joinConnectionService,
@@ -185,7 +172,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
     }, getContext()));
   }
 
-  void _onExitJoinWithQrCodeState() {
+  void _onExitJoinState() {
     systemManager.removeJoinInviteServiceListener(getContext());
   }
 
@@ -199,56 +186,6 @@ class MainFlow extends Flow<FlowState, _StateId> {
     setState(_StateId.clipboard);
   }
 
-  void _onEntryJoinWithCodeState() {
-    systemManager
-        .addJoinConnectionServiceListener(Listener((joinConnectionService) {
-      _connectionService = joinConnectionService;
-
-      systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
-        final flow = JoinFlow(
-            viewType: JoinViewType.code,
-            onCompleted: _closeScreenAndOpenClipboard,
-            onCanceled: _closeScreenAndReturnToOverview,
-            joinConnectionService: joinConnectionService,
-            joinInviteService: joinInviteService);
-
-        navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-      }, getContext()));
-    }, getContext()));
-  }
-
-  void _onExitJoinWithCodeState() {
-    systemManager.removeJoinInviteServiceListener(getContext());
-  }
-
-  void _onEntryPrivacyPolicyState() {
-    systemManager.addFileServiceListener(Listener((service) {
-      service.target!
-          .loadFile('assets/text/privacy-policy.md')
-          .then((privacyPolicyText) {
-        navigator.pushDialog(CancelConfirmDialog(
-          viewModel: CancelConfirmViewModel(
-              isContentMarkdown: true,
-              description: privacyPolicyText,
-              title: 'Read the following',
-              cancelName: 'Disagree',
-              confirmName: 'Agree',
-              onCancelButtonPressed: () {
-                setState(_StateId.getStarted);
-              },
-              onConfirmButtonPressed: () {
-                _authenticationService!.target!.signInAnonymously();
-              }),
-        ));
-      });
-    }, getContext()));
-  }
-
-  void _onExitPrivacyPolicyState() {
-    systemManager.removeFileServiceListener(getContext());
-    navigator.popScreen();
-  }
-
   void _onEntryLoadingState() {
     loading();
   }
@@ -258,7 +195,29 @@ class MainFlow extends Flow<FlowState, _StateId> {
       ButtonViewModel(
           title: 'Get started',
           onPressed: () {
-            setState(_StateId.privacyPolicy);
+            systemManager.addFileServiceListener(Listener((service) {
+              service.target!
+                  .loadFile('assets/text/privacy-policy.md')
+                  .then((privacyPolicyText) {
+                navigator.pushDialog(CancelConfirmDialog(
+                  viewModel: CancelConfirmViewModel(
+                      isContentMarkdown: true,
+                      description: privacyPolicyText,
+                      title: 'Read the following',
+                      cancelName: 'Disagree',
+                      confirmName: 'Agree',
+                      onCancelButtonPressed: () {
+                        navigator.popScreen();
+                        systemManager.removeFileServiceListener(getContext());
+                      },
+                      onConfirmButtonPressed: () {
+                        navigator.popScreen();
+                        _authenticationService!.target!.signInAnonymously();
+                        systemManager.removeFileServiceListener(getContext());
+                      }),
+                ));
+              });
+            }, getContext()));
           },
           icon: material.Icons.arrow_forward)
     ];

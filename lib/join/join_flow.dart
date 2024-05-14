@@ -107,6 +107,7 @@ class JoinFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryRetrievedState() {
+    loading();
     joinInviteService!.target!.join(_invite!);
   }
 

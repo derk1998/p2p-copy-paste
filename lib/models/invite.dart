@@ -28,6 +28,11 @@ class Invite {
       final tmp = cast<Timestamp>(data['timestamp']);
       if (tmp != null) {
         timestamp = tmp.toDate();
+      } else {
+        final tmp = cast<DateTime>(data['timestamp']);
+        if (tmp != null) {
+          timestamp = tmp;
+        }
       }
     }
 
