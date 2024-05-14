@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:fd_dart/fd_dart.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
@@ -54,35 +52,27 @@ class SystemManager extends ISystemManager {
   final _authenticationService =
       ConditionalObject<FirebaseAuthenticationService>(
           (List<dynamic>? dependencies) {
-    log('Creating authentication service...');
-
     return FirebaseAuthenticationService();
   });
 
   final _inviteRepository = ConditionalObject<FirestoreInviteRepository>(
       (List<dynamic>? dependencies) {
-    log('Creating invite repository...');
-
     return FirestoreInviteRepository();
   });
 
   final _connectionInfoRepository =
       ConditionalObject<FirestoreConnectionInfoRepository>(
           (List<dynamic>? dependencies) {
-    log('Creating connection info repository...');
-
     return FirestoreConnectionInfoRepository();
   });
 
   final _fileService =
       ConditionalObject<FileService>((List<dynamic>? dependencies) {
-    log('Creating file service...');
     return FileService();
   });
 
   final _clipboardService =
       ConditionalObject<ClipboardService>((List<dynamic>? dependencies) {
-    log('Creating clipboard service...');
     return ClipboardService();
   });
 
@@ -94,7 +84,6 @@ class SystemManager extends ISystemManager {
   SystemManager() {
     _createInviteService =
         ConditionalObject<CreateInviteService>((dependencies) {
-      log('Creating create invite service...');
       return CreateInviteService(
           authenticationService: dependencies![0],
           inviteRepository: dependencies[1]);
@@ -102,13 +91,11 @@ class SystemManager extends ISystemManager {
 
     _createConnectionService =
         ConditionalObject<CreateConnectionService>((dependencies) {
-      log('Creating create connection service...');
       return CreateConnectionService(
           connectionInfoRepository: dependencies![0]);
     }, dependencies: [_connectionInfoRepository]);
 
     _joinInviteService = ConditionalObject<JoinInviteService>((dependencies) {
-      log('Creating join invite service...');
       return JoinInviteService(
         authenticationService: dependencies![0],
         inviteRepository: dependencies[1],
@@ -117,7 +104,6 @@ class SystemManager extends ISystemManager {
 
     _joinConnectionService =
         ConditionalObject<JoinConnectionService>((dependencies) {
-      log('Creating join connection service...');
       return JoinConnectionService(connectionInfoRepository: dependencies![0]);
     }, dependencies: [_connectionInfoRepository]);
   }
@@ -147,8 +133,6 @@ class SystemManager extends ISystemManager {
   @override
   void addAuthenticationServiceListener(
       Listener<void Function(WeakReference<IAuthenticationService>)> listener) {
-    log('Add authentication service listener');
-
     _authenticationService.addListener(listener);
   }
 

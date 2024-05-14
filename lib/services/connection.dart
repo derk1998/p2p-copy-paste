@@ -151,7 +151,6 @@ abstract class AbstractConnectionService implements IConnectionService {
   @override
   void dispose() {
     close();
-    log('Dispose abstract connection');
     _onConnectedListener = null;
     _subscription?.cancel();
 

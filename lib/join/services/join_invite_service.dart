@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:fd_dart/fd_dart.dart';
 import 'package:p2p_copy_paste/config.dart';
@@ -96,6 +95,5 @@ class JoinInviteService implements IJoinInviteService {
   @override
   void dispose() {
     statusUpdateSubject.close();
-    log('Join invite service dispose');
   }
 }

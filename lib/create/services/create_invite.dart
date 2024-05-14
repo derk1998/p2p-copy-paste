@@ -54,7 +54,6 @@ class CreateInviteService extends ICreateInviteService {
     _inviteSubscription =
         inviteRepository.target!.snapshots(ownUid).listen(_onInviteUpdated);
 
-    //todo: is this timer only relevant for front end? Consider moving this to flow.
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_onPeriodicUpdateUntilReceivedUid(timer.tick)) {
         timer.cancel();
@@ -76,7 +75,6 @@ class CreateInviteService extends ICreateInviteService {
       _inviteSubscription =
           inviteRepository.target!.snapshots(ownUid).listen(_onInviteUpdated);
 
-      //todo: is this timer only relevant for front end? Consider moving this to flow.
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (_onPeriodicUpdateUntilAcceptedByJoiner(timer.tick)) {
           timer.cancel();
@@ -155,8 +153,6 @@ class CreateInviteService extends ICreateInviteService {
 
   void _onInviteUpdated(Invite? invite) {
     _invite = invite;
-
-    log('Inivte updated: ${invite?.toMap().toString()}');
   }
 
   @override
@@ -169,6 +165,5 @@ class CreateInviteService extends ICreateInviteService {
     _inviteSubscription?.cancel();
     _timer?.cancel();
     statusUpdateSubject.close();
-    log('Create invite service dispose');
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_fd/flutter_fd.dart';
@@ -49,7 +48,6 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   }
 
   void _onDataReceived(String data) {
-    log('data is received! -> $data');
     _updateState(data);
   }
 
@@ -60,7 +58,6 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   void _onPasteButtonPressed() async {
     final data = await clipboardService.target!.get();
     if (data != null) {
-      log('data is $data');
       _updateState(data);
       connectionService.target!.sendData(data);
     }

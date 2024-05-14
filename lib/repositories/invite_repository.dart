@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fd_dart/fd_dart.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
@@ -20,7 +18,6 @@ class FirestoreInviteRepository extends IInviteRepository {
     final data = invite.toMap();
     data['timestamp'] = FieldValue.serverTimestamp();
     await ref.set(data);
-    log('Adding invite: ${invite.toMap().toString()}');
     return invite;
   }
 
@@ -37,7 +34,6 @@ class FirestoreInviteRepository extends IInviteRepository {
     final ref = _collection.doc(invite.creator);
     final data = invite.toMap();
     await ref.set(data);
-    log('Updating invite: ${invite.toMap().toString()}');
   }
 
   @override
@@ -47,7 +43,5 @@ class FirestoreInviteRepository extends IInviteRepository {
   }
 
   @override
-  void dispose() {
-    log('dispose invite repository');
-  }
+  void dispose() {}
 }

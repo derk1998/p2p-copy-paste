@@ -164,7 +164,6 @@ class CreateFlow extends Flow<FlowState, _StateId> {
   }
 
   void _onEntryConnectState() {
-    //todo: check if this prevents the create flow from being garbage collected
     createConnectionService!.target!.setOnConnectedListener(() {
       complete();
     });
