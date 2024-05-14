@@ -1,17 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
-import 'package:p2p_copy_paste/models/invite.dart';
-
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/join/services/join_connection.dart';
-import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
-import 'package:p2p_copy_paste/view_models/basic.dart';
-
-import 'scan_qr_code_screen_test.mocks.dart';
+//These tests are now all flow tests
+/*
 
 @GenerateMocks(
     [IJoinConnectionService, INavigator, IJoinInviteService, IClipboardService])
@@ -170,4 +158,6 @@ void main() {
     expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
         isA<ClipboardScreen>());
   });
+
 }
+*/

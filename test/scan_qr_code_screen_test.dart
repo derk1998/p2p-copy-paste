@@ -1,61 +1,60 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/centered_description.dart';
-import 'package:p2p_copy_paste/join/screens/scan_qr_code.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 
 import 'scan_qr_code_screen_test.mocks.dart';
 
-@GenerateMocks(
-    [IJoinConnectionService, INavigator, IJoinInviteService, IClipboardService])
+@GenerateMocks([IJoinInviteService, StreamController])
 void main() {
   late ScanQrCodeScreenViewModel viewModel;
   late MockIJoinInviteService mockJoinInviteService;
-  late MockINavigator mockNavigator;
+  late MockStreamController<Invite> mockInviteRetrievedCondition;
 
   setUp(() {
-    mockNavigator = MockINavigator();
     mockJoinInviteService = MockIJoinInviteService();
+    mockInviteRetrievedCondition = MockStreamController<Invite>();
 
     viewModel = ScanQrCodeScreenViewModel(
-        clipboardService: MockIClipboardService(),
-        joinConnectionService: MockIJoinConnectionService(),
         joinInviteService: mockJoinInviteService,
-        navigator: mockNavigator);
+        inviteRetrievedCondition: mockInviteRetrievedCondition);
 
     viewModel.init();
   });
 
   test(
-      'Verify if connect dialog is shown when qr code is scanned with valid timestamp',
+      'Verify if invite retrieved condition is valid when qr code is scanned with valid timestamp',
       () async {
-    final invite = Invite('creator')..timestamp = DateTime.now();
+    final invite = Invite(creator: 'creator')..timestamp = DateTime.now();
     final json = invite.toJson();
 
     viewModel.onQrCodeScanned(json);
 
-    expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<CenteredDescriptionScreen>());
+    final Invite? capturedInvite =
+        verify(mockInviteRetrievedCondition.add(captureAny)).captured[0];
+
+    expect(capturedInvite, isNotNull);
+    expect(invite.creator, capturedInvite?.creator);
   });
 
   test(
-      'Verify if connect dialog is not shown when qr code is scanned with invalid timestamp',
+      'Verify if invite retrieved condition is not updated when qr code is scanned with invalid timestamp',
       () async {
-    final invite = Invite('creator');
+    final invite = Invite(creator: 'creator');
     final json = invite.toJson();
 
     viewModel.onQrCodeScanned(json);
 
-    verifyNever(mockNavigator.replaceScreen(any));
+    verifyNever(mockInviteRetrievedCondition.add(any));
   });
 
+//flow test
+/*
   test(
       'Verify if scan qr code screen is displayed when refresh button is pressed in connect dialog',
       () async {
@@ -80,4 +79,5 @@ void main() {
     expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
         isA<ScanQRCodeScreen>());
   });
+  */
 }

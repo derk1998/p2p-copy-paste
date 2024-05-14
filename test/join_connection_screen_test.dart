@@ -1,34 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-import 'package:p2p_copy_paste/navigation_manager.dart';
-import 'package:p2p_copy_paste/screens/centered_description.dart';
-import 'package:p2p_copy_paste/join/screens/join_connection.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/join/services/join_connection.dart';
-import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 
 import 'join_connection_screen_test.mocks.dart';
 
-@GenerateMocks(
-    [IJoinConnectionService, INavigator, IJoinInviteService, IClipboardService])
+@GenerateMocks([StreamController])
 void main() {
   late JoinConnectionScreenViewModel viewModel;
-  late MockIJoinInviteService mockJoinInviteService;
-  late MockINavigator mockNavigator;
+  late MockStreamController<Invite> mockInviteRetrievedCondition;
 
   setUp(() {
-    mockNavigator = MockINavigator();
-    mockJoinInviteService = MockIJoinInviteService();
+    mockInviteRetrievedCondition = MockStreamController();
 
     viewModel = JoinConnectionScreenViewModel(
-        clipboardService: MockIClipboardService(),
-        joinConnectionService: MockIJoinConnectionService(),
-        joinInviteService: mockJoinInviteService,
-        navigator: mockNavigator);
+        inviteRetrievedCondition: mockInviteRetrievedCondition);
 
     viewModel.init();
   });
@@ -40,6 +30,8 @@ void main() {
     expect(state.status, '');
   });
 
+//flow test
+/*
   test(
       'Verify if connect dialog is not shown when code is empty and submit button is pressed',
       () async {
@@ -48,6 +40,7 @@ void main() {
 
     verifyNever(mockNavigator.replaceScreen(any));
   });
+  */
 
   test(
       'Verify if error message is shown when code is empty and submit button is pressed',
@@ -61,15 +54,20 @@ void main() {
   });
 
   test(
-      'Verify if connect dialog is shown when code is not empty and submit button is pressed',
+      'Verify if invite retrieved condition is valid when code is not empty and submit button is pressed',
       () async {
     viewModel.code = 'creator';
     viewModel.connectButtonViewModel.onPressed();
 
-    expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<CenteredDescriptionScreen>());
+    final Invite? invite =
+        verify(mockInviteRetrievedCondition.add(captureAny)).captured[0];
+
+    expect(invite, isNotNull);
+    expect(invite?.creator, viewModel.code);
   });
 
+//flow test
+/*
   test(
       'Verify if join connection screen is displayed when refresh button is pressed in connect dialog',
       () async {
@@ -92,4 +90,5 @@ void main() {
     expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
         isA<JoinConnectionScreen>());
   });
+  */
 }

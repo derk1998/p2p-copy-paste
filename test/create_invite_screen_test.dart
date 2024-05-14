@@ -18,7 +18,7 @@ void main() {
     mockCreateInviteService = MockICreateInviteService();
 
     viewModel = CreateInviteScreenViewModel(
-        createInviteService: mockCreateInviteService);
+        createInviteService: WeakReference(mockCreateInviteService));
   });
 
   test('Verify if initial state starts at loading', () async {

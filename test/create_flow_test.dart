@@ -1,30 +1,36 @@
 import 'dart:async';
 
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:p2p_copy_paste/create/create_flow.dart';
 import 'package:p2p_copy_paste/create/screens/create_invite.dart';
-import 'package:p2p_copy_paste/create/view_models/invite_expired.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
 import 'package:p2p_copy_paste/screens/horizontal_menu.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
-import 'package:p2p_copy_paste/screen_view.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
+import 'package:p2p_copy_paste/view_models/restart.dart';
 
-import 'create_invite_screen_test.mocks.dart';
+import 'create_flow_test.mocks.dart';
 
-@GenerateMocks([ICreateInviteService, Stream, StreamSubscription])
+@GenerateMocks(
+    [ICreateInviteService, IConnectionService, Stream, StreamSubscription])
 void main() {
   late MockICreateInviteService mockCreateInviteService;
+  late MockIConnectionService mockConnectionService;
 
   setUp(() {
     mockCreateInviteService = MockICreateInviteService();
+    mockConnectionService = MockIConnectionService();
   });
 
   test('Verify if flow starts at create invite screen', () async {
-    final flow = CreateFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(
+        createInviteService: WeakReference(mockCreateInviteService),
+        createConnectionService: WeakReference(mockConnectionService));
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -34,22 +40,17 @@ void main() {
     final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
     when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
-    StatefulScreenView? view;
-    final completer = Completer<void>();
-    flow.viewChangeSubject.listen((value) {
-      view = value;
-      completer.complete();
-    });
-
     flow.init();
 
-    await completer.future;
-    expect(view, isA<CreateInviteScreen>());
+    final screen = await flow.viewChangeSubject.first;
+    expect(screen?.view, isA<CreateInviteScreen>());
   });
 
   test('Verify if invite answered screen is shown when uid is received',
       () async {
-    final flow = CreateFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(
+        createInviteService: WeakReference(mockCreateInviteService),
+        createConnectionService: WeakReference(mockConnectionService));
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -62,31 +63,20 @@ void main() {
     flow.init();
 
     final listener = verify(mockStream.listen(captureAny)).captured[0];
-
-    StatefulScreenView? view;
-    final completer = Completer<void>();
-    const int expectedScreenChanges = 2;
-    int actualScreenChanges = 0;
-    flow.viewChangeSubject.listen((value) {
-      actualScreenChanges++;
-      view = value;
-
-      if (expectedScreenChanges == actualScreenChanges) {
-        completer.complete();
-      }
-    });
 
     listener(CreateInviteUpdate(
         state: CreateInviteState.receivedUid,
         seconds: 60,
-        invite: Invite('creator')..joiner = 'joiner'));
+        invite: Invite(creator: 'creator', joiner: 'joiner')));
 
-    await completer.future;
-    expect(view, isA<HorizontalMenuScreen>());
+    final screen = await flow.viewChangeSubject.first;
+    expect(screen?.view, isA<HorizontalMenuScreen>());
   });
 
   test('Verify if invite expired screen is shown when expired', () async {
-    final flow = CreateFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(
+        createInviteService: WeakReference(mockCreateInviteService),
+        createConnectionService: WeakReference(mockConnectionService));
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -100,26 +90,13 @@ void main() {
 
     final listener = verify(mockStream.listen(captureAny)).captured[0];
 
-    StatefulScreenView? view;
-    final completer = Completer<void>();
-    const int expectedScreenChanges = 2;
-    int actualScreenChanges = 0;
-    flow.viewChangeSubject.listen((value) {
-      actualScreenChanges++;
-      view = value;
-
-      if (expectedScreenChanges == actualScreenChanges) {
-        completer.complete();
-      }
-    });
-
     listener(CreateInviteUpdate(
         state: CreateInviteState.expired,
         seconds: 60,
-        invite: Invite('creator')..joiner = 'joiner'));
+        invite: Invite(creator: 'creator', joiner: 'joiner')));
 
-    await completer.future;
-    expect(view, isA<RestartScreen>());
+    final screen = await flow.viewChangeSubject.first;
+    expect(screen?.view, isA<RestartScreen>());
   });
 
   test('Verify if flow is canceled when invite is declined', () async {
@@ -127,7 +104,8 @@ void main() {
     final completer = Completer<void>();
 
     final flow = CreateFlow(
-      createInviteService: mockCreateInviteService,
+      createInviteService: WeakReference(mockCreateInviteService),
+      createConnectionService: WeakReference(mockConnectionService),
       onCanceled: () async {
         canceled = true;
         completer.complete();
@@ -149,18 +127,45 @@ void main() {
     listener(CreateInviteUpdate(
         state: CreateInviteState.declined,
         seconds: 60,
-        invite: Invite('creator')..joiner = 'joiner'));
+        invite: Invite(creator: 'creator', joiner: 'joiner')));
 
     await completer.future;
     expect(canceled, isTrue);
   });
 
-  test('Verify if flow is completed when invite is accepted', () async {
+  test('Verify if connecting when invite is accepted', () async {
+    final flow = CreateFlow(
+      createInviteService: WeakReference(mockCreateInviteService),
+      createConnectionService: WeakReference(mockConnectionService),
+    );
+
+    final mockStream = MockStream<CreateInviteUpdate>();
+    when(mockCreateInviteService.stream()).thenAnswer(
+      (realInvocation) => mockStream,
+    );
+
+    final mockStreamSubscription = MockStreamSubscription<CreateInviteUpdate>();
+    when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
+
+    flow.init();
+
+    final listener = verify(mockStream.listen(captureAny)).captured[0];
+    final invite = Invite(creator: 'creator', joiner: 'joiner');
+    listener(CreateInviteUpdate(
+        state: CreateInviteState.accepted, seconds: 60, invite: invite));
+
+    await untilCalled(mockConnectionService.connect(any, any));
+
+    verify(mockConnectionService.connect(invite.creator, invite.joiner));
+  });
+
+  test('Verify if flow is completed when connected', () async {
     bool completed = false;
     final completer = Completer<void>();
 
     final flow = CreateFlow(
-      createInviteService: mockCreateInviteService,
+      createInviteService: WeakReference(mockCreateInviteService),
+      createConnectionService: WeakReference(mockConnectionService),
       onCompleted: () async {
         completed = true;
         completer.complete();
@@ -182,7 +187,13 @@ void main() {
     listener(CreateInviteUpdate(
         state: CreateInviteState.accepted,
         seconds: 60,
-        invite: Invite('creator')..joiner = 'joiner'));
+        invite: Invite(creator: 'creator', joiner: 'joiner')));
+
+    final connectedListener =
+        verify(mockConnectionService.setOnConnectedListener(captureAny))
+            .captured[0];
+
+    connectedListener();
 
     await completer.future;
     expect(completed, isTrue);
@@ -190,9 +201,9 @@ void main() {
 
   test('Verify if create invite screen is shown when expired and restarted',
       () async {
-    //ugly test but it does what it's supposed to do, feel free to improve
-
-    final flow = CreateFlow(createInviteService: mockCreateInviteService);
+    final flow = CreateFlow(
+        createInviteService: WeakReference(mockCreateInviteService),
+        createConnectionService: WeakReference(mockConnectionService));
 
     final mockStream = MockStream<CreateInviteUpdate>();
     when(mockCreateInviteService.stream()).thenAnswer(
@@ -206,35 +217,18 @@ void main() {
 
     final listener = verify(mockStream.listen(captureAny)).captured[0];
 
-    StatefulScreenView? view;
-    final completer = Completer<void>();
-    final restartedCompleter = Completer<void>();
-
-    const int expectedScreenChanges = 2;
-    int actualScreenChanges = 0;
-    flow.viewChangeSubject.listen((value) {
-      actualScreenChanges++;
-      view = value;
-
-      if (expectedScreenChanges == actualScreenChanges) {
-        completer.complete();
-      } else if (expectedScreenChanges + 1 == actualScreenChanges) {
-        restartedCompleter.complete();
-      }
-    });
-
     listener(CreateInviteUpdate(
         state: CreateInviteState.expired,
         seconds: 60,
-        invite: Invite('creator')..joiner = 'joiner'));
+        invite: Invite(creator: 'creator', joiner: 'joiner')));
 
-    await completer.future;
-    expect(view, isA<RestartScreen>());
+    Screen? screen = await flow.viewChangeSubject.first;
+    expect(screen?.view, isA<RestartScreen>());
 
-    final inviteExpiredViewModel = view!.viewModel as InviteExpiredViewModel;
+    final inviteExpiredViewModel = screen!.viewModel as RestartViewModel;
     inviteExpiredViewModel.iconButtonViewModel.onPressed();
-
-    await restartedCompleter.future;
-    expect(view, isA<CreateInviteScreen>());
+    await untilCalled(mockCreateInviteService.stream());
+    screen = await flow.viewChangeSubject.first;
+    expect(screen?.view, isA<CreateInviteScreen>());
   });
 }
