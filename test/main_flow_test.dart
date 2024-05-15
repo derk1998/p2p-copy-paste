@@ -183,8 +183,6 @@ void main() {
 
     menuScreenViewModel.buttonViewModelList[0].onPressed();
 
-    await untilCalled(mockSystemManager.addFileServiceListener(any));
-
     final fileServiceListener =
         verify(mockSystemManager.addFileServiceListener(captureAny))
             .captured[0];
@@ -236,8 +234,6 @@ void main() {
     final menuScreenViewModel = screen!.viewModel as MenuScreenViewModel;
 
     menuScreenViewModel.buttonViewModelList[0].onPressed();
-
-    await untilCalled(mockSystemManager.addFileServiceListener(any));
 
     final fileServiceListener =
         verify(mockSystemManager.addFileServiceListener(captureAny))
@@ -291,8 +287,6 @@ void main() {
     final menuScreenViewModel = screen!.viewModel as MenuScreenViewModel;
 
     menuScreenViewModel.buttonViewModelList[0].onPressed();
-
-    await untilCalled(mockSystemManager.addFileServiceListener(any));
 
     final fileServiceListener =
         verify(mockSystemManager.addFileServiceListener(captureAny))
