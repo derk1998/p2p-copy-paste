@@ -5,20 +5,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 T? cast<T>(x) => x is T ? x : null;
 
 class Invite {
-  Invite(this.creator);
+  Invite({
+    required this.creator,
+    this.joiner,
+    this.timestamp,
+    this.acceptedByCreator,
+    this.acceptedByJoiner,
+  });
 
   String creator;
   String? joiner;
   DateTime? timestamp;
-  bool? accepted;
-
-  void accept() {
-    accepted = true;
-  }
-
-  void decline() {
-    accepted = false;
-  }
+  bool? acceptedByCreator;
+  bool? acceptedByJoiner;
 
   Invite.fromMap(Map<String, dynamic> data) : creator = data['creator'] {
     if (data.containsKey('joiner')) {
@@ -29,11 +28,20 @@ class Invite {
       final tmp = cast<Timestamp>(data['timestamp']);
       if (tmp != null) {
         timestamp = tmp.toDate();
+      } else {
+        final tmp = cast<DateTime>(data['timestamp']);
+        if (tmp != null) {
+          timestamp = tmp;
+        }
       }
     }
 
-    if (data.containsKey('accepted')) {
-      accepted = data['accepted'];
+    if (data.containsKey('acceptedByCreator')) {
+      acceptedByCreator = data['acceptedByCreator'];
+    }
+
+    if (data.containsKey('acceptedByJoiner')) {
+      acceptedByJoiner = data['acceptedByJoiner'];
     }
   }
 
@@ -42,7 +50,8 @@ class Invite {
       'creator': creator,
       if (joiner != null) 'joiner': joiner,
       if (timestamp != null) 'timestamp': timestamp,
-      if (accepted != null) 'accepted': accepted,
+      if (acceptedByCreator != null) 'acceptedByCreator': acceptedByCreator,
+      if (acceptedByJoiner != null) 'acceptedByJoiner': acceptedByJoiner,
     };
   }
 
@@ -56,5 +65,35 @@ class Invite {
         return object;
       },
     );
+  }
+}
+
+class JoinerInvite extends Invite {
+  JoinerInvite.fromInvite(Invite invite)
+      : super(
+            creator: invite.creator,
+            joiner: invite.joiner,
+            acceptedByCreator: invite.acceptedByCreator,
+            acceptedByJoiner: invite.acceptedByJoiner);
+
+  void accept() {
+    acceptedByJoiner = true;
+  }
+}
+
+class CreatorInvite extends Invite {
+  CreatorInvite.fromInvite(Invite invite)
+      : super(
+            creator: invite.creator,
+            joiner: invite.joiner,
+            acceptedByCreator: invite.acceptedByCreator,
+            acceptedByJoiner: invite.acceptedByJoiner);
+
+  void accept() {
+    acceptedByCreator = true;
+  }
+
+  void decline() {
+    acceptedByCreator = false;
   }
 }

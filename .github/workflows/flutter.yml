@@ -48,6 +48,7 @@ jobs:
           cache: true
       - run: flutter --version
       - run: flutter pub get
+      - run: dart run build_runner build
       - run: flutter test
 
       - name: Test Report

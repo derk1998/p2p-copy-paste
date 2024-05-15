@@ -4,39 +4,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:p2p_copy_paste/navigation_manager.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/use_cases/close_connection.dart';
-import 'package:p2p_copy_paste/use_cases/transceive_data.dart';
+import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/clipboard.dart';
-import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 
 import 'clipboard_screen_test.mocks.dart';
 
-@GenerateMocks([
-  TransceiveDataUseCase,
-  INavigator,
-  CloseConnectionUseCase,
-  IClipboardService
-])
+@GenerateMocks([IConnectionService, IClipboardService])
 void main() {
   late ClipboardScreenViewModel viewModel;
-  late MockTransceiveDataUseCase mockTransceiveDataUseCase;
-  late MockCloseConnectionUseCase mockCloseConnectionUseCase;
-  late MockINavigator mockNavigator;
+  late MockIConnectionService mockConnectionService;
   late MockIClipboardService mockClipboardService;
 
   setUp(() {
-    mockTransceiveDataUseCase = MockTransceiveDataUseCase();
-    mockNavigator = MockINavigator();
-    mockCloseConnectionUseCase = MockCloseConnectionUseCase();
+    mockConnectionService = MockIConnectionService();
     mockClipboardService = MockIClipboardService();
 
     viewModel = ClipboardScreenViewModel(
-        closeConnectionUseCase: mockCloseConnectionUseCase,
-        dataTransceiver: mockTransceiveDataUseCase,
-        navigator: mockNavigator,
-        clipboardService: mockClipboardService);
+        clipboardService: WeakReference(mockClipboardService),
+        connectionService: WeakReference(mockConnectionService));
 
     viewModel.init();
   });
@@ -51,7 +37,7 @@ void main() {
     var state = await viewModel.state.first;
 
     final listener =
-        verify(mockTransceiveDataUseCase.setOnReceiveDataListener(captureAny))
+        verify(mockConnectionService.setOnReceiveDataListener(captureAny))
             .captured[0];
 
     listener('test');
@@ -69,7 +55,7 @@ void main() {
     await viewModel.state.first;
 
     final listener =
-        verify(mockTransceiveDataUseCase.setOnReceiveDataListener(captureAny))
+        verify(mockConnectionService.setOnReceiveDataListener(captureAny))
             .captured[0];
 
     listener('test');
@@ -108,13 +94,15 @@ void main() {
 
     viewModel.pasteButtonViewModel.onPressed();
 
-    await untilCalled(mockTransceiveDataUseCase.sendData('test'));
+    await untilCalled(mockConnectionService.sendData('test'));
   });
 
+  //The following tests are flow tests
+/*
   test('Verify if home screen is shown when connection closes', () async {
     await viewModel.state.first;
 
-    verify(mockCloseConnectionUseCase.setOnConnectionClosedListener(captureAny))
+    verify(mockConnectionService.setOnConnectionClosedListener(captureAny))
         .captured[0]();
 
     verify(mockNavigator.goToHome()).called(1);
@@ -151,4 +139,5 @@ void main() {
 
     verify(mockCloseConnectionUseCase.close()).called(1);
   });
+  */
 }

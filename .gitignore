@@ -48,3 +48,6 @@ firebase_options.dart
 
 # Don't publish test reports
 reports
+
+# Don't add mock files
+/test/*.mocks.dart

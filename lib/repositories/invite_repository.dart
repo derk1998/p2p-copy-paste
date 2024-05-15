@@ -1,9 +1,8 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fd_dart/fd_dart.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 
-abstract class IInviteRepository {
+abstract class IInviteRepository extends Disposable {
   Future<Invite> addInvite(Invite invite);
   Future<Invite> getInvite(String creator);
   Future<void> updateInvite(Invite invite);
@@ -19,7 +18,6 @@ class FirestoreInviteRepository extends IInviteRepository {
     final data = invite.toMap();
     data['timestamp'] = FieldValue.serverTimestamp();
     await ref.set(data);
-    log('Adding invite: ${invite.toMap().toString()}');
     return invite;
   }
 
@@ -36,7 +34,6 @@ class FirestoreInviteRepository extends IInviteRepository {
     final ref = _collection.doc(invite.creator);
     final data = invite.toMap();
     await ref.set(data);
-    log('Updating invite: ${invite.toMap().toString()}');
   }
 
   @override
@@ -44,4 +41,7 @@ class FirestoreInviteRepository extends IInviteRepository {
     return _collection.doc(creator).snapshots().map((snapshot) =>
         snapshot.data() != null ? Invite.fromMap(snapshot.data()!) : null);
   }
+
+  @override
+  void dispose() {}
 }

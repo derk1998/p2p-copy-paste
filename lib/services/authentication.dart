@@ -1,8 +1,10 @@
+import 'package:fd_dart/fd_dart.dart';
+
 enum LoginState { loggedIn, loggedOut, loggingIn }
 
-abstract class IAuthenticationService {
+abstract class IAuthenticationService extends Disposable {
   Future<void> signInAnonymously();
   String getUserId();
-  void setOnLoginStateChangedListener(
-      void Function(LoginState) onLoginStateChangedListener);
+
+  Stream<LoginState> stream();
 }
