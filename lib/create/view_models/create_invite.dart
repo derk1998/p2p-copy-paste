@@ -3,7 +3,6 @@ import 'dart:core';
 
 import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
-import 'package:rxdart/rxdart.dart';
 
 class CreateInviteScreenState {
   CreateInviteScreenState({this.data, this.seconds, this.loading = true});
@@ -24,19 +23,16 @@ class CreateInviteScreenState {
   }
 }
 
-class CreateInviteScreenViewModel extends StatefulScreenViewModel {
+class CreateInviteScreenViewModel
+    extends DataScreenViewModel<CreateInviteScreenState> {
   CreateInviteScreenViewModel({required this.createInviteService});
 
   final WeakReference<ICreateInviteService> createInviteService;
-  final _stateSubject = BehaviorSubject<CreateInviteScreenState>.seeded(
-      CreateInviteScreenState());
   StreamSubscription<CreateInviteUpdate>? _createInviteUpdateSubscription;
 
-  Stream<CreateInviteScreenState> get state => _stateSubject;
-
   void _updateState(int? seconds, String? data) {
-    final state = _stateSubject.value;
-    _stateSubject.add(
+    final state = getLastPublishedValue();
+    publish(
       state.copyWith(
           seconds: seconds,
           data: data,
@@ -51,6 +47,8 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel {
 
   @override
   void init() {
+    super.init();
+
     _createInviteUpdateSubscription = createInviteService.target!
         .stream()
         .listen(_onCreateInviteStatusChanged);
@@ -60,11 +58,16 @@ class CreateInviteScreenViewModel extends StatefulScreenViewModel {
   @override
   void dispose() {
     _createInviteUpdateSubscription?.cancel();
-    _stateSubject.close();
+    super.dispose();
   }
 
   @override
   String getTitle() {
     return 'Create an invite';
+  }
+
+  @override
+  CreateInviteScreenState getEmptyState() {
+    return CreateInviteScreenState();
   }
 }

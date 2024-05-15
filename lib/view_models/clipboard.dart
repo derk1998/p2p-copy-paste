@@ -5,7 +5,6 @@ import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/services/clipboard.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:rxdart/rxdart.dart';
 
 class ClipboardScreenState {
   ClipboardScreenState({this.clipboard = ''});
@@ -13,7 +12,8 @@ class ClipboardScreenState {
   final String clipboard;
 }
 
-class ClipboardScreenViewModel implements StatefulScreenViewModel {
+class ClipboardScreenViewModel
+    extends DataScreenViewModel<ClipboardScreenState> {
   late ButtonViewModel copyButtonViewModel;
   late ButtonViewModel pasteButtonViewModel;
 
@@ -25,26 +25,17 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
         title: 'Paste', onPressed: _onPasteButtonPressed, icon: Icons.paste);
   }
 
-  final _stateSubject =
-      BehaviorSubject<ClipboardScreenState>.seeded(ClipboardScreenState());
-
-  Stream<ClipboardScreenState> get state => _stateSubject;
-
   final WeakReference<IConnectionService> connectionService;
   final WeakReference<IClipboardService> clipboardService;
 
   @override
   void init() {
+    super.init();
     connectionService.target!.setOnReceiveDataListener(_onDataReceived);
   }
 
-  @override
-  void dispose() {
-    _stateSubject.close();
-  }
-
   void _updateState(final String data) {
-    _stateSubject.add(ClipboardScreenState(clipboard: data));
+    publish(ClipboardScreenState(clipboard: data));
   }
 
   void _onDataReceived(String data) {
@@ -52,7 +43,7 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   }
 
   void _onCopyButtonPressed() {
-    clipboardService.target!.set(_stateSubject.value.clipboard);
+    clipboardService.target!.set(getLastPublishedValue().clipboard);
   }
 
   void _onPasteButtonPressed() async {
@@ -66,5 +57,10 @@ class ClipboardScreenViewModel implements StatefulScreenViewModel {
   @override
   String getTitle() {
     return '';
+  }
+
+  @override
+  ClipboardScreenState getEmptyState() {
+    return ClipboardScreenState();
   }
 }

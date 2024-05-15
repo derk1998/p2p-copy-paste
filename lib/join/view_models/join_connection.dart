@@ -4,7 +4,6 @@ import 'dart:core';
 import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
-import 'package:rxdart/rxdart.dart';
 
 class JoinConnectionScreenState {
   JoinConnectionScreenState({this.loading = false, this.status = ''});
@@ -13,7 +12,8 @@ class JoinConnectionScreenState {
   String status;
 }
 
-class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
+class JoinConnectionScreenViewModel
+    extends DataScreenViewModel<JoinConnectionScreenState> {
   late ButtonViewModel connectButtonViewModel;
 
   JoinConnectionScreenViewModel({required this.inviteRetrievedCondition}) {
@@ -24,22 +24,8 @@ class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
   String code = '';
   final StreamController<Invite> inviteRetrievedCondition;
 
-  final _stateSubject = BehaviorSubject<JoinConnectionScreenState>.seeded(
-      JoinConnectionScreenState());
-
-  Stream<JoinConnectionScreenState> get state => _stateSubject;
-
-  @override
-  void init() {}
-
-  @override
-  void dispose() {
-    _stateSubject.close();
-  }
-
   void _updateState(String status, {bool loading = false}) {
-    _stateSubject
-        .add(JoinConnectionScreenState(status: status, loading: loading));
+    publish(JoinConnectionScreenState(status: status, loading: loading));
   }
 
   void _onSubmitConnectionIdButtonClicked() async {
@@ -58,5 +44,10 @@ class JoinConnectionScreenViewModel extends StatefulScreenViewModel {
   @override
   String getTitle() {
     return 'Join connection';
+  }
+
+  @override
+  JoinConnectionScreenState getEmptyState() {
+    return JoinConnectionScreenState();
   }
 }

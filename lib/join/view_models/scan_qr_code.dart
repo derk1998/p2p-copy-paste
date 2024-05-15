@@ -15,12 +15,6 @@ class ScanQrCodeScreenViewModel extends StatefulScreenViewModel {
   final IJoinInviteService joinInviteService;
   final StreamController<Invite> inviteRetrievedCondition;
 
-  @override
-  void init() {}
-
-  @override
-  void dispose() {}
-
   void onQrCodeScanned(String code) {
     if (!_scannedCodes.contains(code)) {
       _scannedCodes.add(code);
@@ -40,4 +34,10 @@ class ScanQrCodeScreenViewModel extends StatefulScreenViewModel {
   String getTitle() {
     return 'Scan QR code';
   }
+
+  @override
+  void dispose() {}
+
+  @override
+  void init() {}
 }
