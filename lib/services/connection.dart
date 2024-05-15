@@ -158,9 +158,9 @@ abstract class AbstractConnectionService implements IConnectionService {
     _dataChannel?.onDataChannelState = null;
     _dataChannel = null;
 
-    _peerConnection!.onConnectionState = null;
-    _peerConnection!.onIceConnectionState = null;
-    _peerConnection!.onIceCandidate = null;
+    _peerConnection?.onConnectionState = null;
+    _peerConnection?.onIceConnectionState = null;
+    _peerConnection?.onIceCandidate = null;
     _peerConnection = null;
 
     ownConnectionInfo = null;
