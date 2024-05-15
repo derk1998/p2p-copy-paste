@@ -144,8 +144,8 @@ class MainFlow extends Flow<FlowState, _StateId> {
             onCanceled: _closeScreenAndReturnToOverview);
 
         navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-      }, getContext()));
-    }, getContext()));
+      }, this));
+    }, this));
   }
 
   void _onExitCreateState() {
@@ -168,8 +168,8 @@ class MainFlow extends Flow<FlowState, _StateId> {
             joinInviteService: joinInviteService);
 
         navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-      }, getContext()));
-    }, getContext()));
+      }, this));
+    }, this));
   }
 
   void _onExitJoinState() {
@@ -217,7 +217,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
                       }),
                 ));
               });
-            }, getContext()));
+            }, this));
           },
           icon: material.Icons.arrow_forward)
     ];
@@ -246,7 +246,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
       );
 
       viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
-    }, getContext()));
+    }, this));
   }
 
   void _onExitClipboardState() {
@@ -277,7 +277,7 @@ class MainFlow extends Flow<FlowState, _StateId> {
       _authenticationService = service;
       loginStateSubscription =
           service.target!.stream().listen(_onLoginStateChanged);
-    }, getContext()));
+    }, this));
   }
 
   @override
