@@ -96,48 +96,4 @@ void main() {
 
     await untilCalled(mockConnectionService.sendData('test'));
   });
-
-  //The following tests are flow tests
-/*
-  test('Verify if home screen is shown when connection closes', () async {
-    await viewModel.state.first;
-
-    verify(mockConnectionService.setOnConnectionClosedListener(captureAny))
-        .captured[0]();
-
-    verify(mockNavigator.goToHome()).called(1);
-  });
-
-  test('Verify if dialog is shown when back button is pressed', () async {
-    await viewModel.state.first;
-
-    viewModel.onBackPressed();
-
-    verify(mockNavigator.pushDialog(captureAny)).captured[0];
-  });
-
-  test('Verify if dialog is dismissed when cancel button is pressed', () async {
-    await viewModel.state.first;
-
-    viewModel.onBackPressed();
-
-    final CancelConfirmDialog dialog =
-        verify(mockNavigator.pushDialog(captureAny)).captured[0];
-    dialog.viewModel.cancelButtonViewModel.onPressed();
-    verify(mockNavigator.popScreen());
-  });
-
-  test('Verify connection is closed when dialog confirm button is pressed',
-      () async {
-    await viewModel.state.first;
-
-    viewModel.onBackPressed();
-
-    final CancelConfirmDialog dialog =
-        verify(mockNavigator.pushDialog(captureAny)).captured[0];
-    dialog.viewModel.confirmButtonViewModel.onPressed();
-
-    verify(mockCloseConnectionUseCase.close()).called(1);
-  });
-  */
 }

@@ -52,32 +52,4 @@ void main() {
 
     verifyNever(mockInviteRetrievedCondition.add(any));
   });
-
-//flow test
-/*
-  test(
-      'Verify if scan qr code screen is displayed when refresh button is pressed in connect dialog',
-      () async {
-    final invite = Invite('creator')..timestamp = DateTime.now();
-    final json = invite.toJson();
-
-    viewModel.onQrCodeScanned(json);
-
-    final CenteredDescriptionScreen connectDialog =
-        verify(mockNavigator.replaceScreen(captureAny)).captured[0];
-
-    connectDialog.viewModel.init();
-
-    verify(mockJoinInviteService.join(any, captureAny)).captured[0](
-        invite, JoinInviteState.inviteDeclined);
-
-    final state = await connectDialog.viewModel.state.first;
-    expect(state.refreshButtonViewModel, isNotNull);
-
-    state.refreshButtonViewModel!.onPressed();
-
-    expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<ScanQRCodeScreen>());
-  });
-  */
 }

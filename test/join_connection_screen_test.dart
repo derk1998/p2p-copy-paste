@@ -30,18 +30,6 @@ void main() {
     expect(state.status, '');
   });
 
-//flow test
-/*
-  test(
-      'Verify if connect dialog is not shown when code is empty and submit button is pressed',
-      () async {
-    viewModel.code = '';
-    viewModel.connectButtonViewModel.onPressed();
-
-    verifyNever(mockNavigator.replaceScreen(any));
-  });
-  */
-
   test(
       'Verify if error message is shown when code is empty and submit button is pressed',
       () async {
@@ -65,30 +53,4 @@ void main() {
     expect(invite, isNotNull);
     expect(invite?.creator, viewModel.code);
   });
-
-//flow test
-/*
-  test(
-      'Verify if join connection screen is displayed when refresh button is pressed in connect dialog',
-      () async {
-    viewModel.code = 'creator';
-    viewModel.connectButtonViewModel.onPressed();
-
-    final CenteredDescriptionScreen connectDialog =
-        verify(mockNavigator.replaceScreen(captureAny)).captured[0];
-
-    connectDialog.viewModel.init();
-
-    verify(mockJoinInviteService.join(any, captureAny)).captured[0](
-        Invite(viewModel.code), JoinInviteState.inviteDeclined);
-
-    final state = await connectDialog.viewModel.state.first;
-    expect(state.refreshButtonViewModel, isNotNull);
-
-    state.refreshButtonViewModel!.onPressed();
-
-    expect(verify(mockNavigator.replaceScreen(captureAny)).captured[0],
-        isA<JoinConnectionScreen>());
-  });
-  */
 }
