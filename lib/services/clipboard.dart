@@ -1,5 +1,5 @@
-import 'package:fd_dart/fd_dart.dart';
 import 'package:flutter/services.dart' as services;
+import 'package:flutter_fd/flutter_fd.dart';
 
 abstract class IClipboardService extends Disposable {
   Future<String?> get();

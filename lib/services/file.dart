@@ -1,5 +1,5 @@
-import 'package:fd_dart/fd_dart.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 
 abstract class IFileService extends Disposable {
   Future<String> loadFile(String location);

@@ -1,4 +1,4 @@
-import 'package:fd_dart/fd_dart.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';

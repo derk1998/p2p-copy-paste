@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:fd_dart/fd_dart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter_fd/flutter_fd.dart';

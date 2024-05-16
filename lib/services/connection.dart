@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:fd_dart/fd_dart.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:p2p_copy_paste/ice_server_configuration.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';

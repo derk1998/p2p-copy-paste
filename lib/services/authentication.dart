@@ -1,4 +1,4 @@
-import 'package:fd_dart/fd_dart.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 
 enum LoginState { loggedIn, loggedOut, loggingIn }
 

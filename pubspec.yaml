@@ -45,11 +45,6 @@ dependencies:
   flutter_markdown: ^0.6.22+1
   rxdart: ^0.27.7
 
-  fd_dart:
-    git:
-      url: https://github.com/derk1998/fd_dart
-      ref: main
-
   flutter_fd:
     git:
       url: https://github.com/derk1998/flutter_fd

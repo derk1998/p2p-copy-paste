@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fd_dart/fd_dart.dart';
+import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/models/connection_info.dart';
 
 abstract class IConnectionInfoRepository extends Disposable {
