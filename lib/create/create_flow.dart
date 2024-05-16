@@ -22,7 +22,7 @@ enum _StateId {
   loading,
 }
 
-class CreateFlow extends Flow<FlowState, _StateId> {
+class CreateFlow extends Flow<_StateId> {
   StreamSubscription<CreateInviteUpdate>? createInviteStatusSubscription;
 
   WeakReference<ICreateInviteService>? createInviteService;

@@ -27,7 +27,7 @@ enum _StateId {
 
 enum JoinViewType { camera, code }
 
-class JoinFlow extends Flow<FlowState, _StateId> {
+class JoinFlow extends Flow<_StateId> {
   WeakReference<IJoinInviteService>? joinInviteService;
   WeakReference<IConnectionService>? joinConnectionService;
 

@@ -26,7 +26,7 @@ enum _StateId {
   clipboard,
 }
 
-class MainFlow extends Flow<FlowState, _StateId> {
+class MainFlow extends Flow<_StateId> {
   final INavigator navigator;
   late StreamSubscription<LoginState> loginStateSubscription;
   final ISystemManager systemManager;
