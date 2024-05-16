@@ -73,6 +73,8 @@ void main() {
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
 
+    await untilCalled(mockLoginStateStream.listen(any));
+
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
 
@@ -106,6 +108,8 @@ void main() {
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
 
+    await untilCalled(mockLoginStateStream.listen(any));
+
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
 
@@ -137,6 +141,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -172,6 +178,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -224,6 +232,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -278,6 +288,8 @@ void main() {
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
 
+    await untilCalled(mockLoginStateStream.listen(any));
+
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
 
@@ -330,6 +342,8 @@ void main() {
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
 
+    await untilCalled(mockLoginStateStream.listen(any));
+
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
 
@@ -366,6 +380,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -420,6 +436,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -484,6 +502,8 @@ void main() {
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
 
+    await untilCalled(mockLoginStateStream.listen(any));
+
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
 
@@ -520,6 +540,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -574,6 +596,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -639,6 +663,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -706,6 +732,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
@@ -778,6 +806,8 @@ void main() {
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
 
+    await untilCalled(mockLoginStateStream.listen(any));
+
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
 
@@ -846,6 +876,8 @@ void main() {
     authenticationServiceListener
         .lock()
         ?.call(WeakReference(mockAuthenticationService));
+
+    await untilCalled(mockLoginStateStream.listen(any));
 
     final loginStateListener =
         verify(mockLoginStateStream.listen(captureAny)).captured[0];
