@@ -49,6 +49,7 @@ class CreateInviteService extends ICreateInviteService {
   @override
   Future<void> create() async {
     final ownUid = authenticationService.target!.getUserId();
+    await inviteRepository.target!.deleteInvite(Invite(creator: ownUid));
     await inviteRepository.target!.addInvite(Invite(creator: ownUid));
 
     _inviteSubscription =
@@ -69,7 +70,7 @@ class CreateInviteService extends ICreateInviteService {
 
     invite.accept();
     try {
-      await inviteRepository.target!.addInvite(invite);
+      await inviteRepository.target!.updateInvite(invite);
       final ownUid = authenticationService.target!.getUserId();
 
       _inviteSubscription =
@@ -91,7 +92,7 @@ class CreateInviteService extends ICreateInviteService {
   Future<void> decline(CreatorInvite invite) async {
     invite.decline();
     try {
-      await inviteRepository.target!.addInvite(invite);
+      await inviteRepository.target!.updateInvite(invite);
     } catch (e) {
       //ignore
     }

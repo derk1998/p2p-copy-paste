@@ -26,11 +26,11 @@ void main() {
         authenticationService: WeakReference(mockAuthenticationService));
   });
 
-  test('Verify if add invite is called when invite is declined', () async {
+  test('Verify if invite is updated when invite is declined', () async {
     final invite = CreatorInvite.fromInvite(Invite(creator: 'creator'));
 
     createInviteService.decline(invite);
-    verify(mockInviteRepository.addInvite(invite)).called(1);
+    verify(mockInviteRepository.updateInvite(invite)).called(1);
   });
 
   test('Verify if invite is updated when declined', () async {
@@ -40,11 +40,11 @@ void main() {
     expect(invite.acceptedByCreator, false);
   });
 
-  test('Verify if add invite is called when invite is accepted', () async {
+  test('Verify if invite is updated when invite is accepted', () async {
     final invite = CreatorInvite.fromInvite(Invite(creator: 'creator'));
 
     createInviteService.accept(invite);
-    verify(mockInviteRepository.addInvite(invite)).called(1);
+    verify(mockInviteRepository.updateInvite(invite)).called(1);
   });
 
   test('Verify if invite is updated when accepted', () async {
@@ -60,6 +60,8 @@ void main() {
     when(mockAuthenticationService.getUserId()).thenReturn(userId);
     when(mockInviteRepository.addInvite(any))
         .thenAnswer((realInvocation) => Future(() => invite));
+    when(mockInviteRepository.deleteInvite(any))
+        .thenAnswer((realInvocation) => Future(() {}));
     final mockStream = MockStream<Invite?>();
     final mockStreamSubscription = MockStreamSubscription<Invite?>();
 
@@ -70,6 +72,8 @@ void main() {
     when(mockStream.listen(any)).thenReturn(mockStreamSubscription);
 
     createInviteService.create();
+
+    await untilCalled(mockInviteRepository.addInvite(any));
 
     verify(mockAuthenticationService.getUserId()).called(1);
     expect(
@@ -83,6 +87,10 @@ void main() {
     when(mockAuthenticationService.getUserId()).thenReturn(userId);
     when(mockInviteRepository.addInvite(any))
         .thenAnswer((realInvocation) => Future(() => invite));
+    when(mockInviteRepository.updateInvite(any))
+        .thenAnswer((realInvocation) => Future(() => invite));
+    when(mockInviteRepository.deleteInvite(any))
+        .thenAnswer((realInvocation) => Future(() {}));
     final mockStream = MockStream<Invite?>();
     final mockStreamSubscription = MockStreamSubscription<Invite?>();
 

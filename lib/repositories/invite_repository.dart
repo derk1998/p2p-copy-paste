@@ -4,6 +4,7 @@ import 'package:p2p_copy_paste/models/invite.dart';
 
 abstract class IInviteRepository extends Disposable {
   Future<Invite> addInvite(Invite invite);
+  Future<void> deleteInvite(Invite invite);
   Future<Invite> getInvite(String creator);
   Future<void> updateInvite(Invite invite);
   Stream<Invite?> snapshots(String creator);
@@ -31,9 +32,7 @@ class FirestoreInviteRepository extends IInviteRepository {
 
   @override
   Future<void> updateInvite(Invite invite) async {
-    final ref = _collection.doc(invite.creator);
-    final data = invite.toMap();
-    await ref.set(data);
+    addInvite(invite);
   }
 
   @override
@@ -44,4 +43,10 @@ class FirestoreInviteRepository extends IInviteRepository {
 
   @override
   void dispose() {}
+
+  @override
+  Future<void> deleteInvite(Invite invite) async {
+    final ref = _collection.doc(invite.creator);
+    await ref.delete();
+  }
 }
