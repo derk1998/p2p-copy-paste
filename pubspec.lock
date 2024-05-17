@@ -322,11 +322,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: main
-      resolved-ref: "0c7fc9423220ad45e912b88b35c1e9cca4008821"
+      ref: "0.1.0"
+      resolved-ref: "8f8e26bb1958d1f363e0c416d2efc2089e2af845"
       url: "https://github.com/derk1998/flutter_fd"
     source: git
-    version: "0.0.1"
+    version: "0.1.0"
   flutter_launcher_icons:
     dependency: "direct main"
     description:

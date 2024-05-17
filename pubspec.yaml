@@ -48,7 +48,7 @@ dependencies:
   flutter_fd:
     git:
       url: https://github.com/derk1998/flutter_fd
-      ref: main
+      ref: 0.1.0
 
 dev_dependencies:
   flutter_test:
