@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_fd/flutter_fd.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -13,10 +15,12 @@ class ScanQRCodeScreen extends StatefulScreenView<ScanQrCodeScreenViewModel> {
 class _ScanQRCodeScreenState extends StatefulScreenViewState<ScanQRCodeScreen,
     ScanQrCodeScreenViewModel> {
   QRViewController? qrViewController;
+  StreamSubscription<Barcode>? subscription;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   @override
   void dispose() {
+    subscription?.cancel();
     qrViewController?.dispose();
     super.dispose();
   }
@@ -27,7 +31,7 @@ class _ScanQRCodeScreenState extends StatefulScreenViewState<ScanQRCodeScreen,
       key: qrKey,
       onQRViewCreated: (controller) {
         qrViewController = controller;
-        qrViewController?.scannedDataStream.listen((scanData) {
+        subscription = qrViewController?.scannedDataStream.listen((scanData) {
           if (scanData.code != null) {
             viewModel.onQrCodeScanned(scanData.code!);
           }
