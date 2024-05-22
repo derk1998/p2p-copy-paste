@@ -39,7 +39,10 @@ dependencies:
   firebase_core: ^2.27.0
   cloud_firestore: ^4.15.8
   qr_flutter: ^4.1.0
-  qr_code_scanner: ^1.0.1
+  qr_code_scanner:
+    git:
+      url: https://github.com/derk1998/qr_code_scanner
+      ref: master
   firebase_auth: ^4.17.9
   flutter_launcher_icons: ^0.13.1
   flutter_markdown: ^0.6.22+1
