@@ -14,6 +14,17 @@ class JoinConnectionService extends AbstractConnectionService {
   Future<void> connect(String ownUid, String visitor) async {
     final pc = await setupPeerConnection(ownUid, visitor);
 
+    pc.onSignalingState = (state) async {
+      if (state == RTCSignalingState.RTCSignalingStateHaveRemoteOffer) {
+        final answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        ownConnectionInfo!.answer = answer;
+        await connectionInfoRepository.target!.updateRoom(ownConnectionInfo!);
+        log('Answer generated and sent');
+      }
+    };
+
     pc.onDataChannel = (channel) {
       setDataChannel(channel);
     };
@@ -25,14 +36,8 @@ class JoinConnectionService extends AbstractConnectionService {
     if (peerConnectionInfo == null) return;
 
     if (peerConnectionInfo.offer != null && !offerSet) {
-      peerConnection.setRemoteDescription(peerConnectionInfo.offer!);
       log('Offer set!');
-      final answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
-      ownConnectionInfo!.answer = answer;
-      await connectionInfoRepository.target!.updateRoom(ownConnectionInfo!);
-      log('Answer generated and sent');
+      await peerConnection.setRemoteDescription(peerConnectionInfo.offer!);
       offerSet = true;
     }
 

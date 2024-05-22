@@ -14,13 +14,15 @@ class CreateConnectionService extends AbstractConnectionService {
   Future<void> connect(String ownUid, String visitor) async {
     final pc = await setupPeerConnection(ownUid, visitor);
 
+    pc.onRenegotiationNeeded = () async {
+      final offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      ownConnectionInfo!.setOffer(offer);
+      connectionInfoRepository.target!.updateRoom(ownConnectionInfo!);
+    };
+
     setDataChannel(
         await pc.createDataChannel('clipboard', RTCDataChannelInit()..id = 1));
-
-    final offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    ownConnectionInfo!.setOffer(offer);
-    connectionInfoRepository.target!.updateRoom(ownConnectionInfo!);
   }
 
   @override
@@ -34,9 +36,7 @@ class CreateConnectionService extends AbstractConnectionService {
       await peerConnection.setRemoteDescription(peerConnectionInfo.answer!);
       answerSet = true;
       log('Answer is set');
-    }
-
-    if (peerConnectionInfo.iceCandidates.isNotEmpty && answerSet) {
+    } else if (peerConnectionInfo.iceCandidates.isNotEmpty) {
       for (final iceCandidate in peerConnectionInfo.iceCandidates) {
         log('Add ice candidate (create)');
         try {

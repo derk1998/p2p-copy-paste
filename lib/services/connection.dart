@@ -90,6 +90,10 @@ abstract class AbstractConnectionService implements IConnectionService {
       if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
         callOnDisconnectedListener();
       }
+
+      if (state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
+        _peerConnection!.restartIce();
+      }
     };
 
     _peerConnection!.onIceCandidate = (candidate) async {
@@ -158,9 +162,12 @@ abstract class AbstractConnectionService implements IConnectionService {
     _dataChannel?.onDataChannelState = null;
     _dataChannel = null;
 
+    _peerConnection?.onSignalingState = null;
     _peerConnection?.onConnectionState = null;
     _peerConnection?.onIceConnectionState = null;
     _peerConnection?.onIceCandidate = null;
+    _peerConnection?.onRenegotiationNeeded = null;
+    _peerConnection?.dispose();
     _peerConnection = null;
 
     ownConnectionInfo = null;
