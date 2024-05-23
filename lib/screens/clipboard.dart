@@ -17,23 +17,36 @@ class _ClipboardScreenState
     return StreamBuilder<ClipboardScreenState>(
       stream: viewModel.state,
       builder: (context, snapshot) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (snapshot.hasData) Text(snapshot.data!.clipboard),
-              const SizedBox(
-                height: 16,
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: FractionallySizedBox(
+                  heightFactor: 0.75,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      child: Text(
+                        snapshot.hasData ? snapshot.data!.clipboard : '',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  btn.Button(viewModel: viewModel.copyButtonViewModel),
-                  btn.Button(viewModel: viewModel.pasteButtonViewModel),
-                ],
-              )
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                btn.Button(viewModel: viewModel.copyButtonViewModel),
+                const SizedBox(width: 8),
+                btn.Button(viewModel: viewModel.pasteButtonViewModel),
+              ],
+            )
+          ],
         );
       },
     );
