@@ -56,7 +56,7 @@ class ClipboardScreenViewModel
 
   @override
   String getTitle() {
-    return '';
+    return 'Clipboard';
   }
 
   @override
