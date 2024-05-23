@@ -4,13 +4,9 @@ import 'package:flutter_fd/flutter_fd.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:p2p_copy_paste/create/services/create_invite.dart';
-import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/main_flow.dart';
 import 'package:p2p_copy_paste/screens/vertical_menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/services/clipboard.dart';
-import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 
 import 'package:p2p_copy_paste/system_manager.dart';
@@ -26,10 +22,6 @@ import 'main_flow_test.mocks.dart';
   Stream,
   StreamSubscription,
   IFileService,
-  IConnectionService,
-  ICreateInviteService,
-  IJoinInviteService,
-  IClipboardService,
 ])
 void main() {
   late MockISystemManager mockSystemManager;
@@ -318,44 +310,6 @@ void main() {
     verify(mockAuthenticationService.signInAnonymously());
   });
 
-  test('Verify if flow is loading after create button pressed', () async {
-    flow.init();
-
-    await untilCalled(mockSystemManager.addAuthenticationServiceListener(any));
-
-    final authenticationServiceListener =
-        verify(mockSystemManager.addAuthenticationServiceListener(captureAny))
-            .captured[0];
-
-    final mockAuthenticationService = MockIAuthenticationService();
-    final mockLoginStateStream = MockStream<LoginState>();
-    when(mockAuthenticationService.stream())
-        .thenAnswer((realInvocation) => mockLoginStateStream);
-
-    final mockLoginStateStreamSubscription =
-        MockStreamSubscription<LoginState>();
-    when(mockLoginStateStream.listen(any))
-        .thenReturn(mockLoginStateStreamSubscription);
-
-    authenticationServiceListener
-        .lock()
-        ?.call(WeakReference(mockAuthenticationService));
-
-    await untilCalled(mockLoginStateStream.listen(any));
-
-    final loginStateListener =
-        verify(mockLoginStateStream.listen(captureAny)).captured[0];
-
-    loginStateListener(LoginState.loggedIn);
-
-    Screen? screen = await flow.viewChangeSubject.first;
-    final viewModel = screen!.viewModel as MenuScreenViewModel;
-    viewModel.buttonViewModelList[0].onPressed();
-
-    screen = await flow.viewChangeSubject.first;
-    expect(screen, isNull);
-  });
-
   test('Verify if create flow screen is shown when create button is pressed',
       () async {
     flow.init();
@@ -391,63 +345,9 @@ void main() {
     final viewModel = screen!.viewModel as MenuScreenViewModel;
     viewModel.buttonViewModelList[0].onPressed();
 
-    final createConnectionServiceListener =
-        verify(mockSystemManager.addCreateConnectionServiceListener(captureAny))
-            .captured[0];
-    final mockConnectionService = MockIConnectionService();
-    createConnectionServiceListener
-        .lock()
-        ?.call(WeakReference(mockConnectionService));
-
-    final createInviteServiceListener =
-        verify(mockSystemManager.addCreateInviteServiceListener(captureAny))
-            .captured[0];
-    final mockCreateInviteService = MockICreateInviteService();
-    createInviteServiceListener
-        .lock()
-        ?.call(WeakReference(mockCreateInviteService));
-
     final capturedView =
         verify(mockNavigator.pushScreen(captureAny)).captured[0];
     expect(capturedView, isA<FlowScreen>());
-  });
-
-  test('Verify if flow is loading after join button pressed', () async {
-    flow.init();
-
-    await untilCalled(mockSystemManager.addAuthenticationServiceListener(any));
-
-    final authenticationServiceListener =
-        verify(mockSystemManager.addAuthenticationServiceListener(captureAny))
-            .captured[0];
-
-    final mockAuthenticationService = MockIAuthenticationService();
-    final mockLoginStateStream = MockStream<LoginState>();
-    when(mockAuthenticationService.stream())
-        .thenAnswer((realInvocation) => mockLoginStateStream);
-
-    final mockLoginStateStreamSubscription =
-        MockStreamSubscription<LoginState>();
-    when(mockLoginStateStream.listen(any))
-        .thenReturn(mockLoginStateStreamSubscription);
-
-    authenticationServiceListener
-        .lock()
-        ?.call(WeakReference(mockAuthenticationService));
-
-    await untilCalled(mockLoginStateStream.listen(any));
-
-    final loginStateListener =
-        verify(mockLoginStateStream.listen(captureAny)).captured[0];
-
-    loginStateListener(LoginState.loggedIn);
-
-    Screen? screen = await flow.viewChangeSubject.first;
-    final viewModel = screen!.viewModel as MenuScreenViewModel;
-    viewModel.buttonViewModelList[1].onPressed();
-
-    screen = await flow.viewChangeSubject.first;
-    expect(screen, isNull);
   });
 
   test('Verify if join flow screen is shown when join button is pressed',
@@ -484,22 +384,6 @@ void main() {
     Screen? screen = await flow.viewChangeSubject.first;
     final viewModel = screen!.viewModel as MenuScreenViewModel;
     viewModel.buttonViewModelList[1].onPressed();
-
-    final joinConnectionServiceListener =
-        verify(mockSystemManager.addJoinConnectionServiceListener(captureAny))
-            .captured[0];
-    final mockConnectionService = MockIConnectionService();
-    joinConnectionServiceListener
-        .lock()
-        ?.call(WeakReference(mockConnectionService));
-
-    final joinInviteServiceListener =
-        verify(mockSystemManager.addJoinInviteServiceListener(captureAny))
-            .captured[0];
-    final mockJoinInviteService = MockIJoinInviteService();
-    joinInviteServiceListener
-        .lock()
-        ?.call(WeakReference(mockJoinInviteService));
 
     final capturedView =
         verify(mockNavigator.pushScreen(captureAny)).captured[0];

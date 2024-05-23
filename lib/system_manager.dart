@@ -1,6 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/create/services/create_connection.dart';
 import 'package:p2p_copy_paste/create/services/create_invite.dart';
+import 'package:p2p_copy_paste/features/clipboard.dart';
+import 'package:p2p_copy_paste/features/create.dart';
+import 'package:p2p_copy_paste/features/join.dart';
 import 'package:p2p_copy_paste/join/services/join_connection.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/repositories/connection_info_repository.dart';
@@ -11,27 +16,8 @@ import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/services/file.dart';
 import 'package:p2p_copy_paste/services/firebase_authentication.dart';
 
-abstract class ISystemManager {
-  void addCreateInviteServiceListener(
-      Listener<void Function(WeakReference<ICreateInviteService>)> listener);
-
-  void removeCreateInviteServiceListener(WeakReference<Context> context);
-
-  void addCreateConnectionServiceListener(
-      Listener<void Function(WeakReference<IConnectionService>)> listener);
-
-  void removeCreateConnectionServiceListener(WeakReference<Context> context);
-
-  void addJoinInviteServiceListener(
-      Listener<void Function(WeakReference<IJoinInviteService>)> listener);
-
-  void removeJoinInviteServiceListener(WeakReference<Context> context);
-
-  void addJoinConnectionServiceListener(
-      Listener<void Function(WeakReference<IConnectionService>)> listener);
-
-  void removeJoinConnectionServiceListener(WeakReference<Context> context);
-
+abstract class ISystemManager
+    implements ClipboardFeature, CreateFeature, JoinFeature {
   void addAuthenticationServiceListener(
       Listener<void Function(WeakReference<IAuthenticationService>)> listener);
 
@@ -41,11 +27,6 @@ abstract class ISystemManager {
       Listener<void Function(WeakReference<IFileService>)> listener);
 
   void removeFileServiceListener(WeakReference<Context> context);
-
-  void addClipboardServiceListener(
-      Listener<void Function(WeakReference<IClipboardService>)> listener);
-
-  void removeClipboardServiceListener(WeakReference<Context> context);
 }
 
 class SystemManager extends ISystemManager {
@@ -166,6 +147,8 @@ class SystemManager extends ISystemManager {
   @override
   void addJoinInviteServiceListener(
       Listener<void Function(WeakReference<IJoinInviteService>)> listener) {
+    log('add listener join invite service');
+
     _joinInviteService.addListener(listener);
   }
 
@@ -177,6 +160,7 @@ class SystemManager extends ISystemManager {
   @override
   void addJoinConnectionServiceListener(
       Listener<void Function(WeakReference<IConnectionService>)> listener) {
+    log('add listener join connection service');
     _joinConnectionService.addListener(listener);
   }
 

@@ -1,8 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter_fd/flutter_fd.dart';
+import 'package:p2p_copy_paste/features/clipboard.dart';
+import 'package:p2p_copy_paste/features/join.dart';
+import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/restart.dart';
 import 'package:p2p_copy_paste/services/connection.dart';
+import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
+import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/restart.dart';
 import 'package:p2p_copy_paste/join/services/join_invite_service.dart';
 import 'package:p2p_copy_paste/screens/centered_description.dart';
@@ -12,9 +17,11 @@ import 'package:p2p_copy_paste/view_models/basic.dart';
 import 'package:p2p_copy_paste/join/view_models/join_connection.dart';
 import 'package:p2p_copy_paste/join/view_models/scan_qr_code.dart';
 import 'package:p2p_copy_paste/models/invite.dart';
+import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum _StateId {
+  retrieveServices,
   start,
   retrieved,
   error,
@@ -23,13 +30,17 @@ enum _StateId {
   sent,
   addVisitor,
   join,
+  clipboard,
 }
 
 enum JoinViewType { camera, code }
 
 class JoinFlow extends Flow<_StateId> {
-  WeakReference<IJoinInviteService>? joinInviteService;
-  WeakReference<IConnectionService>? joinConnectionService;
+  WeakReference<IJoinInviteService>? _joinInviteService;
+  WeakReference<IConnectionService>? _joinConnectionService;
+  ClipboardFeature clipboardFeature;
+  JoinFeature joinFeature;
+  INavigator navigator;
 
   Invite? _invite;
   final JoinViewType viewType;
@@ -40,11 +51,16 @@ class JoinFlow extends Flow<_StateId> {
   StreamSubscription<bool>? _restartConditionSubscription;
 
   JoinFlow(
-      {required this.joinInviteService,
-      required this.joinConnectionService,
+      {required this.joinFeature,
+      required this.clipboardFeature,
+      required this.navigator,
       super.onCompleted,
       super.onCanceled,
       required this.viewType}) {
+    addState(
+        state: FlowState(
+            name: 'retrieveServices', onEntry: _onEntryRetrieveServicesState),
+        stateId: _StateId.retrieveServices);
     addState(
         state: FlowState(
             name: 'start',
@@ -72,13 +88,58 @@ class JoinFlow extends Flow<_StateId> {
     addState(
         state: FlowState(name: 'join', onEntry: _onEntryJoinState),
         stateId: _StateId.join);
+    addState(
+        state: FlowState(
+            name: 'clipboard',
+            onEntry: _onEntryClipboardState,
+            onPop: _onPopClipboard),
+        stateId: _StateId.clipboard);
 
-    setInitialState(_StateId.start);
+    setInitialState(_StateId.retrieveServices);
+  }
+
+  void _onPopClipboard() {
+    navigator.pushDialog(
+      CancelConfirmDialog(
+        viewModel: CancelConfirmViewModel(
+          title: 'Are you sure?',
+          description: 'The connection will be lost',
+          onCancelButtonPressed: () {
+            navigator.popScreen();
+          },
+          onConfirmButtonPressed: () {
+            navigator.popScreen();
+            _joinConnectionService!.target!.close();
+          },
+        ),
+      ),
+    );
+  }
+
+  void _onEntryRetrieveServicesState() {
+    loading();
+
+    joinFeature
+        .addJoinConnectionServiceListener(Listener((joinConnectionService) {
+      _joinConnectionService = joinConnectionService;
+      _goToStartIfReady();
+    }, this));
+
+    joinFeature.addJoinInviteServiceListener(Listener((joinInviteService) {
+      _joinInviteService = joinInviteService;
+      _goToStartIfReady();
+    }, this));
+  }
+
+  void _goToStartIfReady() {
+    if (_joinConnectionService != null && _joinInviteService != null) {
+      setState(_StateId.start);
+    }
   }
 
   void _onEntryStartState() {
     _joinInviteUpdateSubscription =
-        joinInviteService!.target!.stream().listen(_onJoinInviteStatusChanged);
+        _joinInviteService!.target!.stream().listen(_onJoinInviteStatusChanged);
     _inviteRetrievedConditionSubscription =
         _inviteRetrievedCondition.listen(_onInviteRetrievedConditionChanged);
 
@@ -87,7 +148,7 @@ class JoinFlow extends Flow<_StateId> {
       view = ScanQRCodeScreen(
           viewModel: ScanQrCodeScreenViewModel(
               inviteRetrievedCondition: _inviteRetrievedCondition,
-              joinInviteService: joinInviteService!.target!));
+              joinInviteService: _joinInviteService!.target!));
     } else {
       view = JoinConnectionScreen(
           viewModel: JoinConnectionScreenViewModel(
@@ -108,7 +169,7 @@ class JoinFlow extends Flow<_StateId> {
 
   void _onEntryRetrievedState() {
     loading();
-    joinInviteService!.target!.join(_invite!);
+    _joinInviteService!.target!.join(_invite!);
   }
 
   void _onEntryErrorState() {
@@ -185,25 +246,42 @@ class JoinFlow extends Flow<_StateId> {
 
   void _onEntryJoinState() {
     loading();
-    joinConnectionService!.target!.setOnConnectedListener(() {
-      complete();
+    _joinConnectionService!.target!.setOnConnectedListener(() {
+      setState(_StateId.clipboard);
     });
 
     //todo: the state needs to be captured so the state can be changed when connection fails
-    joinConnectionService!.target!.connect(_invite!.joiner!, _invite!.creator);
+    _joinConnectionService!.target!.connect(_invite!.joiner!, _invite!.creator);
   }
 
   void _onEntryAddVisitorState() {
     loading();
-    joinConnectionService!.target!
+    _joinConnectionService!.target!
         .setVisitor(_invite!.joiner!, _invite!.creator)
         .then((value) {
-      joinInviteService!.target!
+      _joinInviteService!.target!
           .accept(JoinerInvite.fromInvite(_invite!))
           .then((value) {
         setState(_StateId.join);
       });
     });
+  }
+
+  void _onEntryClipboardState() {
+    loading();
+    _joinConnectionService!.target!.setOnDisconnectedListener(() {
+      complete();
+    });
+
+    clipboardFeature.addClipboardServiceListener(Listener((service) {
+      final view = ClipboardScreen(
+        viewModel: ClipboardScreenViewModel(
+            connectionService: _joinConnectionService!,
+            clipboardService: service),
+      );
+
+      viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
+    }, this));
   }
 
   @override

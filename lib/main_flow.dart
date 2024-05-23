@@ -5,14 +5,11 @@ import 'package:flutter/material.dart' as material;
 import 'package:flutter_fd/flutter_fd.dart';
 import 'package:p2p_copy_paste/create/create_flow.dart';
 import 'package:p2p_copy_paste/join/join_flow.dart';
-import 'package:p2p_copy_paste/screens/clipboard.dart';
 import 'package:p2p_copy_paste/screens/vertical_menu.dart';
 import 'package:p2p_copy_paste/services/authentication.dart';
-import 'package:p2p_copy_paste/services/connection.dart';
 import 'package:p2p_copy_paste/system_manager.dart';
 import 'package:p2p_copy_paste/view_models/button.dart';
 import 'package:p2p_copy_paste/view_models/cancel_confirm.dart';
-import 'package:p2p_copy_paste/view_models/clipboard.dart';
 import 'package:p2p_copy_paste/view_models/menu.dart';
 import 'package:p2p_copy_paste/widgets/cancel_confirm_dialog.dart';
 
@@ -22,7 +19,6 @@ enum _StateId {
   loading,
   create,
   join,
-  clipboard,
 }
 
 class MainFlow extends Flow<_StateId> {
@@ -32,7 +28,6 @@ class MainFlow extends Flow<_StateId> {
   JoinViewType _joinViewType = JoinViewType.camera;
 
   WeakReference<IAuthenticationService>? _authenticationService;
-  WeakReference<IConnectionService>? _connectionService;
 
   MainFlow(
       {required this.navigator,
@@ -46,53 +41,19 @@ class MainFlow extends Flow<_StateId> {
         state: FlowState(name: 'overview', onEntry: _onEntryOverviewState),
         stateId: _StateId.overview);
     addState(
-        state: FlowState(
-            name: 'create',
-            onEntry: _onEntryCreateState,
-            onExit: _onExitCreateState),
+        state: FlowState(name: 'create', onEntry: _onEntryCreateState),
         stateId: _StateId.create);
     addState(
-        state: FlowState(
-            name: 'join', onEntry: _onEntryJoinState, onExit: _onExitJoinState),
+        state: FlowState(name: 'join', onEntry: _onEntryJoinState),
         stateId: _StateId.join);
     addState(
         state: FlowState(name: 'get started', onEntry: _onEntryGetStartedState),
         stateId: _StateId.getStarted);
-    addState(
-        state: FlowState(
-            name: 'clipboard',
-            onEntry: _onEntryClipboardState,
-            onExit: _onExitClipboardState),
-        stateId: _StateId.clipboard);
 
     setInitialState(_StateId.loading);
   }
 
-  @override
-  void onPopInvoked() {
-    if (isCurrentState(_StateId.clipboard)) {
-      navigator.pushDialog(
-        CancelConfirmDialog(
-          viewModel: CancelConfirmViewModel(
-            title: 'Are you sure?',
-            description: 'The connection will be lost',
-            onCancelButtonPressed: () {
-              navigator.popScreen();
-            },
-            onConfirmButtonPressed: () {
-              navigator.popScreen();
-              _connectionService!.target!.close();
-            },
-          ),
-        ),
-      );
-    }
-  }
-
   void _onEntryOverviewState() {
-    systemManager.removeCreateConnectionServiceListener(getContext());
-    systemManager.removeJoinConnectionServiceListener(getContext());
-
     final buttonViewModelList = [
       ButtonViewModel(
           title: 'Create an invite',
@@ -128,61 +89,31 @@ class MainFlow extends Flow<_StateId> {
   }
 
   void _onEntryCreateState() {
-    loading();
+    final flow = CreateFlow(
+        createFeature: systemManager,
+        clipboardFeature: systemManager,
+        navigator: navigator,
+        onCompleted: _closeScreenAndReturnToOverview,
+        onCanceled: _closeScreenAndReturnToOverview);
 
-    systemManager
-        .addCreateConnectionServiceListener(Listener((createConnectionService) {
-      _connectionService = createConnectionService;
-
-      systemManager
-          .addCreateInviteServiceListener(Listener((createInviteService) {
-        final flow = CreateFlow(
-            createConnectionService: createConnectionService,
-            createInviteService: createInviteService,
-            onCompleted: _closeScreenAndOpenClipboard,
-            onCanceled: _closeScreenAndReturnToOverview);
-
-        navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-      }, this));
-    }, this));
-  }
-
-  void _onExitCreateState() {
-    systemManager.removeCreateInviteServiceListener(getContext());
+    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
   }
 
   void _onEntryJoinState() {
-    loading();
+    final flow = JoinFlow(
+        viewType: _joinViewType,
+        joinFeature: systemManager,
+        clipboardFeature: systemManager,
+        navigator: navigator,
+        onCompleted: _closeScreenAndReturnToOverview,
+        onCanceled: _closeScreenAndReturnToOverview);
 
-    systemManager
-        .addJoinConnectionServiceListener(Listener((joinConnectionService) {
-      _connectionService = joinConnectionService;
-
-      systemManager.addJoinInviteServiceListener(Listener((joinInviteService) {
-        final flow = JoinFlow(
-            viewType: _joinViewType,
-            onCompleted: _closeScreenAndOpenClipboard,
-            onCanceled: _closeScreenAndReturnToOverview,
-            joinConnectionService: joinConnectionService,
-            joinInviteService: joinInviteService);
-
-        navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
-      }, this));
-    }, this));
-  }
-
-  void _onExitJoinState() {
-    systemManager.removeJoinInviteServiceListener(getContext());
+    navigator.pushScreen(FlowScreen(viewModel: FlowScreenViewModel(flow)));
   }
 
   Future<void> _closeScreenAndReturnToOverview() async {
     navigator.popScreen();
     setState(_StateId.overview);
-  }
-
-  Future<void> _closeScreenAndOpenClipboard() async {
-    navigator.popScreen();
-    setState(_StateId.clipboard);
   }
 
   void _onEntryLoadingState() {
@@ -230,28 +161,6 @@ class MainFlow extends Flow<_StateId> {
     ));
 
     viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
-  }
-
-  void _onEntryClipboardState() {
-    loading();
-    _connectionService!.target!.setOnDisconnectedListener(() {
-      setState(_StateId.overview);
-    });
-
-    systemManager.addClipboardServiceListener(Listener((service) {
-      final view = ClipboardScreen(
-        viewModel: ClipboardScreenViewModel(
-            connectionService: _connectionService!, clipboardService: service),
-      );
-
-      viewChangeSubject.add(Screen(view: view, viewModel: view.viewModel));
-    }, this));
-  }
-
-  void _onExitClipboardState() {
-    systemManager.removeClipboardServiceListener(getContext());
-    systemManager.removeCreateConnectionServiceListener(getContext());
-    systemManager.removeJoinConnectionServiceListener(getContext());
   }
 
   void _onLoginStateChanged(LoginState loginState) {
