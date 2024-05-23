@@ -10,7 +10,7 @@ class VerticalMenuScreen extends StatelessScreenView<MenuScreenViewModel> {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -18,6 +18,7 @@ class VerticalMenuScreen extends StatelessScreenView<MenuScreenViewModel> {
               viewModel.description,
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 16),
             for (final buttonViewModel in viewModel.buttonViewModelList)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),

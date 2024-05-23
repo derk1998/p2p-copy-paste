@@ -8,27 +8,30 @@ class HorizontalMenuScreen extends StatelessScreenView<MenuScreenViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(viewModel.description),
-          const SizedBox(
-            height: 16,
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final buttonViewModel in viewModel.buttonViewModelList)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: btn.Button(
-                    viewModel: buttonViewModel,
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(viewModel.description),
+            const SizedBox(
+              height: 16,
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final buttonViewModel in viewModel.buttonViewModelList)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: btn.Button(
+                      viewModel: buttonViewModel,
+                    ),
                   ),
-                ),
-            ],
-          )
-        ],
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

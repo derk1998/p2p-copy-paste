@@ -35,7 +35,7 @@ class _JoinConnectionScreenState extends StatefulScreenViewState<
       stream: viewModel.state,
       builder: (context, snapshot) {
         return Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16),
             child: Center(
                 child: Column(
               mainAxisSize: MainAxisSize.min,

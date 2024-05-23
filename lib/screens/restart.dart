@@ -8,13 +8,16 @@ class RestartScreen extends StatelessScreenView<RestartViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(viewModel.description),
-          btn.Button(viewModel: viewModel.iconButtonViewModel)
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(viewModel.description),
+            btn.Button(viewModel: viewModel.iconButtonViewModel)
+          ],
+        ),
       ),
     );
   }

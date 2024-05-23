@@ -7,6 +7,9 @@ class CenteredDescriptionScreen extends StatelessScreenView<BasicViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text(viewModel.description));
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Center(child: Text(viewModel.description)),
+    );
   }
 }
